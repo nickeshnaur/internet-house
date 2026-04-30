@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>internet.house</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    background: #fafaf7;
+    color: #111;
+    font-family: 'Cormorant Garamond', 'Times New Roman', Times, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 28px 36px;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #111;
+  }
+
+  .masthead {
+    font-size: 1.25rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  .meta {
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    color: #2a2a2a;
+  }
+
+  main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .headline {
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(1.5rem, 3vw, 2.15rem);
+    color: #1a1a1a;
+    letter-spacing: 0.005em;
+  }
+
+  footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-top: 14px;
+    border-top: 1px solid #111;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    color: #2a2a2a;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="masthead">internet.house</div>
+    <div class="meta"><span id="date"></span></div>
+  </header>
+
+  <main>
+    <p class="headline">Site coming soon</p>
+  </main>
+
+  <footer>
+    <div id="tz"></div>
+    <div id="time-bottom"></div>
+  </footer>
+
+  <script>
+    function tick() {
+      const d = new Date();
+      const dateOpts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const timeOpts = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+      document.getElementById('date').textContent = d.toLocaleDateString('en-US', dateOpts);
+      document.getElementById('time-bottom').textContent = d.toLocaleTimeString('en-US', timeOpts);
+    }
+    document.getElementById('tz').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone.replace(/_/g, ' ');
+    tick();
+    setInterval(tick, 1000);
+  </script>
+</body>
+</html>
