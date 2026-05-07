@@ -169,8 +169,10 @@
     letter-spacing: 1.5px;
   }
 
-  .triggers { position: absolute; top: 0; left: 0; width: 1px; pointer-events: none; }
-  .trigger { /* height set inline by JS */ }
+  /* triggers must be in normal flow so their height extends .scene
+     and gives .stage somewhere to stick */
+  .triggers { position: relative; width: 1px; pointer-events: none; }
+  .trigger { /* positioned absolute inline by JS, inside .triggers */ }
 
   /* ---------- end ---------- */
   .end {
