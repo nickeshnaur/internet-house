@@ -6,7 +6,7 @@
 <title>letters from myself · internet.house</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Caveat:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Caveat:wght@400;600;700&family=Kalam:wght@300;400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --paper: #efe6d2;
@@ -193,28 +193,202 @@
   .triggers { position: relative; width: 1px; pointer-events: none; }
   .trigger { /* positioned absolute inline by JS, inside .triggers */ }
 
-  /* ---------- end ---------- */
-  .end {
-    min-height: 70vh;
+  /* ---------- narrative bridge ---------- */
+  .narrate {
+    min-height: 60vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 24px;
+  }
+  .narrate p {
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    font-size: clamp(1.3rem, 2vw, 1.7rem);
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 600px;
+    text-align: center;
+    margin: 0;
+  }
+
+  /* ---------- open letter ---------- */
+  .open-letter {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 80px 24px;
+  }
+  .letter-paper {
+    background: var(--paper-bright);
+    width: 100%;
+    max-width: 600px;
+    padding: 60px clamp(28px, 6vw, 64px) 64px;
+    position: relative;
+    border: 1px solid rgba(26,23,20,0.12);
+    box-shadow:
+      0 1px 0 rgba(26,23,20,0.06),
+      0 28px 60px rgba(26,23,20,0.10),
+      0 8px 22px rgba(26,23,20,0.05);
+    transform: rotate(-0.7deg);
+  }
+  .letter-paper::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(rgba(26,23,20,0.04) 1px, transparent 1px),
+      radial-gradient(rgba(26,23,20,0.025) 1px, transparent 1px);
+    background-size: 4px 4px, 9px 9px;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+  /* a "broken seal" mark in the upper-right corner of the letter */
+  .letter-paper::after {
+    content: '';
+    position: absolute;
+    top: 16px; right: 18px;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--ink);
+    opacity: 0.85;
+    clip-path: polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%);
+    transform: rotate(8deg);
+  }
+  .letter-paper .body {
+    font-family: "Kalam", "Caveat", cursive;
+    font-weight: 400;
+    font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+    line-height: 1.7;
+    color: var(--ink);
+    position: relative;
+  }
+  .letter-paper .body p { margin: 0 0 1.1em 0; }
+  .letter-paper .body p.greeting { margin-bottom: 1.6em; }
+  .letter-paper .signature {
+    margin-top: 1.8em;
+    font-family: "Caveat", cursive;
+    font-weight: 700;
+    font-size: 1.7rem;
+    color: var(--ink);
+  }
+
+  /* ---------- reply ---------- */
+  .reply {
+    min-height: 100vh;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    text-align: center; gap: 22px;
-    padding: 0 24px 100px;
+    padding: 80px 24px 120px;
+    gap: 36px;
   }
-  .end .ornament {
+  .reply .laptop {
+    width: clamp(180px, 22vw, 260px);
+    height: auto;
+  }
+  .reply form {
+    display: flex; flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    max-width: 600px;
+  }
+  .reply .field-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+  }
+  .reply textarea {
+    font-family: "Kalam", cursive;
+    font-size: 1.15rem;
+    line-height: 1.65;
+    background: var(--paper-bright);
+    border: 1px solid rgba(26,23,20,0.18);
+    padding: 28px 32px;
+    min-height: 320px;
+    resize: vertical;
+    color: var(--ink);
+    outline: none;
+    width: 100%;
+    box-shadow: 0 8px 24px rgba(26,23,20,0.05);
+    transition: border-color 0.2s;
+  }
+  .reply textarea::placeholder { color: var(--ink-faint); font-style: italic; opacity: 0.7; }
+  .reply textarea:focus { border-color: var(--ink-soft); }
+  .reply input[type="email"] {
+    font-family: "Instrument Serif", serif;
+    font-size: 1.15rem;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(26,23,20,0.3);
+    padding: 8px 4px;
+    color: var(--ink);
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+  .reply input[type="email"]:focus { border-bottom-color: var(--ink); }
+  .reply .submit-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 8px;
+    gap: 16px; flex-wrap: wrap;
+  }
+  .reply .privacy {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px; letter-spacing: 1px;
+    color: var(--ink-faint);
+    max-width: 320px;
+  }
+  .reply button {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 14px 32px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .reply button:hover { opacity: 0.85; }
+  .reply button:active { transform: translateY(1px); }
+  .reply button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .reply .sent-state {
+    text-align: center;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    max-width: 520px;
+  }
+  .reply.sent form { display: none; }
+  .reply.sent .laptop { display: none; }
+  .reply.sent .sent-state { display: flex; }
+  .reply .sent-state .ornament {
     font-family: "Caveat", cursive;
-    font-size: 2.4rem; color: var(--ink-soft);
+    font-size: 2.2rem; color: var(--ink-soft);
   }
-  .end .closing {
+  .reply .sent-state .msg {
     font-family: "Instrument Serif", serif;
     font-style: italic;
     font-size: 1.4rem;
-    color: var(--ink-soft);
-    max-width: 520px;
-    line-height: 1.5;
+    color: var(--ink);
+    line-height: 1.55;
+  }
+  .reply .sent-state .meta {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 12px;
+  }
+
+  /* ---------- end ---------- */
+  .end {
+    min-height: 40vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; gap: 16px;
+    padding: 0 24px 80px;
+  }
+  .end .ornament {
+    font-family: "Caveat", cursive;
+    font-size: 2.2rem; color: var(--ink-soft);
   }
   .end .next {
-    margin-top: 24px;
     font-family: "JetBrains Mono", monospace;
     font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
     color: var(--ink-faint);
@@ -410,14 +584,121 @@
 
 </section>
 
-<!-- end of chapter -->
-<section class="end">
-  <div class="ornament">~ ~ ~</div>
-  <div class="closing">
-    she paid for the coffee with the letter still in her bag,
-    the way you carry something you haven't decided about yet.
+<!-- bridge: she leaves the cafe -->
+<section class="narrate">
+  <p>She paid for the coffee with the letter still in her bag, the way you carry something you haven't decided about yet.</p>
+</section>
+
+<!-- bridge: she opens it -->
+<section class="narrate">
+  <p>She opened it that night, when the light was the way it is around six.</p>
+</section>
+
+<!-- the letter, readable -->
+<section class="open-letter">
+  <div class="letter-paper">
+    <div class="body">
+      <p class="greeting">Mira,</p>
+
+      <p>Okay. You're terrified. I know.</p>
+
+      <p>You've been carrying me around in your bag all day like I'm going to bite, and you finally pulled me out at the cafe with Sam and Jules. Thank god for them.</p>
+
+      <p>First — yes. It's me. A little older, but not as much as you're imagining. You'd recognize the face. The hair is shorter.</p>
+
+      <p>I'm not going to tell you what happens. You'd hate that. You'd spend the whole semester scanning for it. You came here to have a life, not to fact-check one.</p>
+
+      <p>I will tell you this much: you were right to come.</p>
+
+      <p>Not in the way you've been hoping someone would tell you. Not in a "this all works out" way. It's harder than you've been letting yourself admit. There's going to be a Thursday in December where you cry in a stairwell over something small. There's a Friday in November where you get on the wrong train and end up somewhere you've never heard of, and you walk for an hour before you find a metro. (Don't be afraid of it. It ends up being one of the better afternoons you have here.)</p>
+
+      <p>But you were right to come. You came here because the version of you who stayed was unsurvivable. She was so tired. She was getting smaller. You got on the plane to get away from her. That worked.</p>
+
+      <p>So — about your fear.</p>
+
+      <p>You asked, basically, whether this is the part you'll remember. You're so worried about wasting it that you're starting to waste it.</p>
+
+      <p>I want to give you permission to not have a profound time. Permission to spend a whole Sunday eating cheese on the couch and watching a movie you've already seen. Permission to be bored. Permission to be homesick on a Wednesday and not feel like a failure for it.</p>
+
+      <p>Paris doesn't owe you a story. And you don't owe Paris one either. You just have to be here.</p>
+
+      <p>One assignment, if you'll take it: there's a bakery on the corner of rue Cler and rue de Grenelle. Blue awning. Order the kouign-amann. Eat it on the bench across the street. Don't take a picture. Don't text anyone. Just eat it. You'll know why later.</p>
+
+      <p>I love you. You're doing better than you think you are.</p>
+
+      <p>Write me back. Tell me what you noticed today.</p>
+
+      <p class="signature">— M.</p>
+    </div>
   </div>
-  <div class="next">end of chapter one</div>
+</section>
+
+<!-- bridge: she gets up, sits back down, opens her laptop -->
+<section class="narrate">
+  <p>She read it twice. Then she got up. Then she sat back down.</p>
+</section>
+
+<!-- the reply form -->
+<section class="reply" id="reply">
+  <svg class="laptop" viewBox="0 0 240 168" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <!-- screen outer -->
+    <path d="M40,18 L200,18 L210,124 L30,124 Z"
+          fill="#f8f1de" stroke="#1a1714" stroke-width="2.4" stroke-linejoin="round"/>
+    <!-- screen interior -->
+    <path d="M48,26 L192,26 L200,118 L40,118 Z"
+          fill="#efe6d2" stroke="#1a1714" stroke-width="1"/>
+    <!-- text lines on screen -->
+    <line x1="60" y1="48" x2="180" y2="48" stroke="#1a1714" stroke-width="1.4"/>
+    <line x1="60" y1="62" x2="158" y2="62" stroke="#1a1714" stroke-width="1.4"/>
+    <line x1="60" y1="76" x2="172" y2="76" stroke="#1a1714" stroke-width="1.4"/>
+    <line x1="60" y1="90" x2="120" y2="90" stroke="#1a1714" stroke-width="1.4"/>
+    <!-- blinking cursor -->
+    <line x1="124" y1="86" x2="124" y2="96" stroke="#1a1714" stroke-width="2">
+      <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.45;0.5;0.95;1" dur="1s" repeatCount="indefinite"/>
+    </line>
+    <!-- base -->
+    <path d="M10,130 L230,130 L212,150 L28,150 Z"
+          fill="#f8f1de" stroke="#1a1714" stroke-width="2.4" stroke-linejoin="round"/>
+    <!-- trackpad notch -->
+    <path d="M104,144 q16,4 32,0" fill="none" stroke="#1a1714" stroke-width="1.2" stroke-linecap="round"/>
+  </svg>
+
+  <form id="reply-form" novalidate>
+    <div>
+      <div class="field-label">Write back to her</div>
+      <textarea
+        id="reply-letter"
+        placeholder="Mira,&#10;&#10;I noticed today that..."
+        required
+        minlength="20"
+      ></textarea>
+    </div>
+
+    <div>
+      <div class="field-label">So she knows where to write back</div>
+      <input type="email" id="reply-email" placeholder="your@email.com" required>
+    </div>
+
+    <div class="submit-row">
+      <div class="privacy">We'll only use your email to deliver her reply and the next chapter.</div>
+      <button type="submit" id="reply-send">Send your letter</button>
+    </div>
+  </form>
+
+  <div class="sent-state">
+    <div class="ornament">~ ~ ~</div>
+    <div class="msg">
+      Your letter has been sent.<br/>
+      She'll write back when she has something to say.
+    </div>
+    <div class="meta">end of chapter one</div>
+  </div>
+</section>
+
+<!-- end of chapter -->
+<section class="end" id="end">
+  <div class="ornament">~ ~ ~</div>
+  <div class="next">chapter two — coming soon</div>
 </section>
 
 <script>
@@ -425,234 +706,157 @@
   // who: 'mira' | 'sam' | 'jules' | 'sam_jules' | ''
   // mode: '' (mira default, calm serif) | 'shout' (caveat all-caps) | 'whisper' (italic) | 'beat' (mono pause)
   const dialogue = [
-    { who: 'mira',  mode: '',        text: "so. um. something kind of strange happened this morning." },
-    { who: 'mira',  mode: 'whisper', text: "i wasn't going to mention it." },
-    { who: 'sam',   mode: '',        text: "that's a sentence with teeth, mira." },
-    { who: 'sam',   mode: '',        text: "that's a sentence designed to be asked about." },
-    { who: 'jules', mode: '',        text: 'you can\'t open with "something strange" and then sip your coffee.' },
-    { who: 'mira',  mode: 'whisper', text: "i haven't even had any of my coffee." },
-    { who: 'sam',   mode: '',        text: "that's a tell." },
+    { who: 'mira',  mode: '',        text: "So. Um. Something kind of strange happened this morning." },
+    { who: 'mira',  mode: 'whisper', text: "I wasn't going to mention it." },
+    { who: 'sam',   mode: '',        text: "That's a sentence with teeth, Mira." },
+    { who: 'jules', mode: '',        text: 'You can\'t open with "something strange" and then sip your coffee.' },
+    { who: 'mira',  mode: 'whisper', text: "I haven't even had any of my coffee." },
+    { who: 'sam',   mode: '',        text: "That's a tell." },
     { who: '',      mode: 'beat',    text: "— pause —" },
 
-    { who: 'mira',  mode: '',        text: "a letter came." },
-    { who: 'jules', mode: '',        text: "mhmm." },
-    { who: 'mira',  mode: 'whisper', text: "from. um." },
-    { who: 'sam',   mode: '',        text: "from?" },
-    { who: 'mira',  mode: '',        text: "from me." },
+    { who: 'mira',  mode: '',        text: "A letter came." },
+    { who: 'mira',  mode: 'whisper', text: "From me." },
     { who: '',      mode: 'beat',    text: "— silence —" },
+    { who: 'jules', mode: 'whisper', text: "...As in, you mailed it to yourself." },
+    { who: 'mira',  mode: '',        text: "As in, I didn't." },
+    { who: 'sam',   mode: 'whisper', text: "Mira." },
+    { who: 'mira',  mode: '',        text: "I know how it sounds." },
 
-    { who: 'jules', mode: 'whisper', text: "...as in. you mailed it to yourself." },
-    { who: 'mira',  mode: '',        text: "as in. i didn't." },
-    { who: 'sam',   mode: 'whisper', text: "mira." },
-    { who: 'mira',  mode: '',        text: "i know how it sounds." },
-    { who: 'jules', mode: '',        text: "as in the actual — the —" },
-    { who: 'sam',   mode: '',        text: "she's saying it's one of those." },
-    { who: 'mira',  mode: '',        text: "i'm saying it's one of those." },
+    { who: 'sam',   mode: '',        text: "She's saying it's one of those." },
+    { who: 'mira',  mode: '',        text: "I'm saying it's one of those." },
     { who: 'jules', mode: 'shout',   text: "NO." },
     { who: 'sam',   mode: 'shout',   text: "WAIT. WAIT. WAIT." },
-    { who: 'mira',  mode: 'whisper', text: "please." },
+    { who: 'jules', mode: '',        text: "I thought those were a story." },
+    { who: 'mira',  mode: '',        text: "I thought they were a story." },
 
-    { who: 'jules', mode: '',        text: "i thought those were a story." },
-    { who: 'mira',  mode: '',        text: "i thought they were a story." },
-    { who: 'sam',   mode: '',        text: "people get them. people get them, jules." },
-    { who: 'jules', mode: '',        text: "people in essays get them. people on tv get them." },
-    { who: 'jules', mode: '',        text: "not — sorry, mira — not the girl who eats the same ham sandwich every day." },
-    { who: 'mira',  mode: '',        text: "it is not the same sandwich, it is a—" },
-    { who: 'jules', mode: 'shout',   text: "— ham sandwich, MIRA." },
-    { who: 'mira',  mode: 'whisper', text: "okay." },
-
-    { who: 'sam',   mode: '',        text: "where is it." },
-    { who: 'mira',  mode: 'whisper', text: "where's what." },
-    { who: 'sam',   mode: '',        text: "don't." },
-    { who: 'mira',  mode: '',        text: "it's in my bag." },
-    { who: 'jules', mode: 'shout',   text: "it's in her BAG." },
-    { who: 'sam',   mode: '',        text: "she brought it to coffee." },
-    { who: 'mira',  mode: '',        text: "i didn't want to leave it in the apartment." },
-    { who: 'sam',   mode: '',        text: "of course you didn't. of course not." },
-    { who: 'jules', mode: '',        text: "show us." },
+    { who: 'sam',   mode: '',        text: "Where is it." },
+    { who: 'mira',  mode: 'whisper', text: "In my bag." },
+    { who: 'jules', mode: 'shout',   text: "It's in her BAG." },
+    { who: 'sam',   mode: '',        text: "She brought it to coffee." },
+    { who: 'mira',  mode: '',        text: "I didn't want to leave it in the apartment." },
+    { who: 'jules', mode: '',        text: "Show us." },
     { who: '',      mode: 'beat',    text: "— ... —" },
 
-    { who: 'mira',  mode: 'whisper', text: "it's just an envelope." },
-    { who: 'jules', mode: '',        text: "show us the envelope, mira." },
+    { who: 'mira',  mode: 'whisper', text: "It's just an envelope." },
+    { who: 'jules', mode: '',        text: "Show us the envelope, Mira." },
     { who: '',      mode: 'beat',    text: "— she reaches into her bag —" },
 
-    { who: 'jules', mode: 'shout',   text: "oh my god." },
-    { who: 'sam',   mode: 'shout',   text: "oh my god." },
-    { who: 'jules', mode: '',        text: "that's the wax thing." },
-    { who: 'sam',   mode: '',        text: "that's the wax thing." },
-    { who: 'mira',  mode: 'whisper', text: "yeah." },
-    { who: 'jules', mode: '',        text: "sam, that's the —" },
-    { who: 'sam',   mode: '',        text: "i can see, jules." },
-    { who: 'jules', mode: '',        text: "i'm just confirming." },
-    { who: 'sam',   mode: '',        text: "please confirm to yourself." },
+    { who: 'jules', mode: 'shout',   text: "Oh my god." },
+    { who: 'sam',   mode: 'shout',   text: "Oh my god." },
+    { who: 'jules', mode: '',        text: "That's the wax thing." },
+    { who: 'mira',  mode: 'whisper', text: "Yeah." },
 
-    { who: 'mira',  mode: '',        text: "my name is on it." },
-    { who: 'jules', mode: '',        text: "your name." },
-    { who: 'mira',  mode: '',        text: "in my handwriting." },
+    { who: 'mira',  mode: '',        text: "My name is on it. In my handwriting." },
     { who: 'jules', mode: 'shout',   text: "WHAT." },
-    { who: 'sam',   mode: '',        text: "wait. your handwriting now? or —" },
-    { who: 'mira',  mode: '',        text: "i don't know. it's mine. it just looks. older." },
-    { who: 'sam',   mode: 'whisper', text: "older how." },
-    { who: 'mira',  mode: 'whisper', text: "less anxious." },
+    { who: 'sam',   mode: '',        text: "Your handwriting now? Or —" },
+    { who: 'mira',  mode: '',        text: "I don't know. It's mine. It just looks. Older." },
+    { who: 'sam',   mode: 'whisper', text: "Older how." },
+    { who: 'mira',  mode: 'whisper', text: "Less anxious." },
     { who: '',      mode: 'beat',    text: "— ... —" },
 
-    { who: 'sam',   mode: 'whisper', text: "oh." },
-    { who: 'jules', mode: 'whisper', text: "mira." },
-    { who: 'mira',  mode: '',        text: "yeah." },
-    { who: 'jules', mode: '',        text: "what does it say." },
+    { who: 'jules', mode: 'whisper', text: "Mira." },
+    { who: 'jules', mode: '',        text: "What does it say." },
     { who: '',      mode: 'beat',    text: "— ... —" },
-    { who: 'mira',  mode: '',        text: "i haven't opened it." },
-    { who: 'jules', mode: 'beat',    text: ".................." },
-    { who: 'sam',   mode: 'beat',    text: ".................." },
-    { who: 'mira',  mode: 'whisper', text: "stop looking at me like that." },
+    { who: 'mira',  mode: '',        text: "I haven't opened it." },
+    { who: '',      mode: 'beat',    text: ".................." },
     { who: 'jules', mode: 'shout',   text: "SHE HASN'T OPENED IT." },
 
-    { who: 'sam',   mode: '',        text: "how long have you had it." },
-    { who: 'mira',  mode: 'whisper', text: "since. like. eight. this morning." },
-    { who: 'sam',   mode: '',        text: "it is currently four in the afternoon." },
-    { who: 'mira',  mode: '',        text: "i'm aware of the time, sam." },
-    { who: 'jules', mode: 'shout',   text: "SHE HAS HAD IT FOR EIGHT HOURS." },
-    { who: 'mira',  mode: 'whisper', text: "please. people are looking." },
-    { who: 'jules', mode: '',        text: "let them look. the world should look." },
+    { who: 'sam',   mode: '',        text: "How long have you had it." },
+    { who: 'mira',  mode: 'whisper', text: "Since, like, eight this morning." },
+    { who: 'sam',   mode: '',        text: "It is currently four in the afternoon." },
+    { who: 'jules', mode: 'shout',   text: "EIGHT HOURS." },
 
-    { who: 'sam',   mode: '',        text: "open it." },
-    { who: 'mira',  mode: '',        text: "i can't." },
-    { who: 'sam',   mode: '',        text: "open it." },
-    { who: 'mira',  mode: '',        text: "not here." },
-    { who: 'sam',   mode: '',        text: "why not here." },
-    { who: 'mira',  mode: 'whisper', text: "because." },
+    { who: 'sam',   mode: '',        text: "Open it." },
+    { who: 'mira',  mode: '',        text: "Not here." },
+    { who: 'sam',   mode: '',        text: "Why not here." },
     { who: '',      mode: 'beat',    text: "— ... —" },
-    { who: 'mira',  mode: '',        text: "because if it's the kind of thing you'd say at a cafe i want to be alone for it." },
+    { who: 'mira',  mode: '',        text: "Because if it's the kind of thing you'd say at a cafe I want to be alone for it." },
     { who: '',      mode: 'beat',    text: "— ... —" },
-    { who: 'jules', mode: 'whisper', text: "...oh." },
-    { who: 'sam',   mode: 'whisper', text: "yeah. okay." },
-    { who: '',      mode: 'beat',    text: "— quiet —" },
+    { who: 'jules', mode: 'whisper', text: "...Oh." },
+    { who: 'sam',   mode: 'whisper', text: "Yeah. Okay." },
 
-    { who: 'mira',  mode: '',        text: "i keep picking it up and putting it down." },
-    { who: 'mira',  mode: '',        text: "i made a coffee. i didn't drink it. i made another." },
-    { who: 'sam',   mode: 'whisper', text: 'that\'s why you said you "haven\'t had any of your coffee."' },
-    { who: 'mira',  mode: 'whisper', text: "that's why." },
-    { who: 'jules', mode: 'whisper', text: "god." },
-    { who: 'mira',  mode: '',        text: "i was on the metro and i kept holding it through the bag. through the fabric." },
-    { who: 'mira',  mode: '',        text: "like to make sure it was still real." },
-    { who: 'sam',   mode: 'whisper', text: "was it." },
-    { who: 'mira',  mode: 'whisper', text: "it was still real." },
+    { who: 'mira',  mode: '',        text: "I keep picking it up and putting it down." },
+    { who: 'mira',  mode: '',        text: "I made a coffee. I didn't drink it. I made another." },
+    { who: 'sam',   mode: 'whisper', text: 'That\'s why you said you "haven\'t had any of your coffee."' },
+    { who: 'mira',  mode: '',        text: "I was on the metro and I kept holding it through the bag. To make sure it was still real." },
     { who: '',      mode: 'beat',    text: "— ... —" },
 
-    { who: 'jules', mode: '',        text: "what do you want it to say." },
-    { who: 'mira',  mode: 'whisper', text: "i don't —" },
-    { who: 'jules', mode: '',        text: "you must have thought about it." },
-    { who: 'mira',  mode: 'whisper', text: "i've thought about almost nothing else." },
-    { who: 'sam',   mode: '',        text: "what's the answer, mira." },
+    { who: 'jules', mode: '',        text: "What do you want it to say." },
+    { who: 'mira',  mode: 'whisper', text: "I've thought about almost nothing else." },
+    { who: 'sam',   mode: '',        text: "What's the answer, Mira." },
     { who: '',      mode: 'beat',    text: "— ... —" },
-    { who: 'mira',  mode: '',        text: "i want it to say i'm fine." },
-    { who: '',      mode: 'beat',    text: "— ... —" },
-    { who: 'mira',  mode: '',        text: "that future me is fine. that whatever i'm worried about today is silly. or survivable. or." },
-    { who: 'sam',   mode: 'whisper', text: "yeah." },
-    { who: 'mira',  mode: '',        text: 'i want it to say "you were right to come."' },
+    { who: 'mira',  mode: '',        text: "I want it to say I'm fine." },
+    { who: 'mira',  mode: '',        text: "That whatever I'm worried about today is silly. Or survivable." },
+    { who: 'mira',  mode: '',        text: 'I want it to say "you were right to come."' },
 
-    { who: 'jules', mode: 'whisper', text: "...did you not want to come." },
-    { who: 'mira',  mode: '',        text: "i wanted to come. i also didn't." },
-    { who: 'jules', mode: 'whisper', text: "okay." },
-    { who: 'mira',  mode: '',        text: "i wanted to want to come more than i wanted to come." },
-    { who: 'sam',   mode: '',        text: "that is the most mira sentence i have ever heard." },
-    { who: 'mira',  mode: 'shout',   text: "i KNOW." },
+    { who: 'jules', mode: 'whisper', text: "...Did you not want to come." },
+    { who: 'mira',  mode: '',        text: "I wanted to come. I also didn't." },
+    { who: 'mira',  mode: '',        text: "I wanted to want to come more than I wanted to come." },
+    { who: 'sam',   mode: '',        text: "That is the most Mira sentence I have ever heard." },
+    { who: 'mira',  mode: 'shout',   text: "I KNOW." },
     { who: '',      mode: 'beat',    text: "— small laugh —" },
 
-    { who: 'sam',   mode: '',        text: "what are you afraid of it saying." },
+    { who: 'sam',   mode: '',        text: "What are you afraid of it saying." },
     { who: '',      mode: 'beat',    text: "— ... —" },
-    { who: 'mira',  mode: 'whisper', text: "that this isn't the part i remember." },
-    { who: '',      mode: 'beat',    text: "— ... —" },
-    { who: 'jules', mode: 'whisper', text: "...what." },
-    { who: 'mira',  mode: '',        text: "like — that one day i'll be older and i'll think about paris and this won't be the part i think about." },
-    { who: 'mira',  mode: '',        text: "it'll be the bad week. or the breakup. or the night i couldn't find the apartment. and i'll have wasted —" },
-    { who: 'sam',   mode: 'whisper', text: "mira." },
-    { who: 'mira',  mode: 'whisper', text: "i know it sounds stupid." },
-    { who: 'sam',   mode: '',        text: "it doesn't sound stupid." },
-    { who: 'mira',  mode: 'whisper', text: "it sounds stupid out loud." },
-    { who: 'jules', mode: '',        text: "it does not sound stupid out loud." },
+    { who: 'mira',  mode: 'whisper', text: "That this isn't the part I remember." },
+    { who: 'jules', mode: 'whisper', text: "...What." },
+    { who: 'mira',  mode: '',        text: "Like — that one day I'll be older and I'll think about Paris and this won't be the part I think about." },
+    { who: 'mira',  mode: '',        text: "It'll be the bad week. Or the breakup. And I'll have wasted —" },
+    { who: 'sam',   mode: 'whisper', text: "Mira." },
+    { who: 'mira',  mode: 'whisper', text: "I know it sounds stupid." },
+    { who: 'sam',   mode: '',        text: "It doesn't sound stupid." },
 
-    { who: 'sam',   mode: '',        text: "okay but. okay but." },
-    { who: 'mira',  mode: 'whisper', text: "yeah." },
-    { who: 'sam',   mode: '',        text: 'a letter that says "this isn\'t the part you remember" doesn\'t exist.' },
-    { who: 'sam',   mode: '',        text: "that's not what those letters do." },
-    { who: 'mira',  mode: '',        text: "how do you know what they do." },
-    { who: 'sam',   mode: '',        text: "because nobody writes that to themselves." },
-    { who: 'sam',   mode: '',        text: "people don't write to be cruel." },
-    { who: 'sam',   mode: '',        text: "you wouldn't write that to you." },
-    { who: 'mira',  mode: 'whisper', text: "maybe i'm crueler when i'm older." },
-    { who: 'jules', mode: 'whisper', text: "mira. babe." },
-    { who: 'mira',  mode: 'whisper', text: "okay." },
+    { who: 'sam',   mode: '',        text: 'A letter that says "this isn\'t the part you remember" doesn\'t exist.' },
+    { who: 'sam',   mode: '',        text: "That's not what those letters do." },
+    { who: 'mira',  mode: '',        text: "How do you know what they do." },
+    { who: 'sam',   mode: '',        text: "Because nobody writes that to themselves. People don't write to be cruel." },
+    { who: 'mira',  mode: 'whisper', text: "Maybe I'm crueler when I'm older." },
+    { who: 'jules', mode: 'whisper', text: "Mira. Babe." },
 
-    { who: 'jules', mode: '',        text: "future you is the one who decided to write to past you." },
-    { who: 'jules', mode: '',        text: "that's a person who is rooting for you." },
-    { who: 'jules', mode: '',        text: "by definition." },
+    { who: 'jules', mode: '',        text: "Future you is the one who decided to write to past you." },
+    { who: 'jules', mode: '',        text: "That's a person who is rooting for you. By definition." },
     { who: '',      mode: 'beat',    text: "— ... —" },
-    { who: 'mira',  mode: 'whisper', text: "...i didn't think about it like that." },
-    { who: 'jules', mode: 'whisper', text: "well." },
+    { who: 'mira',  mode: 'whisper', text: "...I didn't think about it like that." },
+
+    { who: 'sam',   mode: '',        text: "You don't have to open it today." },
+    { who: 'sam',   mode: '',        text: "You don't have to open it ever." },
+    { who: 'jules', mode: '',        text: "But you're going to." },
+    { who: 'mira',  mode: '',        text: "Yeah." },
     { who: '',      mode: 'beat',    text: "— ... —" },
 
-    { who: 'sam',   mode: '',        text: "you don't have to open it today." },
-    { who: 'mira',  mode: 'whisper', text: "i know." },
-    { who: 'sam',   mode: '',        text: "you don't have to open it ever." },
-    { who: 'mira',  mode: 'whisper', text: "i know." },
-    { who: 'jules', mode: '',        text: "but you're going to." },
-    { who: 'mira',  mode: '',        text: "yeah." },
+    { who: 'sam',   mode: 'whisper', text: "When." },
+    { who: 'mira',  mode: '',        text: "Tonight, maybe. When I get back to the room." },
+    { who: 'mira',  mode: '',        text: "When the light is the way it is around six." },
+    { who: 'mira',  mode: 'whisper', text: "I want it to be a moment." },
+    { who: 'mira',  mode: 'whisper', text: "I want to be the kind of person who has a moment." },
+
+    { who: 'sam',   mode: '',        text: "Mira. You got a letter from yourself. You ARE having a moment." },
+    { who: 'sam',   mode: '',        text: "You are inside the moment." },
+    { who: 'sam',   mode: '',        text: "It is happening to you in a cafe in Paris while we drink coffee that's gotten cold." },
+    { who: '',      mode: 'beat',    text: "— ... —" },
+    { who: 'mira',  mode: 'whisper', text: "...Okay." },
+
+    { who: 'jules', mode: 'whisper', text: "Put it back in your bag. Gently." },
     { who: '',      mode: 'beat',    text: "— ... —" },
 
-    { who: 'sam',   mode: 'whisper', text: "when." },
-    { who: 'mira',  mode: '',        text: "tonight, maybe. when i get back to the room." },
-    { who: 'mira',  mode: '',        text: "when the light is the way it is around six." },
-    { who: 'mira',  mode: 'whisper', text: "i want it to be a moment." },
-    { who: 'jules', mode: 'whisper', text: "okay." },
-    { who: 'mira',  mode: 'whisper', text: "i want to be the kind of person who has a moment." },
-    { who: 'sam',   mode: '',        text: "you are." },
-    { who: 'mira',  mode: 'whisper', text: "am i?" },
-
-    { who: 'sam',   mode: '',        text: "mira. you got a letter from yourself." },
-    { who: 'sam',   mode: '',        text: "you ARE having a moment." },
-    { who: 'sam',   mode: '',        text: "you are inside the moment." },
-    { who: 'sam',   mode: '',        text: "the moment is currently happening to you in a cafe in paris" },
-    { who: 'sam',   mode: '',        text: "while we drink coffee that's gotten cold." },
-    { who: '',      mode: 'beat',    text: "— ... —" },
-    { who: 'mira',  mode: 'whisper', text: "...okay." },
-    { who: 'sam',   mode: 'whisper', text: "okay?" },
-    { who: 'mira',  mode: 'whisper', text: "okay." },
-
-    { who: 'jules', mode: 'whisper', text: "put it back in your bag." },
-    { who: 'mira',  mode: 'whisper', text: "yeah." },
-    { who: 'jules', mode: 'whisper', text: "gently." },
-    { who: 'mira',  mode: 'whisper', text: "yeah." },
-    { who: '',      mode: 'beat',    text: "— ... —" },
-
-    { who: 'sam',   mode: '',        text: "how are you feeling." },
-    { who: 'mira',  mode: 'whisper', text: "...lighter." },
-    { who: 'jules', mode: 'whisper', text: "yeah?" },
-    { who: 'mira',  mode: '',        text: "i thought it would feel scarier to talk about it." },
-    { who: 'mira',  mode: '',        text: "but it feels like — i don't know." },
-    { who: 'mira',  mode: 'whisper', text: "it feels like having two fewer thoughts." },
-    { who: 'sam',   mode: '',        text: "you can have two fewer thoughts whenever you want." },
-    { who: 'sam',   mode: '',        text: "you just have to call us." },
-    { who: 'mira',  mode: 'whisper', text: "i'll remember that." },
-    { who: 'jules', mode: '',        text: "a memo. for future mira." },
+    { who: 'sam',   mode: '',        text: "How are you feeling." },
+    { who: 'mira',  mode: 'whisper', text: "...Lighter." },
+    { who: 'mira',  mode: '',        text: "It feels like having two fewer thoughts." },
+    { who: 'sam',   mode: '',        text: "You can have two fewer thoughts whenever you want. You just have to call us." },
+    { who: 'jules', mode: '',        text: "A memo. For future Mira." },
     { who: '',      mode: 'beat',    text: "— small laugh —" },
-    { who: 'mira',  mode: 'whisper', text: "she'll get it." },
+    { who: 'mira',  mode: 'whisper', text: "She'll get it." },
     { who: '',      mode: 'beat',    text: "— ... —" },
 
-    { who: 'mira',  mode: '',        text: "thank you." },
-    { who: 'sam',   mode: 'whisper', text: "for what." },
-    { who: 'mira',  mode: 'whisper', text: "for not making it weird." },
-    { who: 'jules', mode: '',        text: "it IS weird, mira." },
-    { who: 'jules', mode: '',        text: "you got a letter from your future self." },
-    { who: 'jules', mode: '',        text: "it is the weirdest thing that's happened to anyone we know." },
-    { who: 'mira',  mode: 'whisper', text: "yeah, but you didn't make it weird." },
-    { who: '',      mode: 'beat',    text: "— ... —" },
-    { who: 'sam',   mode: 'whisper', text: "...yeah. okay." },
-    { who: 'jules', mode: 'whisper', text: "that's the nicest thing anyone's said to me all month." },
+    { who: 'mira',  mode: '',        text: "Thank you. For not making it weird." },
+    { who: 'jules', mode: '',        text: "It IS weird, Mira. You got a letter from your future self." },
+    { who: 'mira',  mode: 'whisper', text: "Yeah, but you didn't make it weird." },
+    { who: 'sam',   mode: 'whisper', text: "...Yeah. Okay." },
+    { who: 'jules', mode: 'whisper', text: "That's the nicest thing anyone's said to me all month." },
     { who: '',      mode: 'beat',    text: "— wider —" },
 
-    { who: 'mira',  mode: '',        text: "should we order another round." },
-    { who: 'sam',   mode: '',        text: "yes." },
+    { who: 'mira',  mode: '',        text: "Should we order another round." },
+    { who: 'sam',   mode: '',        text: "Yes." },
     { who: 'jules', mode: 'shout',   text: "GOD. YES." },
     { who: '',      mode: 'beat',    text: "— ... —" },
   ];
@@ -742,6 +946,32 @@
   window.addEventListener('scroll', tick, { passive: true });
   window.addEventListener('resize', tick);
   update();
+
+  // ----- reply form (POC: stores locally; real backend wires in later) -----
+  const form    = document.getElementById('reply-form');
+  const replySection = document.getElementById('reply');
+  const endSection   = document.getElementById('end');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const letter = document.getElementById('reply-letter').value.trim();
+    const email  = document.getElementById('reply-email').value.trim();
+    if (letter.length < 20 || !email.includes('@')) return;
+
+    // POC: stash in localStorage so the user has their draft on a refresh.
+    // Real backend will POST { email, letter, beat: 1 } to an API endpoint.
+    try {
+      const submissions = JSON.parse(localStorage.getItem('lfm.submissions') || '[]');
+      submissions.push({ beat: 1, email, letter, at: new Date().toISOString() });
+      localStorage.setItem('lfm.submissions', JSON.stringify(submissions));
+    } catch (_) {}
+
+    replySection.classList.add('sent');
+    // scroll the sent-state into a comfortable view
+    setTimeout(() => {
+      replySection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 80);
+  });
 </script>
 
 </body>
