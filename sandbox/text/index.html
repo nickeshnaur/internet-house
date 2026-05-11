@@ -443,33 +443,7 @@
   .hw-hint.hidden { opacity: 0; }
 
   /* ============================================
-     10 — FIREFLIES
-     ============================================ */
-  .fire-stage {
-    position: absolute; inset: 0;
-    overflow: hidden;
-    cursor: crosshair;
-    background: linear-gradient(to bottom, var(--paper) 0%, var(--paper-deep) 100%);
-  }
-  .fire-stage .fly {
-    position: absolute;
-    left: 0; top: 0;
-    font-family: "EB Garamond", serif;
-    color: var(--ink);
-    font-size: 1.05rem;
-    text-shadow:
-      0 0 6px rgba(255, 200, 110, 0.55),
-      0 0 16px rgba(255, 180, 80, 0.30);
-    white-space: nowrap;
-    user-select: none;
-    pointer-events: none;
-    will-change: transform, opacity;
-  }
-  .fire-stage .fly.script { font-family: "Caveat", cursive; font-size: 1.35rem; }
-  .fire-stage .fly.italic { font-style: italic; color: var(--ink-soft); font-family: "Instrument Serif", serif; }
-
-  /* ============================================
-     11 — HEARTBEAT
+     10 — HEARTBEAT
      ============================================ */
   .beat-stage {
     position: absolute; inset: 0;
@@ -1217,96 +1191,7 @@
   }
 
   /* ============================================
-     33 — GLITCH
-     ============================================ */
-  .glitch-stage {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: #0a0a0a;
-    overflow: hidden;
-    cursor: crosshair;
-  }
-  .glitch-stage::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.05) 0%, transparent 60%);
-    pointer-events: none;
-  }
-  .glitch-frame {
-    position: relative;
-    text-align: center;
-    will-change: transform;
-  }
-  .glitch-text {
-    position: relative;
-    font-family: "JetBrains Mono", monospace;
-    font-size: clamp(3rem, 7vw, 6rem);
-    font-weight: 500;
-    color: #f4f4f4;
-    letter-spacing: 0.04em;
-    text-shadow: 0 0 6px rgba(244, 244, 244, 0.25);
-  }
-  .glitch-text::before,
-  .glitch-text::after {
-    content: attr(data-text);
-    position: absolute;
-    left: 0; top: 0;
-    width: 100%;
-    mix-blend-mode: screen;
-  }
-  .glitch-text::before {
-    color: #ff003a;
-    animation: glitchR 2.8s steps(40, end) infinite;
-  }
-  .glitch-text::after {
-    color: #00f0ff;
-    animation: glitchB 2.8s steps(40, end) infinite;
-  }
-  @keyframes glitchR {
-    0%, 4%   { transform: translate(0); clip-path: inset(0); }
-    5%       { transform: translate(-4px, 1px); clip-path: inset(30% 0 50%); }
-    6%, 14%  { transform: translate(0); clip-path: inset(0); }
-    15%      { transform: translate(3px, -1px); clip-path: inset(70% 0 10%); }
-    16%, 40% { transform: translate(0); clip-path: inset(0); }
-    41%      { transform: translate(-2px, 0); clip-path: inset(10% 0 80%); }
-    42%, 70% { transform: translate(0); clip-path: inset(0); }
-    71%      { transform: translate(-5px, 2px); clip-path: inset(50% 0 30%); }
-    72%, 100%{ transform: translate(0); clip-path: inset(0); }
-  }
-  @keyframes glitchB {
-    0%, 4%   { transform: translate(0); clip-path: inset(0); }
-    5%       { transform: translate(3px, -1px); clip-path: inset(30% 0 50%); }
-    6%, 14%  { transform: translate(0); clip-path: inset(0); }
-    15%      { transform: translate(-3px, 1px); clip-path: inset(70% 0 10%); }
-    16%, 40% { transform: translate(0); clip-path: inset(0); }
-    41%      { transform: translate(2px, 0); clip-path: inset(10% 0 80%); }
-    42%, 70% { transform: translate(0); clip-path: inset(0); }
-    71%      { transform: translate(4px, -2px); clip-path: inset(50% 0 30%); }
-    72%, 100%{ transform: translate(0); clip-path: inset(0); }
-  }
-  .glitch-sub {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 11px;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: rgba(244, 244, 244, 0.5);
-    margin-top: 24px;
-  }
-  .glitch-scanlines {
-    position: absolute; inset: 0;
-    pointer-events: none;
-    background-image: repeating-linear-gradient(
-      0deg,
-      rgba(0,0,0,0.18) 0px,
-      rgba(0,0,0,0.18) 1px,
-      transparent 1px,
-      transparent 3px
-    );
-    mix-blend-mode: multiply;
-  }
-
-  /* ============================================
-     34 — BLOOM
+     32 — BLOOM
      ============================================ */
   .bloom-stage {
     position: absolute; inset: 0;
@@ -1367,31 +1252,29 @@
   <button class="pill" data-exp="typer">07</button>
   <button class="pill" data-exp="gravity">08</button>
   <button class="pill" data-exp="hw">09</button>
-  <button class="pill" data-exp="fire">10</button>
-  <button class="pill" data-exp="beat">11</button>
-  <button class="pill" data-exp="decay">12</button>
-  <button class="pill" data-exp="channel">13</button>
-  <button class="pill" data-exp="murmur">14</button>
-  <button class="pill" data-exp="double">15</button>
-  <button class="pill" data-exp="zerog">16</button>
-  <button class="pill" data-exp="river">17</button>
-  <button class="pill" data-exp="tunnel">18</button>
-  <button class="pill" data-exp="kaleido">19</button>
-  <button class="pill" data-exp="globe">20</button>
-  <button class="pill" data-exp="vortex">21</button>
-  <button class="pill" data-exp="helix">22</button>
-  <button class="pill" data-exp="mirror">23</button>
-  <button class="pill" data-exp="grow">24</button>
-  <button class="pill" data-exp="aurora">25</button>
-  <button class="pill" data-exp="chroma">26</button>
-  <button class="pill" data-exp="prism">27</button>
-  <button class="pill" data-exp="thermal">28</button>
-  <button class="pill" data-exp="magnify">29</button>
-  <button class="pill" data-exp="liquid">30</button>
-  <button class="pill" data-exp="portal">31</button>
-  <button class="pill" data-exp="holo">32</button>
-  <button class="pill" data-exp="glitch">33</button>
-  <button class="pill" data-exp="bloom">34</button>
+  <button class="pill" data-exp="beat">10</button>
+  <button class="pill" data-exp="decay">11</button>
+  <button class="pill" data-exp="channel">12</button>
+  <button class="pill" data-exp="murmur">13</button>
+  <button class="pill" data-exp="double">14</button>
+  <button class="pill" data-exp="zerog">15</button>
+  <button class="pill" data-exp="river">16</button>
+  <button class="pill" data-exp="tunnel">17</button>
+  <button class="pill" data-exp="kaleido">18</button>
+  <button class="pill" data-exp="globe">19</button>
+  <button class="pill" data-exp="vortex">20</button>
+  <button class="pill" data-exp="helix">21</button>
+  <button class="pill" data-exp="mirror">22</button>
+  <button class="pill" data-exp="grow">23</button>
+  <button class="pill" data-exp="aurora">24</button>
+  <button class="pill" data-exp="chroma">25</button>
+  <button class="pill" data-exp="prism">26</button>
+  <button class="pill" data-exp="thermal">27</button>
+  <button class="pill" data-exp="magnify">28</button>
+  <button class="pill" data-exp="liquid">29</button>
+  <button class="pill" data-exp="portal">30</button>
+  <button class="pill" data-exp="holo">31</button>
+  <button class="pill" data-exp="bloom">32</button>
 </nav>
 
 <main class="stage">
@@ -1489,12 +1372,7 @@
     </div>
   </section>
 
-  <!-- 10 FIREFLIES -->
-  <section class="exp" data-exp="fire">
-    <div class="fire-stage" id="fireStage"></div>
-  </section>
-
-  <!-- 11 HEARTBEAT -->
+  <!-- 10 HEARTBEAT -->
   <section class="exp" data-exp="beat">
     <div class="beat-stage" id="beatStage">
       <div class="beat-text" id="beatText">i am here. i am here. <span class="ephem">(i am also terrified.)</span> i am here. <span class="ephem">(i love you so much it aches.)</span> i am here.</div>
@@ -1692,18 +1570,7 @@
     </div>
   </section>
 
-  <!-- 33 GLITCH -->
-  <section class="exp" data-exp="glitch">
-    <div class="glitch-stage" id="glitchStage">
-      <div class="glitch-frame" id="glitchFrame">
-        <div class="glitch-text" data-text="I AM HERE">I AM HERE</div>
-        <div class="glitch-sub">— transmission · 03:47 · still here</div>
-      </div>
-      <div class="glitch-scanlines"></div>
-    </div>
-  </section>
-
-  <!-- 34 BLOOM -->
+  <!-- 32 BLOOM -->
   <section class="exp" data-exp="bloom">
     <div class="bloom-stage" id="bloomStage">
       <div class="bloom-center" id="bloomCenter"></div>
@@ -1721,7 +1588,7 @@
   // -------------------- TAB SWITCHING --------------------
   const exps = {};
   let current = 'orbit';
-  const order = ['orbit','magnetic','ripple','const','pal','shatter','typer','gravity','hw','fire','beat','decay','channel','murmur','double','zerog','river','tunnel','kaleido','globe','vortex','helix','mirror','grow','aurora','chroma','prism','thermal','magnify','liquid','portal','holo','glitch','bloom'];
+  const order = ['orbit','magnetic','ripple','const','pal','shatter','typer','gravity','hw','beat','decay','channel','murmur','double','zerog','river','tunnel','kaleido','globe','vortex','helix','mirror','grow','aurora','chroma','prism','thermal','magnify','liquid','portal','holo','bloom'];
 
   const tabs = document.querySelectorAll('.tabs .pill');
   const sections = document.querySelectorAll('.exp');
@@ -1737,7 +1604,6 @@
     typer:    { label: 'haunted',       text: 'someone is typing · sometimes it slips' },
     gravity:  { label: 'gravity',       text: 'the cursor pulls · hold the mouse down to push' },
     hw:       { label: 'ink',           text: 'move your cursor · the letter writes itself' },
-    fire:     { label: 'fireflies',     text: 'call the words · they will come to you' },
     beat:     { label: 'heartbeat',     text: 'come closer · the heart speeds up' },
     decay:    { label: 'decay',         text: 'keep moving · the letter forgets if you don\'t' },
     channel:  { label: 'channel',       text: 'type anything · the future self uses your fingers' },
@@ -1760,7 +1626,6 @@
     liquid:   { label: 'liquid',        text: 'the letters are melting · your cursor adds heat' },
     portal:   { label: 'portal',        text: 'the cursor opens into another reality' },
     holo:     { label: 'hologram',      text: 'iridescent foil · move your cursor to shift the colors' },
-    glitch:   { label: 'glitch',        text: 'the signal is failing · the message is still there' },
     bloom:    { label: 'bloom',         text: 'move toward the center · let it open' }
   };
 
@@ -2466,99 +2331,6 @@
     exps.hw = { start, stop };
   })();
 
-  // ========================================================
-  // 10 — FIREFLIES
-  // ========================================================
-  (function () {
-    const stageEl = document.getElementById('fireStage');
-    const wordBank = [
-      { t: 'you', c: '' }, { t: 'are', c: '' }, { t: 'still', c: 'italic' },
-      { t: 'the', c: '' }, { t: 'person', c: '' }, { t: 'who', c: '' },
-      { t: 'came', c: '' }, { t: 'here', c: 'italic' }, { t: 'on purpose', c: 'script' },
-      { t: 'remember', c: 'italic' }, { t: 'open', c: '' }, { t: 'the window', c: '' },
-      { t: 'let it', c: 'italic' }, { t: 'in', c: 'script' }, { t: 'i love you', c: 'script' },
-      { t: 'i love you', c: 'script' }, { t: 'wait', c: 'italic' }, { t: 'i am here', c: 'script' },
-      { t: 'patience', c: '' }, { t: 'rain', c: '' }, { t: 'kitchen', c: '' },
-      { t: 'kettle', c: 'italic' }, { t: 'tuesday', c: '' }, { t: 'morning', c: '' },
-      { t: 'still here', c: 'script' }, { t: 'breathe', c: 'italic' }, { t: 'small', c: '' },
-      { t: 'gentle', c: 'italic' }, { t: 'slow', c: '' }, { t: 'enough', c: 'italic' },
-      { t: 'almost', c: '' }, { t: 'always', c: 'italic' }, { t: 'love', c: 'script' }
-    ];
-    const flies = [];
-    let mouseX = -9999, mouseY = -9999;
-    let raf = null, running = false, t0 = 0;
-    function init() {
-      stageEl.querySelectorAll('.fly').forEach(n => n.remove());
-      flies.length = 0;
-      const w = stageEl.clientWidth, h = stageEl.clientHeight;
-      wordBank.forEach((wb) => {
-        const el = document.createElement('span');
-        el.className = 'fly ' + (wb.c || '');
-        el.textContent = wb.t;
-        stageEl.appendChild(el);
-        flies.push({
-          el,
-          x: Math.random() * w,
-          y: Math.random() * h,
-          vx: (Math.random() - 0.5) * 0.6,
-          vy: (Math.random() - 0.5) * 0.6,
-          phase: Math.random() * Math.PI * 2,
-          speed: 0.5 + Math.random() * 0.6
-        });
-      });
-    }
-    function tick() {
-      if (!running) return;
-      const t = (performance.now() - t0) / 1000;
-      const w = stageEl.clientWidth, h = stageEl.clientHeight;
-      const callRadius = 380;
-      for (let i = 0; i < flies.length; i++) {
-        const f = flies[i];
-        f.vx += (Math.random() - 0.5) * 0.06;
-        f.vy += (Math.random() - 0.5) * 0.06;
-        const dx = mouseX - f.x, dy = mouseY - f.y;
-        const d = Math.sqrt(dx*dx + dy*dy);
-        if (d < callRadius && d > 0) {
-          const pull = (1 - d / callRadius) * 0.6;
-          f.vx += (dx / d) * pull;
-          f.vy += (dy / d) * pull;
-        }
-        f.vx *= 0.94; f.vy *= 0.94;
-        const sp = Math.sqrt(f.vx*f.vx + f.vy*f.vy);
-        const max = 3.2;
-        if (sp > max) { f.vx = f.vx/sp*max; f.vy = f.vy/sp*max; }
-        f.x += f.vx; f.y += f.vy;
-        if (f.x < -80) f.x = w + 60;
-        if (f.x > w + 80) f.x = -60;
-        if (f.y < -60) f.y = h + 40;
-        if (f.y > h + 60) f.y = -40;
-        const pulse = 0.55 + 0.45 * Math.sin(t * f.speed + f.phase);
-        f.el.style.transform = `translate(${f.x.toFixed(1)}px, ${f.y.toFixed(1)}px)`;
-        f.el.style.opacity = pulse.toFixed(2);
-      }
-      raf = requestAnimationFrame(tick);
-    }
-    function onMove(e) {
-      const r = stageEl.getBoundingClientRect();
-      mouseX = e.clientX - r.left; mouseY = e.clientY - r.top;
-    }
-    function onLeave() { mouseX = -9999; mouseY = -9999; }
-    function start() {
-      init();
-      stageEl.addEventListener('mousemove', onMove);
-      stageEl.addEventListener('mouseleave', onLeave);
-      running = true;
-      t0 = performance.now();
-      raf = requestAnimationFrame(tick);
-    }
-    function stop() {
-      stageEl.removeEventListener('mousemove', onMove);
-      stageEl.removeEventListener('mouseleave', onLeave);
-      running = false;
-      cancelAnimationFrame(raf);
-    }
-    exps.fire = { start, stop };
-  })();
 
   // ========================================================
   // 11 — HEARTBEAT
@@ -4235,50 +4007,7 @@
   })();
 
   // ========================================================
-  // 33 — GLITCH
-  // ========================================================
-  (function () {
-    const stageEl = document.getElementById('glitchStage');
-    const frame = document.getElementById('glitchFrame');
-    let raf = null, running = false;
-    let mouseX = 0, mouseY = 0;
-    function tick() {
-      if (!running) return;
-      const r = stageEl.getBoundingClientRect();
-      const cx = r.width / 2, cy = r.height / 2;
-      const d = Math.sqrt((mouseX - cx)**2 + (mouseY - cy)**2);
-      const maxD = Math.sqrt(cx*cx + cy*cy);
-      const closeness = 1 - Math.min(1, d / maxD);
-      let translate = 0;
-      if (Math.random() < 0.014 + closeness * 0.07) {
-        translate = (Math.random() - 0.5) * (closeness * 32 + 6);
-      }
-      frame.style.transform = `translateX(${translate.toFixed(1)}px)`;
-      raf = requestAnimationFrame(tick);
-    }
-    function onMove(e) {
-      const r = stageEl.getBoundingClientRect();
-      mouseX = e.clientX - r.left;
-      mouseY = e.clientY - r.top;
-    }
-    function start() {
-      stageEl.addEventListener('mousemove', onMove);
-      const r = stageEl.getBoundingClientRect();
-      mouseX = r.width / 2; mouseY = r.height / 2;
-      running = true;
-      raf = requestAnimationFrame(tick);
-    }
-    function stop() {
-      stageEl.removeEventListener('mousemove', onMove);
-      running = false;
-      cancelAnimationFrame(raf);
-      frame.style.transform = '';
-    }
-    exps.glitch = { start, stop };
-  })();
-
-  // ========================================================
-  // 34 — BLOOM
+  // 32 — BLOOM
   // ========================================================
   (function () {
     const stageEl = document.getElementById('bloomStage');
