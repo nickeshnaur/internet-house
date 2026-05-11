@@ -752,6 +752,182 @@
   .tunnel-stage .w.script { font-family: "Caveat", cursive; font-size: 3rem; color: var(--ink-soft); }
   .tunnel-stage .w.small  { font-size: 1.6rem; color: var(--ink-faint); }
 
+  /* ============================================
+     19 — KALEIDOSCOPE
+     ============================================ */
+  .kaleido-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .kaleido-svg {
+    width: min(95vh, 95vw);
+    height: min(95vh, 95vw);
+  }
+
+  /* ============================================
+     20 — GLOBE
+     ============================================ */
+  .globe-stage {
+    position: absolute; inset: 0;
+    perspective: 1400px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: grab;
+    overflow: hidden;
+  }
+  .globe-stage.dragging { cursor: grabbing; }
+  .globe-scene {
+    position: relative;
+    width: 0; height: 0;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .globe-stage .gw {
+    position: absolute;
+    left: 0; top: 0;
+    font-family: "EB Garamond", serif;
+    font-size: 1.05rem;
+    color: var(--ink);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    will-change: transform, opacity;
+  }
+  .globe-stage .gw.italic { font-style: italic; color: var(--ink-soft); font-family: "Instrument Serif", serif; }
+  .globe-stage .gw.script { font-family: "Caveat", cursive; font-size: 1.3rem; color: var(--ink-soft); }
+  .globe-hint {
+    position: absolute;
+    bottom: 14vh; left: 50%; transform: translateX(-50%);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px; letter-spacing: 3px;
+    color: var(--ink-ghost);
+    pointer-events: none;
+  }
+
+  /* ============================================
+     21 — VORTEX (wormhole)
+     ============================================ */
+  .vortex-stage {
+    position: absolute; inset: 0;
+    perspective: 600px;
+    overflow: hidden;
+    cursor: crosshair;
+  }
+  .vortex-stage .vw {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform-style: preserve-3d;
+    font-family: "EB Garamond", serif;
+    font-size: 1.3rem;
+    color: var(--ink);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    will-change: transform, opacity;
+  }
+  .vortex-stage .vw.italic { font-style: italic; color: var(--ink-soft); font-family: "Instrument Serif", serif; }
+  .vortex-stage .vw.script { font-family: "Caveat", cursive; color: var(--ink-soft); font-size: 1.6rem; }
+
+  /* ============================================
+     22 — HELIX
+     ============================================ */
+  .helix-stage {
+    position: absolute; inset: 0;
+    perspective: 1200px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .helix-3d {
+    position: relative;
+    width: 0; height: 0;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .helix-stage .h {
+    position: absolute;
+    left: 0; top: 0;
+    font-family: "EB Garamond", serif;
+    font-size: 1.1rem;
+    color: var(--ink);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    will-change: transform, opacity;
+  }
+  .helix-stage .h.s2 {
+    font-style: italic;
+    color: var(--ink-soft);
+    font-family: "Caveat", cursive;
+    font-size: 1.4rem;
+  }
+
+  /* ============================================
+     23 — MIRROR (recursive room)
+     ============================================ */
+  .mirror-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .mirror-layers {
+    position: relative;
+    width: 100%; height: 100%;
+  }
+  .mirror-stage .ml {
+    position: absolute;
+    left: 50%; top: 50%;
+    font-family: "EB Garamond", serif;
+    font-size: 1.35rem;
+    color: var(--ink);
+    text-align: center;
+    width: 460px;
+    line-height: 1.7;
+    pointer-events: none;
+    user-select: none;
+    will-change: transform, opacity;
+  }
+  .mirror-stage .ml h3 {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 14px;
+    font-weight: 400;
+  }
+  .mirror-stage .ml p { margin: 0 0 0.8em; }
+  .mirror-stage .ml em {
+    font-family: "Caveat", cursive;
+    font-style: normal;
+    color: var(--ink-soft);
+  }
+
+  /* ============================================
+     24 — GROW (branching word tree)
+     ============================================ */
+  .grow-stage {
+    position: absolute; inset: 0;
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .grow-svg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+  }
+  .grow-hint {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Caveat", cursive;
+    font-size: 1.8rem;
+    color: var(--ink-ghost);
+    pointer-events: none;
+    transition: opacity 0.5s;
+  }
+  .grow-hint.hidden { opacity: 0; }
+
 </style>
 </head>
 <body>
@@ -786,6 +962,12 @@
   <button class="pill" data-exp="zerog">16</button>
   <button class="pill" data-exp="river">17</button>
   <button class="pill" data-exp="tunnel">18</button>
+  <button class="pill" data-exp="kaleido">19</button>
+  <button class="pill" data-exp="globe">20</button>
+  <button class="pill" data-exp="vortex">21</button>
+  <button class="pill" data-exp="helix">22</button>
+  <button class="pill" data-exp="mirror">23</button>
+  <button class="pill" data-exp="grow">24</button>
 </nav>
 
 <main class="stage">
@@ -958,6 +1140,66 @@
     </div>
   </section>
 
+  <!-- 19 KALEIDOSCOPE -->
+  <section class="exp" data-exp="kaleido">
+    <div class="kaleido-stage" id="kaleidoStage">
+      <svg class="kaleido-svg" id="kaleidoSvg" viewBox="-400 -400 800 800" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <symbol id="kal-cell" overflow="visible">
+            <g class="kal-inner" id="kalInner">
+              <text x="0"    y="-260" text-anchor="middle" font-family="EB Garamond, serif" font-size="22" fill="#1a1714">remember</text>
+              <text x="140"  y="-180" font-family="Caveat, cursive" font-size="34" fill="#3a342d">i love you</text>
+              <text x="-150" y="-120" text-anchor="end" font-style="italic" font-family="Instrument Serif, serif" font-size="24" fill="#3a342d">october</text>
+              <text x="70"   y="-50"  font-family="EB Garamond, serif" font-size="18" fill="#1a1714">the kitchen</text>
+              <text x="-60"  y="40"   font-family="Caveat, cursive" font-size="28" fill="#3a342d">wait</text>
+              <text x="120"  y="110"  font-style="italic" font-family="Instrument Serif, serif" font-size="22" fill="#3a342d">still here</text>
+              <text x="-100" y="180"  text-anchor="end" font-family="EB Garamond, serif" font-size="22" fill="#1a1714">on purpose</text>
+              <text x="40"   y="250"  font-family="Caveat, cursive" font-size="46" fill="#3a342d">·</text>
+              <text x="-180" y="-30"  font-family="EB Garamond, serif" font-size="16" fill="#8a8275">rain</text>
+              <text x="200"  y="20"   font-style="italic" font-family="Instrument Serif, serif" font-size="18" fill="#8a8275">almonds</text>
+            </g>
+          </symbol>
+        </defs>
+        <g class="kal-petals" id="kalPetals"></g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 20 GLOBE -->
+  <section class="exp" data-exp="globe">
+    <div class="globe-stage" id="globeStage">
+      <div class="globe-scene" id="globeScene"></div>
+      <div class="globe-hint">drag to spin</div>
+    </div>
+  </section>
+
+  <!-- 21 VORTEX -->
+  <section class="exp" data-exp="vortex">
+    <div class="vortex-stage" id="vortexStage"></div>
+  </section>
+
+  <!-- 22 HELIX -->
+  <section class="exp" data-exp="helix">
+    <div class="helix-stage" id="helixStage">
+      <div class="helix-3d" id="helix3d"></div>
+    </div>
+  </section>
+
+  <!-- 23 MIRROR -->
+  <section class="exp" data-exp="mirror">
+    <div class="mirror-stage" id="mirrorStage">
+      <div class="mirror-layers" id="mirrorLayers"></div>
+    </div>
+  </section>
+
+  <!-- 24 GROW -->
+  <section class="exp" data-exp="grow">
+    <div class="grow-stage" id="growStage">
+      <svg class="grow-svg" id="growSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="grow-hint" id="growHint">move slowly · let the words grow</div>
+    </div>
+  </section>
+
 </main>
 
 <div class="caption" id="caption">
@@ -968,7 +1210,7 @@
   // -------------------- TAB SWITCHING --------------------
   const exps = {};
   let current = 'orbit';
-  const order = ['orbit','magnetic','ripple','const','pal','shatter','typer','gravity','hw','fire','beat','decay','channel','murmur','double','zerog','river','tunnel'];
+  const order = ['orbit','magnetic','ripple','const','pal','shatter','typer','gravity','hw','fire','beat','decay','channel','murmur','double','zerog','river','tunnel','kaleido','globe','vortex','helix','mirror','grow'];
 
   const tabs = document.querySelectorAll('.tabs .pill');
   const sections = document.querySelectorAll('.exp');
@@ -992,7 +1234,13 @@
     double:   { label: 'double',        text: 'move horizontally · two letters become one' },
     zerog:    { label: 'zero-g',        text: 'drag any word · throw it · arrange your own letter' },
     river:    { label: 'river',         text: 'words flow through · place your cursor in the current' },
-    tunnel:   { label: 'tunnel',        text: 'flying through · move your cursor to steer' }
+    tunnel:   { label: 'tunnel',        text: 'flying through · move your cursor to steer' },
+    kaleido:  { label: 'kaleidoscope',  text: 'twelve mirrors · move your cursor to twist the world' },
+    globe:    { label: 'globe',         text: 'drag to spin the world of letters' },
+    vortex:   { label: 'vortex',        text: 'everything is being pulled in · let it' },
+    helix:    { label: 'helix',         text: 'two strands · what you said · what you meant' },
+    mirror:   { label: 'mirror',        text: 'an infinite hallway of the same letter' },
+    grow:     { label: 'grow',          text: 'move slowly · the words branch from your path' }
   };
 
   function switchTo(name) {
@@ -2470,6 +2718,483 @@
       cancelAnimationFrame(raf);
     }
     exps.tunnel = { start, stop };
+  })();
+
+  // ========================================================
+  // 19 — KALEIDOSCOPE
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('kaleidoStage');
+    const petals = document.getElementById('kalPetals');
+    const inner = document.getElementById('kalInner');
+    const N = 12;
+    for (let i = 0; i < N; i++) {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      const angle = i * (360 / N);
+      const flip = i % 2 === 1 ? ' scale(-1, 1)' : '';
+      g.setAttribute('transform', `rotate(${angle})${flip}`);
+      const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+      use.setAttribute('href', '#kal-cell');
+      g.appendChild(use);
+      petals.appendChild(g);
+    }
+    let raf = null, running = false;
+    let mouseX = 0, mouseY = 0;
+    let t0 = performance.now();
+    function tick() {
+      if (!running) return;
+      const t = (performance.now() - t0) / 1000;
+      const autoRot = t * 6;
+      const innerRot = autoRot + mouseX * 220;
+      const innerScale = 1 + mouseY * 0.3;
+      const innerTx = mouseY * 50;
+      inner.setAttribute('transform', `rotate(${innerRot.toFixed(2)}) translate(0, ${innerTx.toFixed(1)}) scale(${innerScale.toFixed(3)})`);
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = (e.clientX - r.left) / r.width - 0.5;
+      mouseY = (e.clientY - r.top) / r.height - 0.5;
+    }
+    function start() {
+      stageEl.addEventListener('mousemove', onMove);
+      running = true;
+      t0 = performance.now();
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.kaleido = { start, stop };
+  })();
+
+  // ========================================================
+  // 20 — GLOBE
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('globeStage');
+    const scene = document.getElementById('globeScene');
+    const rings = [
+      { lat:  62, text: 'remember this · remember this · remember this · remember this · ', cls: 'italic' },
+      { lat:  36, text: 'you are still the person who came here on purpose · you are still ', cls: '' },
+      { lat:  10, text: 'i am writing this from a kitchen that does not exist yet · ', cls: 'italic' },
+      { lat: -18, text: 'open the window · let october in · just open it · open it · ', cls: '' },
+      { lat: -44, text: 'i love you · i love you · i love you · i love you · ', cls: 'script' },
+      { lat: -70, text: 'wait · breathe · still here · wait · breathe · ', cls: 'italic' }
+    ];
+    const R = 280;
+    const tiles = [];
+    let raf = null, running = false;
+    let rotY = 0, rotX = -10;
+    let dragging = false;
+    let dragLast = null;
+    function init() {
+      scene.querySelectorAll('.gw').forEach(n => n.remove());
+      tiles.length = 0;
+      rings.forEach(ring => {
+        const words = ring.text.split(' ').filter(w => w.length > 0);
+        const N = words.length;
+        const phi = ring.lat * Math.PI / 180;
+        for (let i = 0; i < N; i++) {
+          const theta = (i / N) * Math.PI * 2;
+          const el = document.createElement('span');
+          el.className = 'gw ' + (ring.cls || '');
+          el.textContent = words[i] + ' ';
+          scene.appendChild(el);
+          tiles.push({ el, phi, theta });
+        }
+      });
+    }
+    function tick() {
+      if (!running) return;
+      if (!dragging) rotY += 0.18;
+      const ry = rotY * Math.PI / 180;
+      const rx = rotX * Math.PI / 180;
+      for (const t of tiles) {
+        const x = R * Math.cos(t.phi) * Math.cos(t.theta);
+        const y = R * Math.sin(t.phi);
+        const z = R * Math.cos(t.phi) * Math.sin(t.theta);
+        const x1 = x * Math.cos(ry) + z * Math.sin(ry);
+        const z1 = -x * Math.sin(ry) + z * Math.cos(ry);
+        const y2 = y * Math.cos(rx) - z1 * Math.sin(rx);
+        const z2 = y * Math.sin(rx) + z1 * Math.cos(rx);
+        const front = Math.max(0, (z2 + R) / (2 * R));
+        const op = 0.10 + 0.90 * front;
+        const scale = 0.5 + 0.6 * front;
+        t.el.style.transform = `translate3d(${x1.toFixed(1)}px, ${(-y2).toFixed(1)}px, ${z2.toFixed(1)}px) scale(${scale.toFixed(3)})`;
+        t.el.style.opacity = op.toFixed(2);
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onDown(e) {
+      dragging = true;
+      dragLast = { x: e.clientX, y: e.clientY };
+      stageEl.classList.add('dragging');
+    }
+    function onMove(e) {
+      if (!dragging) return;
+      const dx = e.clientX - dragLast.x;
+      const dy = e.clientY - dragLast.y;
+      rotY += dx * 0.32;
+      rotX += dy * 0.22;
+      rotX = Math.max(-82, Math.min(82, rotX));
+      dragLast = { x: e.clientX, y: e.clientY };
+    }
+    function onUp() {
+      dragging = false;
+      stageEl.classList.remove('dragging');
+    }
+    function start() {
+      init();
+      stageEl.addEventListener('mousedown', onDown);
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousedown', onDown);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      running = false;
+      cancelAnimationFrame(raf);
+      dragging = false;
+    }
+    exps.globe = { start, stop };
+  })();
+
+  // ========================================================
+  // 21 — VORTEX (wormhole)
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('vortexStage');
+    const wordBank = [
+      { t: 'remember',    c: 'italic' },
+      { t: 'this',        c: '' },
+      { t: 'i love you',  c: 'script' },
+      { t: 'come back',   c: 'italic' },
+      { t: 'wait',        c: 'script' },
+      { t: 'still here',  c: 'italic' },
+      { t: 'open',        c: '' },
+      { t: 'breathe',     c: 'italic' },
+      { t: 'on purpose',  c: 'script' },
+      { t: 'the kitchen', c: '' },
+      { t: 'morning',     c: 'italic' },
+      { t: 'patience',    c: '' },
+      { t: 'rain',        c: '' },
+      { t: 'kettle',      c: 'italic' },
+      { t: 'small',       c: '' },
+      { t: 'gentle',      c: 'italic' },
+      { t: 'slow',        c: '' },
+      { t: 'enough',      c: 'italic' },
+      { t: 'i am here',   c: 'script' },
+      { t: 'remember',    c: '' }
+    ];
+    const N = 64;
+    const particles = [];
+    let raf = null, running = false;
+    let mouseX = 0, mouseY = 0;
+    function spawn(p, fresh) {
+      p.angle = Math.random() * Math.PI * 2;
+      p.radius = 400 + Math.random() * 500;
+      p.z = fresh ? -1100 - Math.random() * 900 : -1800;
+      p.rotZ = Math.random() * 360;
+      p.spin = (Math.random() - 0.5) * 5;
+    }
+    function init() {
+      stageEl.querySelectorAll('.vw').forEach(n => n.remove());
+      particles.length = 0;
+      for (let i = 0; i < N; i++) {
+        const wb = wordBank[i % wordBank.length];
+        const el = document.createElement('span');
+        el.className = 'vw ' + (wb.c || '');
+        el.textContent = wb.t;
+        stageEl.appendChild(el);
+        const p = { el };
+        spawn(p, true);
+        particles.push(p);
+      }
+    }
+    function tick() {
+      if (!running) return;
+      const r = stageEl.getBoundingClientRect();
+      const cx = mouseX - r.width / 2;
+      const cy = mouseY - r.height / 2;
+      for (const p of particles) {
+        p.angle += 0.028;
+        p.radius -= 2.6;
+        p.z += 9;
+        p.rotZ += p.spin;
+        if (p.radius < 25 || p.z > 80) spawn(p, false);
+        const x = Math.cos(p.angle) * p.radius + cx * 0.35;
+        const y = Math.sin(p.angle) * p.radius + cy * 0.35;
+        let op;
+        if (p.z < -900) op = (p.z + 1400) / 500;
+        else if (p.z > -100) op = Math.max(0, 1 - (p.z + 100) / 180);
+        else op = 1;
+        op = Math.max(0, Math.min(1, op));
+        p.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${p.z.toFixed(1)}px) rotateZ(${p.rotZ.toFixed(1)}deg)`;
+        p.el.style.opacity = op.toFixed(2);
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left;
+      mouseY = e.clientY - r.top;
+    }
+    function start() {
+      init();
+      const r = stageEl.getBoundingClientRect();
+      mouseX = r.width / 2; mouseY = r.height / 2;
+      stageEl.addEventListener('mousemove', onMove);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.vortex = { start, stop };
+  })();
+
+  // ========================================================
+  // 22 — HELIX (double helix of opposing letters)
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('helixStage');
+    const scene = document.getElementById('helix3d');
+    const strandA = "I am doing fine . Things are going well . I think of you often . The weather is agreeable . I trust you are well .".split(' ').filter(x => x);
+    const strandB = "I am terrified . Things are falling apart . I miss you so much . The weather is unbearable . I love you completely .".split(' ').filter(x => x);
+    const radius = 220;
+    const height = 720;
+    const turns = 2.5;
+    const tiles = [];
+    let raf = null, running = false;
+    let rotation = 0;
+    let mouseX = 0, mouseY = 0;
+    function init() {
+      scene.querySelectorAll('.h').forEach(n => n.remove());
+      tiles.length = 0;
+      for (let i = 0; i < strandA.length; i++) {
+        const t = i / Math.max(1, strandA.length - 1);
+        const el = document.createElement('span');
+        el.className = 'h';
+        el.textContent = strandA[i];
+        scene.appendChild(el);
+        tiles.push({ el, t, phase: 0 });
+      }
+      for (let i = 0; i < strandB.length; i++) {
+        const t = i / Math.max(1, strandB.length - 1);
+        const el = document.createElement('span');
+        el.className = 'h s2';
+        el.textContent = strandB[i];
+        scene.appendChild(el);
+        tiles.push({ el, t, phase: Math.PI });
+      }
+    }
+    function tick() {
+      if (!running) return;
+      rotation += 0.35 + mouseX * 1.8;
+      const ry = rotation * Math.PI / 180;
+      for (const t of tiles) {
+        const baseAngle = t.t * turns * Math.PI * 2 + t.phase;
+        const a = baseAngle + ry;
+        const x = Math.cos(a) * radius;
+        const z = Math.sin(a) * radius;
+        const y = (t.t - 0.5) * height + mouseY * 90;
+        const front = Math.max(0, (z + radius) / (2 * radius));
+        const op = 0.12 + 0.88 * front;
+        const scale = 0.55 + 0.55 * front;
+        t.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px) scale(${scale.toFixed(3)})`;
+        t.el.style.opacity = op.toFixed(2);
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = (e.clientX - r.left) / r.width - 0.5;
+      mouseY = (e.clientY - r.top) / r.height - 0.5;
+    }
+    function start() {
+      init();
+      mouseX = 0; mouseY = 0;
+      stageEl.addEventListener('mousemove', onMove);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.helix = { start, stop };
+  })();
+
+  // ========================================================
+  // 23 — MIRROR (recursive room)
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('mirrorStage');
+    const layers = document.getElementById('mirrorLayers');
+    const letterHtml = `
+      <h3>letter · march 14</h3>
+      <p>i am writing this from a kitchen that does not exist yet.</p>
+      <p>the window faces east. <em>you will love that.</em></p>
+      <p>open the window. let october in.</p>
+      <p>i love you i love you i love you.</p>
+      <p>— still here</p>
+    `;
+    const N = 14;
+    const tiles = [];
+    let raf = null, running = false;
+    let mouseX = 0, mouseY = 0;
+    function init() {
+      layers.querySelectorAll('.ml').forEach(n => n.remove());
+      tiles.length = 0;
+      for (let i = N - 1; i >= 0; i--) {
+        const el = document.createElement('div');
+        el.className = 'ml';
+        el.innerHTML = letterHtml;
+        el.style.zIndex = N - i;
+        layers.appendChild(el);
+        tiles.push({ el, depth: i });
+      }
+    }
+    function tick() {
+      if (!running) return;
+      for (const t of tiles) {
+        const d = t.depth;
+        const scale = Math.pow(0.86, d);
+        const opacity = Math.pow(0.82, d);
+        const tx = mouseX * d * 18;
+        const ty = mouseY * d * 18;
+        t.el.style.transform = `translate(-50%, -50%) translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${scale.toFixed(3)})`;
+        t.el.style.opacity = opacity.toFixed(3);
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = (e.clientX - r.left) / r.width - 0.5;
+      mouseY = (e.clientY - r.top) / r.height - 0.5;
+    }
+    function start() {
+      init();
+      stageEl.addEventListener('mousemove', onMove);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.mirror = { start, stop };
+  })();
+
+  // ========================================================
+  // 24 — GROW (branching word tree)
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('growStage');
+    const svg = document.getElementById('growSvg');
+    const hint = document.getElementById('growHint');
+    const wordBank = [
+      'remember', 'wait', 'breathe', 'open', 'i love you', 'still here',
+      'on purpose', 'morning', 'kettle', 'come back', 'i am here',
+      'patience', 'gentle', 'slow', 'small', 'almost', 'rain', 'october'
+    ];
+    const branches = [];
+    let lastPoint = null;
+    let raf = null, running = false;
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      hint.classList.add('hidden');
+      if (lastPoint) {
+        const dx = x - lastPoint.x;
+        const dy = y - lastPoint.y;
+        const d = Math.hypot(dx, dy);
+        if (d > 26) {
+          const angle = Math.atan2(dy, dx) + (Math.random() > 0.5 ? Math.PI/2 : -Math.PI/2);
+          const len = 40 + Math.random() * 90;
+          const word = wordBank[Math.floor(Math.random() * wordBank.length)];
+          const sx = lastPoint.x, sy = lastPoint.y;
+          const ex = sx + Math.cos(angle) * len;
+          const ey = sy + Math.sin(angle) * len;
+          const branch = {
+            createdAt: performance.now(),
+            maxAge: 4500 + Math.random() * 2500
+          };
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          const mx = (sx + ex) / 2 + (Math.random() - 0.5) * 24;
+          const my = (sy + ey) / 2 + (Math.random() - 0.5) * 24;
+          path.setAttribute('d', `M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}`);
+          path.setAttribute('stroke', '#3a342d');
+          path.setAttribute('stroke-width', '0.7');
+          path.setAttribute('fill', 'none');
+          path.setAttribute('opacity', '0');
+          svg.appendChild(path);
+          branch.path = path;
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('x', ex);
+          text.setAttribute('y', ey);
+          text.setAttribute('font-family', 'Caveat, cursive');
+          text.setAttribute('font-size', '22');
+          text.setAttribute('fill', '#3a342d');
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('opacity', '0');
+          text.textContent = word;
+          svg.appendChild(text);
+          branch.text = text;
+          branches.push(branch);
+          lastPoint = { x, y };
+        }
+      } else {
+        lastPoint = { x, y };
+      }
+    }
+    function onLeave() { lastPoint = null; }
+    function tick() {
+      if (!running) return;
+      const now = performance.now();
+      for (let i = branches.length - 1; i >= 0; i--) {
+        const b = branches[i];
+        const age = now - b.createdAt;
+        const grow = Math.min(1, age / 700);
+        const fade = age > b.maxAge - 1600 ? Math.max(0, (b.maxAge - age) / 1600) : 1;
+        const op = Math.min(grow, fade);
+        b.path.setAttribute('opacity', (op * 0.5).toFixed(2));
+        b.text.setAttribute('opacity', op.toFixed(2));
+        if (age > b.maxAge) {
+          b.path.remove();
+          b.text.remove();
+          branches.splice(i, 1);
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function start() {
+      branches.forEach(b => { b.path.remove(); b.text.remove(); });
+      branches.length = 0;
+      lastPoint = null;
+      hint.classList.remove('hidden');
+      stageEl.addEventListener('mousemove', onMove);
+      stageEl.addEventListener('mouseleave', onLeave);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      stageEl.removeEventListener('mouseleave', onLeave);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.grow = { start, stop };
   })();
 </script>
 </body>
