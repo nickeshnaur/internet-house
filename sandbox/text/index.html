@@ -1071,6 +1071,277 @@
     will-change: color, text-shadow;
   }
 
+  /* ============================================
+     29 — MAGNIFY (cursor lens)
+     ============================================ */
+  .magnify-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: none;
+    overflow: hidden;
+  }
+  .magnify-text {
+    width: clamp(540px, 60vw, 820px);
+    font-family: "EB Garamond", serif;
+    font-size: clamp(1.2rem, 1.8vw, 1.7rem);
+    text-align: center;
+    line-height: 1.85;
+    color: var(--ink);
+  }
+  .magnify-text .c {
+    display: inline-block;
+    transform-origin: center center;
+    will-change: transform;
+  }
+  .magnify-lens {
+    position: absolute;
+    width: 220px; height: 220px;
+    border: 1px solid rgba(26,23,20,0.18);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    box-shadow: inset 0 0 30px rgba(26,23,20,0.05), 0 8px 24px rgba(26,23,20,0.10);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .magnify-stage:hover .magnify-lens { opacity: 1; }
+
+  /* ============================================
+     30 — LIQUID (dripping text)
+     ============================================ */
+  .liquid-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--paper);
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .liquid-text {
+    width: clamp(540px, 60vw, 820px);
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    font-size: clamp(2rem, 3.5vw, 3.2rem);
+    text-align: center;
+    line-height: 1.4;
+    color: var(--ink);
+  }
+  .liquid-text .c {
+    display: inline-block;
+    transform-origin: center top;
+    will-change: transform, opacity, filter;
+  }
+
+  /* ============================================
+     31 — PORTAL
+     ============================================ */
+  .portal-stage {
+    position: absolute; inset: 0;
+    cursor: crosshair;
+    overflow: hidden;
+    --cx: 50%;
+    --cy: 50%;
+  }
+  .portal-layer {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 14vh 6vw;
+  }
+  .portal-other {
+    background: radial-gradient(ellipse at 50% 50%, #1a0a2e 0%, #050211 80%);
+  }
+  .portal-other-text {
+    width: clamp(440px, 50vw, 680px);
+    font-family: "Caveat", cursive;
+    font-size: clamp(2rem, 3.5vw, 2.8rem);
+    line-height: 1.5;
+    text-align: center;
+    background: linear-gradient(90deg, #ff79c6, #bd93f9, #8be9fd, #50fa7b, #ffb86c, #ff79c6);
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+            background-clip: text;
+    -webkit-text-fill-color: transparent;
+            text-fill-color: transparent;
+    animation: portalShimmer 7s linear infinite;
+  }
+  @keyframes portalShimmer {
+    0%   { background-position:   0% 50%; }
+    100% { background-position: 220% 50%; }
+  }
+  .portal-this-text {
+    width: clamp(440px, 50vw, 680px);
+    font-family: "EB Garamond", serif;
+    font-size: clamp(1.15rem, 1.5vw, 1.4rem);
+    line-height: 1.8;
+    text-align: center;
+    color: var(--ink);
+  }
+  .portal-this {
+    background: var(--paper);
+    -webkit-mask-image: radial-gradient(circle 180px at var(--cx) var(--cy), transparent 0, transparent 55%, black 100%);
+            mask-image: radial-gradient(circle 180px at var(--cx) var(--cy), transparent 0, transparent 55%, black 100%);
+  }
+  .portal-ring {
+    position: absolute;
+    width: 360px; height: 360px;
+    border-radius: 50%;
+    pointer-events: none;
+    border: 1px solid rgba(189, 147, 249, 0.45);
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.22), inset 0 0 30px rgba(189, 147, 249, 0.15);
+    transform: translate(-50%, -50%);
+    left: var(--cx); top: var(--cy);
+  }
+
+  /* ============================================
+     32 — HOLOGRAM
+     ============================================ */
+  .holo-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #18141f;
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .holo-text {
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    text-align: center;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    max-width: 18ch;
+    padding: 0 4vw;
+  }
+  .holo-text .c {
+    display: inline-block;
+    will-change: color, text-shadow;
+  }
+
+  /* ============================================
+     33 — GLITCH
+     ============================================ */
+  .glitch-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #0a0a0a;
+    overflow: hidden;
+    cursor: crosshair;
+  }
+  .glitch-stage::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .glitch-frame {
+    position: relative;
+    text-align: center;
+    will-change: transform;
+  }
+  .glitch-text {
+    position: relative;
+    font-family: "JetBrains Mono", monospace;
+    font-size: clamp(3rem, 7vw, 6rem);
+    font-weight: 500;
+    color: #f4f4f4;
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 6px rgba(244, 244, 244, 0.25);
+  }
+  .glitch-text::before,
+  .glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%;
+    mix-blend-mode: screen;
+  }
+  .glitch-text::before {
+    color: #ff003a;
+    animation: glitchR 2.8s steps(40, end) infinite;
+  }
+  .glitch-text::after {
+    color: #00f0ff;
+    animation: glitchB 2.8s steps(40, end) infinite;
+  }
+  @keyframes glitchR {
+    0%, 4%   { transform: translate(0); clip-path: inset(0); }
+    5%       { transform: translate(-4px, 1px); clip-path: inset(30% 0 50%); }
+    6%, 14%  { transform: translate(0); clip-path: inset(0); }
+    15%      { transform: translate(3px, -1px); clip-path: inset(70% 0 10%); }
+    16%, 40% { transform: translate(0); clip-path: inset(0); }
+    41%      { transform: translate(-2px, 0); clip-path: inset(10% 0 80%); }
+    42%, 70% { transform: translate(0); clip-path: inset(0); }
+    71%      { transform: translate(-5px, 2px); clip-path: inset(50% 0 30%); }
+    72%, 100%{ transform: translate(0); clip-path: inset(0); }
+  }
+  @keyframes glitchB {
+    0%, 4%   { transform: translate(0); clip-path: inset(0); }
+    5%       { transform: translate(3px, -1px); clip-path: inset(30% 0 50%); }
+    6%, 14%  { transform: translate(0); clip-path: inset(0); }
+    15%      { transform: translate(-3px, 1px); clip-path: inset(70% 0 10%); }
+    16%, 40% { transform: translate(0); clip-path: inset(0); }
+    41%      { transform: translate(2px, 0); clip-path: inset(10% 0 80%); }
+    42%, 70% { transform: translate(0); clip-path: inset(0); }
+    71%      { transform: translate(4px, -2px); clip-path: inset(50% 0 30%); }
+    72%, 100%{ transform: translate(0); clip-path: inset(0); }
+  }
+  .glitch-sub {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: rgba(244, 244, 244, 0.5);
+    margin-top: 24px;
+  }
+  .glitch-scanlines {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0.18) 0px,
+      rgba(0,0,0,0.18) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    mix-blend-mode: multiply;
+  }
+
+  /* ============================================
+     34 — BLOOM
+     ============================================ */
+  .bloom-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: crosshair;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 50% 50%, #f8f1de 0%, #e2d6b6 80%);
+  }
+  .bloom-center {
+    position: relative;
+    width: 0; height: 0;
+  }
+  .bloom-stage .petal {
+    position: absolute;
+    left: 0; top: 0;
+    font-family: "Caveat", cursive;
+    font-size: 1.5rem;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    will-change: transform, opacity;
+  }
+  .bloom-stage .petal.italic { font-family: "Instrument Serif", serif; font-style: italic; color: var(--ink); font-size: 1.4rem; }
+  .bloom-stage .petal.serif  { font-family: "EB Garamond", serif; color: var(--ink); font-size: 1.2rem; }
+  .bloom-core {
+    position: absolute;
+    width: 18px; height: 18px;
+    left: 50%; top: 50%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(58,52,45,0.55), rgba(58,52,45,0) 70%);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
 </style>
 </head>
 <body>
@@ -1115,6 +1386,12 @@
   <button class="pill" data-exp="chroma">26</button>
   <button class="pill" data-exp="prism">27</button>
   <button class="pill" data-exp="thermal">28</button>
+  <button class="pill" data-exp="magnify">29</button>
+  <button class="pill" data-exp="liquid">30</button>
+  <button class="pill" data-exp="portal">31</button>
+  <button class="pill" data-exp="holo">32</button>
+  <button class="pill" data-exp="glitch">33</button>
+  <button class="pill" data-exp="bloom">34</button>
 </nav>
 
 <main class="stage">
@@ -1380,6 +1657,60 @@
     </div>
   </section>
 
+  <!-- 29 MAGNIFY -->
+  <section class="exp" data-exp="magnify">
+    <div class="magnify-stage" id="magnifyStage">
+      <div class="magnify-text" id="magnifyText">i am writing this from a place where everything is closer than you think · everything is much closer than you think · you only need to look at it · — yourself</div>
+      <div class="magnify-lens" id="magnifyLens"></div>
+    </div>
+  </section>
+
+  <!-- 30 LIQUID -->
+  <section class="exp" data-exp="liquid">
+    <div class="liquid-stage" id="liquidStage">
+      <div class="liquid-text" id="liquidText">i am writing this through the heat. everything is melting at the edges. i am okay with that. you can melt too. you can let it all become softer. — still here, still soft</div>
+    </div>
+  </section>
+
+  <!-- 31 PORTAL -->
+  <section class="exp" data-exp="portal">
+    <div class="portal-stage" id="portalStage">
+      <div class="portal-layer portal-other">
+        <div class="portal-other-text">i love you. i miss you. i need you. i am scared. i am here. i love you. i love you.</div>
+      </div>
+      <div class="portal-layer portal-this">
+        <div class="portal-this-text">I trust you are well. The weather is fine. I have started a new project at work and I am, on balance, doing alright. I think of you often.</div>
+      </div>
+      <div class="portal-ring" id="portalRing"></div>
+    </div>
+  </section>
+
+  <!-- 32 HOLOGRAM -->
+  <section class="exp" data-exp="holo">
+    <div class="holo-stage" id="holoStage">
+      <div class="holo-text" id="holoText">i love you i love you i love you</div>
+    </div>
+  </section>
+
+  <!-- 33 GLITCH -->
+  <section class="exp" data-exp="glitch">
+    <div class="glitch-stage" id="glitchStage">
+      <div class="glitch-frame" id="glitchFrame">
+        <div class="glitch-text" data-text="I AM HERE">I AM HERE</div>
+        <div class="glitch-sub">— transmission · 03:47 · still here</div>
+      </div>
+      <div class="glitch-scanlines"></div>
+    </div>
+  </section>
+
+  <!-- 34 BLOOM -->
+  <section class="exp" data-exp="bloom">
+    <div class="bloom-stage" id="bloomStage">
+      <div class="bloom-center" id="bloomCenter"></div>
+      <div class="bloom-core"></div>
+    </div>
+  </section>
+
 </main>
 
 <div class="caption" id="caption">
@@ -1390,7 +1721,7 @@
   // -------------------- TAB SWITCHING --------------------
   const exps = {};
   let current = 'orbit';
-  const order = ['orbit','magnetic','ripple','const','pal','shatter','typer','gravity','hw','fire','beat','decay','channel','murmur','double','zerog','river','tunnel','kaleido','globe','vortex','helix','mirror','grow','aurora','chroma','prism','thermal'];
+  const order = ['orbit','magnetic','ripple','const','pal','shatter','typer','gravity','hw','fire','beat','decay','channel','murmur','double','zerog','river','tunnel','kaleido','globe','vortex','helix','mirror','grow','aurora','chroma','prism','thermal','magnify','liquid','portal','holo','glitch','bloom'];
 
   const tabs = document.querySelectorAll('.tabs .pill');
   const sections = document.querySelectorAll('.exp');
@@ -1424,7 +1755,13 @@
     aurora:   { label: 'aurora',        text: 'an aurora flowing through the letters · cursor sets the angle' },
     chroma:   { label: 'chroma',        text: 'cursor pulls the color channels apart' },
     prism:    { label: 'prism',         text: 'your cursor refracts the text into a spectrum' },
-    thermal:  { label: 'thermal',       text: 'your cursor is the source of heat' }
+    thermal:  { label: 'thermal',       text: 'your cursor is the source of heat' },
+    magnify:  { label: 'magnify',       text: 'your cursor is a magnifying glass' },
+    liquid:   { label: 'liquid',        text: 'the letters are melting · your cursor adds heat' },
+    portal:   { label: 'portal',        text: 'the cursor opens into another reality' },
+    holo:     { label: 'hologram',      text: 'iridescent foil · move your cursor to shift the colors' },
+    glitch:   { label: 'glitch',        text: 'the signal is failing · the message is still there' },
+    bloom:    { label: 'bloom',         text: 'move toward the center · let it open' }
   };
 
   function switchTo(name) {
@@ -3641,6 +3978,389 @@
       chars.forEach(c => { c.style.color = ''; c.style.textShadow = ''; });
     }
     exps.thermal = { start, stop };
+  })();
+
+  // ========================================================
+  // 29 — MAGNIFY (cursor lens)
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('magnifyStage');
+    const textEl = document.getElementById('magnifyText');
+    const lens = document.getElementById('magnifyLens');
+    const raw = textEl.textContent;
+    textEl.innerHTML = '';
+    const chars = [];
+    for (const ch of raw) {
+      if (ch === ' ') textEl.appendChild(document.createTextNode(' '));
+      else {
+        const sp = document.createElement('span');
+        sp.className = 'c';
+        sp.textContent = ch;
+        textEl.appendChild(sp);
+        chars.push(sp);
+      }
+    }
+    let positions = [];
+    let mouseX = -9999, mouseY = -9999;
+    let raf = null, running = false;
+    function measure() {
+      const stageRect = stageEl.getBoundingClientRect();
+      positions = chars.map(c => {
+        const r = c.getBoundingClientRect();
+        return { x: r.left + r.width/2 - stageRect.left, y: r.top + r.height/2 - stageRect.top };
+      });
+    }
+    function tick() {
+      if (!running) return;
+      const R = 110;
+      const MAG = 2.5;
+      for (let i = 0; i < chars.length; i++) {
+        const p = positions[i];
+        if (!p) continue;
+        const dx = p.x - mouseX, dy = p.y - mouseY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < R) {
+          const t = dist / R;
+          const scale = 1 + (MAG - 1) * (1 - t * t);
+          const edgePull = (1 - t) * 16;
+          const ux = dist > 0 ? dx / dist : 0;
+          const uy = dist > 0 ? dy / dist : 0;
+          const tx = ux * edgePull;
+          const ty = uy * edgePull;
+          chars[i].style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${scale.toFixed(2)})`;
+          chars[i].style.zIndex = '2';
+        } else {
+          chars[i].style.transform = '';
+          chars[i].style.zIndex = '';
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left;
+      mouseY = e.clientY - r.top;
+      lens.style.left = mouseX + 'px';
+      lens.style.top  = mouseY + 'px';
+    }
+    function onLeave() { mouseX = -9999; mouseY = -9999; }
+    function start() {
+      measure();
+      stageEl.addEventListener('mousemove', onMove);
+      stageEl.addEventListener('mouseleave', onLeave);
+      window.addEventListener('resize', measure);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      stageEl.removeEventListener('mouseleave', onLeave);
+      window.removeEventListener('resize', measure);
+      running = false;
+      cancelAnimationFrame(raf);
+      chars.forEach(c => { c.style.transform = ''; c.style.zIndex = ''; });
+    }
+    exps.magnify = { start, stop };
+  })();
+
+  // ========================================================
+  // 30 — LIQUID (dripping text)
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('liquidStage');
+    const textEl = document.getElementById('liquidText');
+    const raw = textEl.textContent;
+    textEl.innerHTML = '';
+    const chars = [];
+    for (const ch of raw) {
+      if (ch === ' ') textEl.appendChild(document.createTextNode(' '));
+      else {
+        const sp = document.createElement('span');
+        sp.className = 'c';
+        sp.textContent = ch;
+        textEl.appendChild(sp);
+        chars.push({ el: sp, melt: 0 });
+      }
+    }
+    let positions = [];
+    let mouseX = -9999, mouseY = -9999;
+    let raf = null, running = false;
+    let lastT = 0;
+    function measure() {
+      const stageRect = stageEl.getBoundingClientRect();
+      positions = chars.map(c => {
+        const r = c.el.getBoundingClientRect();
+        return { x: r.left + r.width/2 - stageRect.left, y: r.top + r.height/2 - stageRect.top };
+      });
+    }
+    function tick() {
+      if (!running) return;
+      const now = performance.now();
+      const dt = Math.min(0.05, (now - lastT) / 1000);
+      lastT = now;
+      const HEAT_R = 240;
+      for (let i = 0; i < chars.length; i++) {
+        const c = chars[i];
+        const p = positions[i];
+        if (!p) continue;
+        let heat = 0.07;
+        const dx = p.x - mouseX, dy = p.y - mouseY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < HEAT_R) heat += (1 - dist / HEAT_R) * 1.4;
+        c.melt += heat * dt;
+        const m = Math.min(2.6, c.melt);
+        const ty = m * 22;
+        const sy = 1 + m * 0.55;
+        const sx = 1 - m * 0.07;
+        const opacity = Math.max(0, 1 - m * 0.26);
+        const blur = m * 0.7;
+        c.el.style.transform = `translateY(${ty.toFixed(1)}px) scale(${sx.toFixed(2)}, ${sy.toFixed(2)})`;
+        c.el.style.opacity = opacity.toFixed(2);
+        c.el.style.filter = blur > 0.12 ? `blur(${blur.toFixed(2)}px)` : '';
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left;
+      mouseY = e.clientY - r.top;
+    }
+    function onLeave() { mouseX = -9999; mouseY = -9999; }
+    function start() {
+      chars.forEach(c => { c.melt = 0; c.el.style.transform=''; c.el.style.opacity=''; c.el.style.filter=''; });
+      measure();
+      stageEl.addEventListener('mousemove', onMove);
+      stageEl.addEventListener('mouseleave', onLeave);
+      window.addEventListener('resize', measure);
+      running = true;
+      lastT = performance.now();
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      stageEl.removeEventListener('mouseleave', onLeave);
+      window.removeEventListener('resize', measure);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.liquid = { start, stop };
+  })();
+
+  // ========================================================
+  // 31 — PORTAL
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('portalStage');
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width) * 100;
+      const y = ((e.clientY - r.top) / r.height) * 100;
+      stageEl.style.setProperty('--cx', x + '%');
+      stageEl.style.setProperty('--cy', y + '%');
+    }
+    exps.portal = {
+      start: () => stageEl.addEventListener('mousemove', onMove),
+      stop:  () => stageEl.removeEventListener('mousemove', onMove)
+    };
+  })();
+
+  // ========================================================
+  // 32 — HOLOGRAM
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('holoStage');
+    const textEl = document.getElementById('holoText');
+    const raw = textEl.textContent;
+    textEl.innerHTML = '';
+    const chars = [];
+    for (const ch of raw) {
+      if (ch === ' ') textEl.appendChild(document.createTextNode(' '));
+      else {
+        const sp = document.createElement('span');
+        sp.className = 'c';
+        sp.textContent = ch;
+        textEl.appendChild(sp);
+        chars.push(sp);
+      }
+    }
+    let positions = [];
+    let mouseX = 0, mouseY = 0;
+    let raf = null, running = false;
+    let t0 = performance.now();
+    function measure() {
+      const stageRect = stageEl.getBoundingClientRect();
+      positions = chars.map(c => {
+        const r = c.getBoundingClientRect();
+        return { x: r.left + r.width/2 - stageRect.left, y: r.top + r.height/2 - stageRect.top };
+      });
+    }
+    function tick() {
+      if (!running) return;
+      const t = (performance.now() - t0) / 1000;
+      for (let i = 0; i < chars.length; i++) {
+        const p = positions[i];
+        if (!p) continue;
+        const angle = Math.atan2(p.y - mouseY, p.x - mouseX) * 180 / Math.PI;
+        const dist = Math.sqrt((p.x - mouseX)**2 + (p.y - mouseY)**2);
+        const hue = ((angle + i * 8 + t * 35 + dist * 0.4) % 360 + 360) % 360;
+        const hue2 = (hue + 60) % 360;
+        chars[i].style.color = `hsl(${hue.toFixed(0)}, 92%, 68%)`;
+        chars[i].style.textShadow = `0 0 9px hsla(${hue.toFixed(0)}, 95%, 70%, 0.55), 0 0 22px hsla(${hue2.toFixed(0)}, 90%, 60%, 0.32)`;
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left;
+      mouseY = e.clientY - r.top;
+    }
+    function start() {
+      measure();
+      const r = stageEl.getBoundingClientRect();
+      mouseX = r.width / 2; mouseY = r.height / 2;
+      stageEl.addEventListener('mousemove', onMove);
+      window.addEventListener('resize', measure);
+      running = true;
+      t0 = performance.now();
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      window.removeEventListener('resize', measure);
+      running = false;
+      cancelAnimationFrame(raf);
+      chars.forEach(c => { c.style.color = ''; c.style.textShadow = ''; });
+    }
+    exps.holo = { start, stop };
+  })();
+
+  // ========================================================
+  // 33 — GLITCH
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('glitchStage');
+    const frame = document.getElementById('glitchFrame');
+    let raf = null, running = false;
+    let mouseX = 0, mouseY = 0;
+    function tick() {
+      if (!running) return;
+      const r = stageEl.getBoundingClientRect();
+      const cx = r.width / 2, cy = r.height / 2;
+      const d = Math.sqrt((mouseX - cx)**2 + (mouseY - cy)**2);
+      const maxD = Math.sqrt(cx*cx + cy*cy);
+      const closeness = 1 - Math.min(1, d / maxD);
+      let translate = 0;
+      if (Math.random() < 0.014 + closeness * 0.07) {
+        translate = (Math.random() - 0.5) * (closeness * 32 + 6);
+      }
+      frame.style.transform = `translateX(${translate.toFixed(1)}px)`;
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left;
+      mouseY = e.clientY - r.top;
+    }
+    function start() {
+      stageEl.addEventListener('mousemove', onMove);
+      const r = stageEl.getBoundingClientRect();
+      mouseX = r.width / 2; mouseY = r.height / 2;
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      running = false;
+      cancelAnimationFrame(raf);
+      frame.style.transform = '';
+    }
+    exps.glitch = { start, stop };
+  })();
+
+  // ========================================================
+  // 34 — BLOOM
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('bloomStage');
+    const center = document.getElementById('bloomCenter');
+    const petalText = [
+      { t: 'remember this',     c: 'italic' },
+      { t: 'i love you',        c: '' },
+      { t: 'still here',        c: 'italic' },
+      { t: 'open the window',   c: 'serif' },
+      { t: 'wait · breathe',    c: '' },
+      { t: 'i am writing',      c: 'serif' },
+      { t: 'from a person who', c: 'italic' },
+      { t: 'already loves you', c: '' },
+      { t: 'on purpose',        c: 'italic' },
+      { t: 'come back',         c: '' },
+      { t: 'the kettle',        c: 'serif' },
+      { t: 'patience',          c: 'italic' }
+    ];
+    const N = petalText.length;
+    const petals = [];
+    let raf = null, running = false;
+    let mouseX = 0, mouseY = 0, inside = false;
+    let openAmount = 0;
+    function init() {
+      center.querySelectorAll('.petal').forEach(n => n.remove());
+      petals.length = 0;
+      for (let i = 0; i < N; i++) {
+        const p = petalText[i];
+        const el = document.createElement('span');
+        el.className = 'petal ' + (p.c || '');
+        el.textContent = p.t;
+        center.appendChild(el);
+        petals.push({ el, angle: (i / N) * Math.PI * 2 });
+      }
+    }
+    function tick() {
+      if (!running) return;
+      const r = stageEl.getBoundingClientRect();
+      const cx = r.width / 2, cy = r.height / 2;
+      const d = inside ? Math.sqrt((mouseX - cx)**2 + (mouseY - cy)**2) : 1e9;
+      const maxD = 340;
+      const target = inside ? Math.max(0, 1 - d / maxD) : 0;
+      openAmount += (target - openAmount) * 0.06;
+      const baseR = 30;
+      const maxR = 280;
+      const r2 = baseR + (maxR - baseR) * openAmount;
+      for (let i = 0; i < petals.length; i++) {
+        const p = petals[i];
+        const a = p.angle + openAmount * 0.5;
+        const x = Math.cos(a) * r2;
+        const y = Math.sin(a) * r2;
+        const rot = (a * 180 / Math.PI) + 90;
+        const op = 0.15 + 0.85 * openAmount;
+        const scale = 0.45 + 0.55 * openAmount;
+        p.el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -50%) rotate(${rot.toFixed(1)}deg) scale(${scale.toFixed(2)})`;
+        p.el.style.opacity = op.toFixed(2);
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left;
+      mouseY = e.clientY - r.top;
+      inside = true;
+    }
+    function onLeave() { inside = false; }
+    function start() {
+      init();
+      openAmount = 0;
+      inside = false;
+      stageEl.addEventListener('mousemove', onMove);
+      stageEl.addEventListener('mouseleave', onLeave);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      stageEl.removeEventListener('mouseleave', onLeave);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.bloom = { start, stop };
   })();
 </script>
 </body>
