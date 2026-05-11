@@ -928,6 +928,149 @@
   }
   .grow-hint.hidden { opacity: 0; }
 
+  /* ============================================
+     25 — AURORA
+     ============================================ */
+  .aurora-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 50% 50%, #0d1226 0%, #06060e 80%);
+    overflow: hidden;
+    --flow: 90deg;
+  }
+  .aurora-stage::before {
+    content: '';
+    position: absolute;
+    inset: -30%;
+    background:
+      radial-gradient(ellipse 60% 40% at 30% 25%, rgba(74, 222, 128, 0.30), transparent 60%),
+      radial-gradient(ellipse 55% 35% at 75% 60%, rgba(139, 92, 246, 0.28), transparent 60%),
+      radial-gradient(ellipse 45% 60% at 50% 85%, rgba(6, 182, 212, 0.22), transparent 60%),
+      radial-gradient(ellipse 40% 30% at 20% 80%, rgba(236, 72, 153, 0.18), transparent 65%);
+    filter: blur(40px);
+    animation: auroraSwirl 22s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes auroraSwirl {
+    0%, 100% { transform: rotate(0deg) translate(0, 0); }
+    33%      { transform: rotate(10deg) translate(60px, -40px); }
+    66%      { transform: rotate(-6deg) translate(-30px, 30px); }
+  }
+  .aurora-text {
+    position: relative;
+    z-index: 1;
+    width: clamp(540px, 60vw, 820px);
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    font-size: clamp(2rem, 4vw, 3.4rem);
+    text-align: center;
+    line-height: 1.4;
+    background: linear-gradient(
+      var(--flow),
+      #4ade80 0%,
+      #06b6d4 22%,
+      #8b5cf6 44%,
+      #ec4899 66%,
+      #f59e0b 84%,
+      #4ade80 100%
+    );
+    background-size: 220% 220%;
+    -webkit-background-clip: text;
+            background-clip: text;
+    -webkit-text-fill-color: transparent;
+            text-fill-color: transparent;
+    animation: auroraFlow 14s linear infinite;
+    transition: --flow 0.6s ease;
+  }
+  @keyframes auroraFlow {
+    0%   { background-position:   0% 50%; }
+    100% { background-position: 220% 50%; }
+  }
+
+  /* ============================================
+     26 — CHROMA (CMY aberration)
+     ============================================ */
+  .chroma-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #f5edd6;
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .chroma-content {
+    position: relative;
+    width: clamp(540px, 60vw, 820px);
+  }
+  .chroma-layer {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    font-size: clamp(2.4rem, 5.5vw, 5rem);
+    text-align: center;
+    line-height: 1.15;
+    mix-blend-mode: multiply;
+    will-change: transform;
+    pointer-events: none;
+    user-select: none;
+    padding: 0 4vw;
+  }
+  .chroma-layer.chroma-static {
+    position: relative;
+    color: transparent;
+    mix-blend-mode: normal;
+  }
+  .chroma-c { color: #07ffff; }
+  .chroma-m { color: #ff07ff; }
+  .chroma-y { color: #ffff07; }
+
+  /* ============================================
+     27 — PRISM
+     ============================================ */
+  .prism-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #0a0a14;
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .prism-text {
+    width: clamp(540px, 60vw, 820px);
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    font-size: clamp(2rem, 3.6vw, 3.2rem);
+    text-align: center;
+    line-height: 1.55;
+    color: #f4ecd6;
+  }
+  .prism-text .c {
+    display: inline-block;
+    transition: color 0.04s linear, text-shadow 0.04s linear;
+  }
+
+  /* ============================================
+     28 — THERMAL (heat map)
+     ============================================ */
+  .thermal-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #050208;
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .thermal-text {
+    width: clamp(560px, 64vw, 880px);
+    font-family: "EB Garamond", serif;
+    font-size: clamp(1.2rem, 1.8vw, 1.7rem);
+    text-align: center;
+    line-height: 1.75;
+    color: #14143a;
+  }
+  .thermal-text .c {
+    display: inline-block;
+    will-change: color, text-shadow;
+  }
+
 </style>
 </head>
 <body>
@@ -968,6 +1111,10 @@
   <button class="pill" data-exp="helix">22</button>
   <button class="pill" data-exp="mirror">23</button>
   <button class="pill" data-exp="grow">24</button>
+  <button class="pill" data-exp="aurora">25</button>
+  <button class="pill" data-exp="chroma">26</button>
+  <button class="pill" data-exp="prism">27</button>
+  <button class="pill" data-exp="thermal">28</button>
 </nav>
 
 <main class="stage">
@@ -1200,6 +1347,39 @@
     </div>
   </section>
 
+  <!-- 25 AURORA -->
+  <section class="exp" data-exp="aurora">
+    <div class="aurora-stage" id="auroraStage">
+      <div class="aurora-text" id="auroraText">i am writing this from a place where the light is different · the light is always different · you will know it when you see it · — myself</div>
+    </div>
+  </section>
+
+  <!-- 26 CHROMA -->
+  <section class="exp" data-exp="chroma">
+    <div class="chroma-stage" id="chromaStage">
+      <div class="chroma-content">
+        <div class="chroma-layer chroma-static">i love you   i love you   i love you</div>
+        <div class="chroma-layer chroma-c" id="chromaC">i love you&nbsp;&nbsp;&nbsp;i love you&nbsp;&nbsp;&nbsp;i love you</div>
+        <div class="chroma-layer chroma-m" id="chromaM">i love you&nbsp;&nbsp;&nbsp;i love you&nbsp;&nbsp;&nbsp;i love you</div>
+        <div class="chroma-layer chroma-y" id="chromaY">i love you&nbsp;&nbsp;&nbsp;i love you&nbsp;&nbsp;&nbsp;i love you</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 27 PRISM -->
+  <section class="exp" data-exp="prism">
+    <div class="prism-stage" id="prismStage">
+      <div class="prism-text" id="prismText">light passes through the letter and breaks. each color was always there. you just had not seen them yet. — yourself</div>
+    </div>
+  </section>
+
+  <!-- 28 THERMAL -->
+  <section class="exp" data-exp="thermal">
+    <div class="thermal-stage" id="thermalStage">
+      <div class="thermal-text" id="thermalText">i am writing this from a place where the heat finds you eventually. it always does. that is the whole point of bodies. that is the whole point of letters. they carry warmth across distance. they carry it across time. — still here, still warm</div>
+    </div>
+  </section>
+
 </main>
 
 <div class="caption" id="caption">
@@ -1210,7 +1390,7 @@
   // -------------------- TAB SWITCHING --------------------
   const exps = {};
   let current = 'orbit';
-  const order = ['orbit','magnetic','ripple','const','pal','shatter','typer','gravity','hw','fire','beat','decay','channel','murmur','double','zerog','river','tunnel','kaleido','globe','vortex','helix','mirror','grow'];
+  const order = ['orbit','magnetic','ripple','const','pal','shatter','typer','gravity','hw','fire','beat','decay','channel','murmur','double','zerog','river','tunnel','kaleido','globe','vortex','helix','mirror','grow','aurora','chroma','prism','thermal'];
 
   const tabs = document.querySelectorAll('.tabs .pill');
   const sections = document.querySelectorAll('.exp');
@@ -1240,7 +1420,11 @@
     vortex:   { label: 'vortex',        text: 'everything is being pulled in · let it' },
     helix:    { label: 'helix',         text: 'two strands · what you said · what you meant' },
     mirror:   { label: 'mirror',        text: 'an infinite hallway of the same letter' },
-    grow:     { label: 'grow',          text: 'move slowly · the words branch from your path' }
+    grow:     { label: 'grow',          text: 'move slowly · the words branch from your path' },
+    aurora:   { label: 'aurora',        text: 'an aurora flowing through the letters · cursor sets the angle' },
+    chroma:   { label: 'chroma',        text: 'cursor pulls the color channels apart' },
+    prism:    { label: 'prism',         text: 'your cursor refracts the text into a spectrum' },
+    thermal:  { label: 'thermal',       text: 'your cursor is the source of heat' }
   };
 
   function switchTo(name) {
@@ -3195,6 +3379,268 @@
       cancelAnimationFrame(raf);
     }
     exps.grow = { start, stop };
+  })();
+
+  // ========================================================
+  // 25 — AURORA
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('auroraStage');
+    const textEl = document.getElementById('auroraText');
+    let mouseX = 0.5;
+    let targetAngle = 90, currentAngle = 90;
+    let raf = null, running = false;
+    function tick() {
+      if (!running) return;
+      currentAngle += (targetAngle - currentAngle) * 0.05;
+      textEl.style.setProperty('--flow', currentAngle.toFixed(1) + 'deg');
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = (e.clientX - r.left) / r.width;
+      targetAngle = mouseX * 360;
+    }
+    function start() {
+      stageEl.addEventListener('mousemove', onMove);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.aurora = { start, stop };
+  })();
+
+  // ========================================================
+  // 26 — CHROMA (CMY aberration)
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('chromaStage');
+    const c = document.getElementById('chromaC');
+    const m = document.getElementById('chromaM');
+    const y = document.getElementById('chromaY');
+    let mouseX = 0, mouseY = 0, inside = false;
+    let raf = null, running = false;
+    function tick() {
+      if (!running) return;
+      if (!inside) {
+        c.style.transform = 'translate(0, 0)';
+        m.style.transform = 'translate(0, 0)';
+        y.style.transform = 'translate(0, 0)';
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      const r = stageEl.getBoundingClientRect();
+      const dx = (mouseX - r.width / 2) / r.width;
+      const dy = (mouseY - r.height / 2) / r.height;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const maxOff = 60;
+      const off = Math.min(1, dist * 2.4) * maxOff;
+      const angle = Math.atan2(dy, dx);
+      // three channels offset along three different axes (120° apart)
+      const angles = [angle, angle + 2 * Math.PI / 3, angle + 4 * Math.PI / 3];
+      c.style.transform = `translate(${(Math.cos(angles[0]) * off).toFixed(1)}px, ${(Math.sin(angles[0]) * off).toFixed(1)}px)`;
+      m.style.transform = `translate(${(Math.cos(angles[1]) * off).toFixed(1)}px, ${(Math.sin(angles[1]) * off).toFixed(1)}px)`;
+      y.style.transform = `translate(${(Math.cos(angles[2]) * off).toFixed(1)}px, ${(Math.sin(angles[2]) * off).toFixed(1)}px)`;
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left;
+      mouseY = e.clientY - r.top;
+      inside = true;
+    }
+    function onLeave() { inside = false; }
+    function start() {
+      stageEl.addEventListener('mousemove', onMove);
+      stageEl.addEventListener('mouseleave', onLeave);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      stageEl.removeEventListener('mouseleave', onLeave);
+      running = false;
+      cancelAnimationFrame(raf);
+      c.style.transform = '';
+      m.style.transform = '';
+      y.style.transform = '';
+    }
+    exps.chroma = { start, stop };
+  })();
+
+  // ========================================================
+  // 27 — PRISM
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('prismStage');
+    const textEl = document.getElementById('prismText');
+    const raw = textEl.textContent;
+    textEl.innerHTML = '';
+    const chars = [];
+    for (const ch of raw) {
+      if (ch === ' ') textEl.appendChild(document.createTextNode(' '));
+      else {
+        const sp = document.createElement('span');
+        sp.className = 'c';
+        sp.textContent = ch;
+        textEl.appendChild(sp);
+        chars.push(sp);
+      }
+    }
+    let positions = [];
+    let mouseX = -9999, mouseY = -9999;
+    let raf = null, running = false;
+    function measure() {
+      const stageRect = stageEl.getBoundingClientRect();
+      positions = chars.map(c => {
+        const r = c.getBoundingClientRect();
+        return { x: r.left + r.width/2 - stageRect.left, y: r.top + r.height/2 - stageRect.top };
+      });
+    }
+    function tick() {
+      if (!running) return;
+      const R = 220;
+      for (let i = 0; i < chars.length; i++) {
+        const p = positions[i];
+        if (!p) continue;
+        const dx = p.x - mouseX, dy = p.y - mouseY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < R) {
+          const t = (dx + R) / (2 * R);
+          const hue = t * 300;
+          const intensity = 1 - dist / R;
+          chars[i].style.color = `hsl(${hue}, 95%, ${(55 + intensity * 15).toFixed(0)}%)`;
+          chars[i].style.textShadow = `0 0 ${(intensity * 18).toFixed(1)}px hsla(${hue}, 95%, 65%, ${(intensity * 0.8).toFixed(2)})`;
+        } else {
+          chars[i].style.color = '';
+          chars[i].style.textShadow = '';
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left;
+      mouseY = e.clientY - r.top;
+    }
+    function onLeave() { mouseX = -9999; mouseY = -9999; }
+    function start() {
+      measure();
+      stageEl.addEventListener('mousemove', onMove);
+      stageEl.addEventListener('mouseleave', onLeave);
+      window.addEventListener('resize', measure);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      stageEl.removeEventListener('mouseleave', onLeave);
+      window.removeEventListener('resize', measure);
+      running = false;
+      cancelAnimationFrame(raf);
+      chars.forEach(c => { c.style.color = ''; c.style.textShadow = ''; });
+    }
+    exps.prism = { start, stop };
+  })();
+
+  // ========================================================
+  // 28 — THERMAL
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('thermalStage');
+    const textEl = document.getElementById('thermalText');
+    const raw = textEl.textContent;
+    textEl.innerHTML = '';
+    const chars = [];
+    for (const ch of raw) {
+      if (ch === ' ') textEl.appendChild(document.createTextNode(' '));
+      else {
+        const sp = document.createElement('span');
+        sp.className = 'c';
+        sp.textContent = ch;
+        textEl.appendChild(sp);
+        chars.push(sp);
+      }
+    }
+    let positions = [];
+    let mouseX = -9999, mouseY = -9999;
+    let raf = null, running = false;
+    function measure() {
+      const stageRect = stageEl.getBoundingClientRect();
+      positions = chars.map(c => {
+        const r = c.getBoundingClientRect();
+        return { x: r.left + r.width/2 - stageRect.left, y: r.top + r.height/2 - stageRect.top };
+      });
+    }
+    function thermalColor(t) {
+      let h, l, s = 92;
+      if (t < 0.12) {
+        h = 50; l = 92 - (t / 0.12) * 22;
+      } else if (t < 0.32) {
+        const x = (t - 0.12) / 0.20;
+        h = 50 - x * 50;
+        l = 70 - x * 12;
+      } else if (t < 0.58) {
+        const x = (t - 0.32) / 0.26;
+        h = 360 - x * 60;
+        l = 58 - x * 12;
+      } else if (t < 0.82) {
+        const x = (t - 0.58) / 0.24;
+        h = 300 - x * 60;
+        l = 46 - x * 22;
+      } else {
+        const x = (t - 0.82) / 0.18;
+        h = 240; l = 24 - x * 20;
+      }
+      return { h, s, l };
+    }
+    function tick() {
+      if (!running) return;
+      const R = 420;
+      for (let i = 0; i < chars.length; i++) {
+        const p = positions[i];
+        if (!p) continue;
+        const dx = p.x - mouseX, dy = p.y - mouseY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const t = Math.min(1, dist / R);
+        const { h, s, l } = thermalColor(t);
+        chars[i].style.color = `hsl(${h}, ${s}%, ${l}%)`;
+        if (t < 0.3) {
+          const glow = (1 - t / 0.3) * 14;
+          chars[i].style.textShadow = `0 0 ${glow.toFixed(1)}px hsla(${h}, ${s}%, ${(l + 12).toFixed(0)}%, 0.75)`;
+        } else {
+          chars[i].style.textShadow = '';
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left;
+      mouseY = e.clientY - r.top;
+    }
+    function onLeave() { mouseX = -9999; mouseY = -9999; }
+    function start() {
+      measure();
+      stageEl.addEventListener('mousemove', onMove);
+      stageEl.addEventListener('mouseleave', onLeave);
+      window.addEventListener('resize', measure);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      stageEl.removeEventListener('mouseleave', onLeave);
+      window.removeEventListener('resize', measure);
+      running = false;
+      cancelAnimationFrame(raf);
+      chars.forEach(c => { c.style.color = ''; c.style.textShadow = ''; });
+    }
+    exps.thermal = { start, stop };
   })();
 </script>
 </body>
