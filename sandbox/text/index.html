@@ -6,7 +6,7 @@
 <title>sandbox · text · internet.house</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Caveat:wght@400;600;700&family=Kalam:wght@300;400;700&family=JetBrains+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Caveat:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --paper: #efe6d2;
@@ -20,10 +20,12 @@
   * { box-sizing: border-box; }
   html, body {
     margin: 0; padding: 0;
+    height: 100%;
     background: var(--paper);
     color: var(--ink);
     font-family: "Instrument Serif", Georgia, serif;
     -webkit-font-smoothing: antialiased;
+    overflow: hidden;
   }
   body {
     background-image:
@@ -33,7 +35,7 @@
     background-position: 0 0, 1px 2px;
   }
 
-  /* ---------- chrome ---------- */
+  /* ---------- chrome (crumbs top-right) ---------- */
   .chrome {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     display: flex; align-items: center; justify-content: space-between;
@@ -48,387 +50,359 @@
   .chrome a:hover { color: var(--ink); }
   .chrome .crumbs { display: flex; gap: 10px; align-items: center; }
   .chrome .crumbs .sep { opacity: 0.4; }
+  .chrome .hint { color: var(--ink-ghost); }
 
-  /* ---------- intro ---------- */
-  .intro {
-    min-height: 100vh;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    text-align: center;
-    padding: 0 24px;
+  /* ---------- tabs ---------- */
+  .tabs {
+    position: fixed; top: 56px; left: 0; right: 0; z-index: 50;
+    display: flex; justify-content: center; gap: 0;
+    padding: 0 28px;
   }
-  .intro .eyebrow {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
-    color: var(--ink-faint);
-    margin-bottom: 28px;
-  }
-  .intro h1 {
-    font-size: clamp(2.5rem, 7vw, 4.5rem);
-    line-height: 1.0;
-    margin: 0;
-    font-style: italic;
-    font-weight: 400;
-    letter-spacing: -0.02em;
-    max-width: 18ch;
-  }
-  .intro p {
-    margin-top: 28px;
-    font-family: "EB Garamond", serif;
-    font-size: 1.2rem;
-    color: var(--ink-soft);
-    max-width: 42ch;
-    line-height: 1.6;
-  }
-  .intro .scroll-hint {
-    position: absolute;
-    bottom: 40px;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    animation: bob 2.4s ease-in-out infinite;
-  }
-  @keyframes bob {
-    0%, 100% { transform: translateY(0); opacity: 0.6; }
-    50%      { transform: translateY(6px); opacity: 1; }
-  }
-
-  /* ---------- experiment shell ---------- */
-  .exp {
-    position: relative;
-    min-height: 100vh;
-    border-top: 1px solid rgba(26,23,20,0.08);
-    overflow: hidden;
-  }
-  .exp .tag {
-    position: absolute;
-    top: 28px;
-    left: 28px;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    z-index: 5;
-  }
-  .exp .tag .num { color: var(--ink-soft); }
-  .exp .note {
-    position: absolute;
-    top: 28px;
-    right: 28px;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--ink-ghost);
-    text-align: right;
-    max-width: 28ch;
-    z-index: 5;
-  }
-
-  /* ============================================
-     EXPERIMENT 01 — UNFOLD
-     Scroll-driven left-to-right ink reveal,
-     one line at a time, like a letter being written.
-     ============================================ */
-  .exp-unfold {
-    min-height: 240vh;
-  }
-  .exp-unfold .sticky {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .exp-unfold .letter {
-    width: clamp(420px, 50vw, 640px);
-    font-family: "EB Garamond", serif;
-    font-size: clamp(1.15rem, 1.5vw, 1.5rem);
-    line-height: 1.85;
-    color: var(--ink);
-  }
-  .exp-unfold .letter .salutation {
-    font-style: italic;
-    margin-bottom: 1.2em;
-    color: var(--ink-soft);
-  }
-  .exp-unfold .ul {
-    display: block;
-    overflow: hidden;
-  }
-  .exp-unfold .ul .inner {
-    display: inline-block;
-    width: 100%;
-    clip-path: inset(0 var(--reveal, 100%) 0 0);
-    transition: clip-path 0.1s linear;
-  }
-  .exp-unfold .signoff {
-    margin-top: 1.6em;
-    font-family: "Caveat", cursive;
-    font-size: 1.4em;
-    color: var(--ink-soft);
-  }
-
-  /* ============================================
-     EXPERIMENT 02 — MARGINALIA
-     Body text in a clean column, handwritten
-     interjections in the margins with hand-drawn
-     arrows pointing at specific phrases.
-     ============================================ */
-  .exp-margin {
-    padding: 18vh 0;
-  }
-  .exp-margin .frame {
-    max-width: 1100px;
-    margin: 0 auto;
-    position: relative;
-    padding: 0 24px;
-  }
-  .exp-margin .body {
-    max-width: 38ch;
-    margin: 0 auto;
-    font-family: "EB Garamond", serif;
-    font-size: 1.35rem;
-    line-height: 1.85;
-    color: var(--ink);
-  }
-  .exp-margin .body p { margin: 0 0 1.4em; }
-  .exp-margin .body em.h {
-    font-style: normal;
-    background-image: linear-gradient(transparent 65%, rgba(26,23,20,0.12) 65%, rgba(26,23,20,0.12) 88%, transparent 88%);
-    padding: 0 1px;
-  }
-  .exp-margin .marg {
-    position: absolute;
-    font-family: "Caveat", cursive;
-    color: var(--ink-soft);
-    font-size: 1.35rem;
-    line-height: 1.25;
-    max-width: 18ch;
-    transform: rotate(var(--rot, -2deg));
-  }
-  .exp-margin .marg.left  { right: calc(50% + 22ch); text-align: right; }
-  .exp-margin .marg.right { left:  calc(50% + 22ch); text-align: left; }
-  .exp-margin .marg svg {
-    display: block;
-    margin-top: 6px;
-    color: var(--ink-faint);
-  }
-
-  /* ============================================
-     EXPERIMENT 03 — CONCRETE (ENVELOPE)
-     Words arranged in the shape of an envelope.
-     Pure layout, no animation. Read it like a poem.
-     ============================================ */
-  .exp-concrete {
-    padding: 18vh 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .exp-concrete .env {
-    font-family: "EB Garamond", serif;
-    color: var(--ink);
-    font-size: 1.1rem;
-    line-height: 1.6;
-    text-align: center;
-    width: clamp(380px, 50vw, 620px);
-    position: relative;
-  }
-  .exp-concrete .row {
-    display: flex;
-    justify-content: center;
-    align-items: baseline;
-    gap: 1.5ch;
-    white-space: nowrap;
-  }
-  .exp-concrete .flap   { color: var(--ink-soft); font-style: italic; }
-  .exp-concrete .seam   { letter-spacing: 0.3em; color: var(--ink-faint); }
-  .exp-concrete .center { font-size: 1.4em; font-style: italic; }
-  .exp-concrete .stamp {
-    position: absolute;
-    top: 22%;
-    right: 4%;
-    font-family: "Caveat", cursive;
-    color: var(--ink-soft);
-    transform: rotate(8deg);
-    font-size: 0.95rem;
-    line-height: 1.2;
-    border: 1px solid var(--ink-faint);
-    padding: 8px 10px;
-    background: var(--paper-bright);
-  }
-
-  /* ============================================
-     EXPERIMENT 04 — BREATH
-     One sentence per screen. Massive whitespace.
-     Type size carries the emotional weight.
-     ============================================ */
-  .exp-breath {
-    min-height: 300vh;
-  }
-  .exp-breath .sticky {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 0 8vw;
-  }
-  .exp-breath .stack {
-    position: relative;
-    width: 100%;
-    max-width: 1100px;
-  }
-  .exp-breath .b {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    transition: opacity 0.2s ease-out;
-    opacity: 0;
-    font-family: "Instrument Serif", serif;
-    font-style: italic;
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-    color: var(--ink);
-  }
-  .exp-breath .b .lg { font-size: clamp(3rem, 9vw, 7rem); }
-  .exp-breath .b .md { font-size: clamp(2rem, 5vw, 3.5rem); font-style: normal; color: var(--ink-soft); }
-  .exp-breath .b .sm { font-size: clamp(1.4rem, 2.6vw, 2rem); font-style: normal; color: var(--ink-faint); font-family: "EB Garamond", serif; }
-  .exp-breath .b .stack-v { display: flex; flex-direction: column; gap: 0.4em; align-items: center; }
-  .exp-breath .b .stack-v .l1 { opacity: 0.45; }
-  .exp-breath .b .stack-v .l2 { opacity: 0.75; }
-  .exp-breath .b .stack-v .l3 { opacity: 1; }
-
-  /* ============================================
-     EXPERIMENT 05 — EMERGENCE
-     Words scattered, appearing one by one as
-     you scroll. A thought forming in real time.
-     ============================================ */
-  .exp-emerge {
-    min-height: 260vh;
-  }
-  .exp-emerge .sticky {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    overflow: hidden;
-  }
-  .exp-emerge .field {
-    position: absolute;
-    inset: 0;
-  }
-  .exp-emerge .w {
-    position: absolute;
-    font-family: "EB Garamond", serif;
-    color: var(--ink);
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-    font-size: clamp(1.1rem, 1.6vw, 1.6rem);
-    line-height: 1;
-  }
-  .exp-emerge .w.shown { opacity: 1; transform: translateY(0); }
-  .exp-emerge .w.accent { font-style: italic; color: var(--ink-soft); font-family: "Instrument Serif", serif; font-size: 1.4em; }
-  .exp-emerge .w.faint  { color: var(--ink-faint); font-size: 0.9em; }
-  .exp-emerge .w.big    { font-size: 2em; font-style: italic; }
-
-  /* ============================================
-     EXPERIMENT 06 — ECHO (TWO COLUMNS)
-     Future self on the left in serif italic,
-     past self answering on the right in handwriting.
-     Staggered, never aligned.
-     ============================================ */
-  .exp-echo {
-    padding: 14vh 0 18vh;
-  }
-  .exp-echo .ladder {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 24px;
-    position: relative;
-  }
-  .exp-echo .ladder::before {
-    content: "";
-    position: absolute;
-    top: 0; bottom: 0;
-    left: 50%;
-    width: 1px;
-    background: linear-gradient(to bottom, transparent, var(--ink-ghost) 10%, var(--ink-ghost) 90%, transparent);
-    opacity: 0.5;
-  }
-  .exp-echo .row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4vw;
-    margin: 4vh 0;
-    align-items: start;
-  }
-  .exp-echo .future {
-    grid-column: 1;
-    text-align: right;
-    font-family: "Instrument Serif", serif;
-    font-style: italic;
-    font-size: clamp(1.3rem, 2vw, 1.7rem);
-    line-height: 1.4;
-    color: var(--ink);
-    padding-right: 2ch;
-  }
-  .exp-echo .past {
-    grid-column: 2;
-    text-align: left;
-    font-family: "Caveat", cursive;
-    font-size: clamp(1.4rem, 2.2vw, 1.9rem);
-    line-height: 1.3;
-    color: var(--ink-soft);
-    padding-left: 2ch;
-    margin-top: 1.6em;
-  }
-  .exp-echo .label {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 9px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--ink-ghost);
-    margin-bottom: 8px;
-    display: block;
-  }
-  .exp-echo .future.alone .past { display: none; }
-
-  /* ---------- end ---------- */
-  .end {
-    min-height: 60vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 0 24px;
-    border-top: 1px solid rgba(26,23,20,0.08);
-  }
-  .end p {
-    font-family: "EB Garamond", serif;
-    font-style: italic;
-    color: var(--ink-soft);
-    max-width: 36ch;
-    line-height: 1.6;
-  }
-  .end a {
+  .tabs .pill {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 10px 18px;
+    margin: 0 4px;
     font-family: "JetBrains Mono", monospace;
     font-size: 11px;
     letter-spacing: 2px;
     text-transform: uppercase;
+    color: var(--ink-faint);
+    cursor: pointer;
+    transition: color 0.2s, background 0.2s, border-color 0.2s;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .tabs .pill .n {
+    font-size: 9px;
+    color: var(--ink-ghost);
+  }
+  .tabs .pill:hover {
     color: var(--ink-soft);
-    margin-top: 28px;
+  }
+  .tabs .pill.active {
+    color: var(--ink);
+    background: var(--paper-bright);
+    border-color: rgba(26,23,20,0.12);
+  }
+  .tabs .pill.active .n { color: var(--ink-soft); }
+
+  /* ---------- caption bottom ---------- */
+  .caption {
+    position: fixed; bottom: 22px; left: 0; right: 0; z-index: 50;
+    text-align: center;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-ghost);
+    pointer-events: none;
+  }
+  .caption .label {
+    font-style: normal;
+    color: var(--ink-soft);
+    margin-right: 12px;
+  }
+
+  /* ---------- stage ---------- */
+  .stage {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+  }
+  .exp {
+    position: absolute;
+    inset: 0;
+    display: none;
+  }
+  .exp.active { display: block; }
+
+  /* ============================================
+     01 — ORBIT
+     A constellation of word-fragments orbiting
+     in 3D. Cursor tilts the axis. Click to freeze.
+     ============================================ */
+  .orbit-stage {
+    position: absolute;
+    inset: 0;
+    perspective: 1100px;
+  }
+  .orbit-stage .orbiter {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 0; height: 0;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .orbit-stage .ow {
+    position: absolute;
+    left: 0; top: 0;
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
+    font-family: "EB Garamond", serif;
+    color: var(--ink);
+    white-space: nowrap;
+    user-select: none;
+    pointer-events: none;
+  }
+  .orbit-stage .ow.italic { font-style: italic; color: var(--ink-soft); font-family: "Instrument Serif", serif; }
+  .orbit-stage .ow.script { font-family: "Caveat", cursive; color: var(--ink-soft); }
+  .orbit-stage .ow.small  { font-size: 0.85em; color: var(--ink-faint); }
+  .orbit-stage .ow.big    { font-size: 1.6em; }
+
+  /* ============================================
+     02 — MAGNETIC
+     A sentence centered on screen. Each character
+     is a tiny physics body that flees the cursor
+     and springs back home.
+     ============================================ */
+  .mag-stage {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .mag-line {
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    font-size: clamp(2rem, 6vw, 5rem);
+    color: var(--ink);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    max-width: 22ch;
+    padding: 0 4vw;
+  }
+  .mag-line .c {
+    display: inline-block;
+    will-change: transform;
+    transition: color 0.25s;
+  }
+  .mag-line .c.lit { color: var(--ink-soft); }
+  .mag-cursor {
+    position: absolute;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    border: 1px solid rgba(26,23,20,0.08);
+    transition: opacity 0.4s;
+    opacity: 0;
+  }
+  .mag-stage:hover .mag-cursor { opacity: 1; }
+
+  /* ============================================
+     03 — RIPPLE
+     A paragraph laid out on a 3D plane. The cursor
+     emits a sinusoidal wave that displaces each
+     character along Z. Continuous, no clicking.
+     ============================================ */
+  .ripple-stage {
+    position: absolute;
+    inset: 0;
+    perspective: 900px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ripple-page {
+    width: clamp(560px, 64vw, 880px);
+    font-family: "EB Garamond", serif;
+    font-size: clamp(1.15rem, 1.6vw, 1.7rem);
+    line-height: 2.1;
+    color: var(--ink);
+    text-align: center;
+    transform-style: preserve-3d;
+  }
+  .ripple-page .c {
+    display: inline-block;
+    transform-style: preserve-3d;
+    will-change: transform, color;
+  }
+
+  /* ============================================
+     04 — CONSTELLATION
+     Words scattered as stars. Hovering near any
+     star reveals the connecting line + word and
+     joins it with adjacent stars to form sentences.
+     ============================================ */
+  .const-stage {
+    position: absolute;
+    inset: 0;
+  }
+  .const-stage svg.lines {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  .const-stage .star {
+    position: absolute;
+    width: 36px; height: 36px;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+  }
+  .const-stage .star .dot {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 6px; height: 6px;
+    background: var(--ink-soft);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 0.3s, background 0.3s;
+  }
+  .const-stage .star:hover .dot,
+  .const-stage .star.active .dot {
+    transform: translate(-50%, -50%) scale(2);
+    background: var(--ink);
+  }
+  .const-stage .star .w {
+    position: absolute;
+    left: 50%; top: 18px;
+    transform: translateX(-50%);
+    font-family: "EB Garamond", serif;
+    font-size: 1.05rem;
+    color: var(--ink);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .const-stage .star.lit .w { opacity: 1; }
+  .const-stage .star.lit .dot {
+    transform: translate(-50%, -50%) scale(1.8);
+    background: var(--ink);
+  }
+  .const-stage .star.script .w { font-family: "Caveat", cursive; font-size: 1.25rem; color: var(--ink-soft); }
+  .const-stage .star.italic .w { font-style: italic; color: var(--ink-soft); font-family: "Instrument Serif", serif; }
+  .const-stage .sentence-readout {
+    position: absolute;
+    bottom: 8vh;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    font-size: clamp(1.4rem, 2.2vw, 2rem);
+    color: var(--ink);
+    text-align: center;
+    max-width: 32ch;
+    line-height: 1.4;
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+  }
+  .const-stage .sentence-readout.show { opacity: 1; }
+
+  /* ============================================
+     05 — PALIMPSEST
+     Two letters layered. Cursor is a circular
+     mask that wipes the top one away to reveal
+     the more vulnerable letter underneath.
+     ============================================ */
+  .pal-stage {
+    position: absolute;
+    inset: 0;
+    --cx: 50%;
+    --cy: 50%;
+  }
+  .pal-layer {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14vh 6vw;
+  }
+  .pal-letter {
+    width: clamp(440px, 50vw, 640px);
+    line-height: 1.75;
+  }
+  .pal-letter h3 {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 18px;
+    font-weight: 400;
+  }
+  .pal-letter p { margin: 0 0 1em; }
+  .pal-top .pal-letter {
+    font-family: "EB Garamond", serif;
+    font-size: 1.15rem;
+    color: var(--ink);
+  }
+  .pal-bottom .pal-letter {
+    font-family: "Caveat", cursive;
+    font-size: 1.55rem;
+    color: var(--ink-soft);
+    text-align: left;
+  }
+  .pal-bottom .pal-letter h3 { color: var(--ink-ghost); }
+  .pal-top {
+    /* the circular hole at cursor reveals what's below */
+    -webkit-mask-image: radial-gradient(circle 180px at var(--cx) var(--cy), transparent 0, transparent 30%, black 100%);
+            mask-image: radial-gradient(circle 180px at var(--cx) var(--cy), transparent 0, transparent 30%, black 100%);
+  }
+  .pal-ring {
+    position: absolute;
+    pointer-events: none;
+    width: 360px; height: 360px;
+    border-radius: 50%;
+    border: 1px solid rgba(26,23,20,0.08);
+    transform: translate(-50%, -50%);
+    left: var(--cx); top: var(--cy);
+    transition: opacity 0.3s;
+    mix-blend-mode: multiply;
+  }
+
+  /* ============================================
+     06 — SHATTER
+     A short sentence sits at center. Click anywhere
+     and every glyph flies outward with random
+     trajectory, rotation, and depth. Drifts back
+     together over a few seconds.
+     ============================================ */
+  .shatter-stage {
+    position: absolute;
+    inset: 0;
+    perspective: 1200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: crosshair;
+  }
+  .shatter-line {
+    position: relative;
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    font-size: clamp(2rem, 6vw, 5rem);
+    color: var(--ink);
+    text-align: center;
+    line-height: 1.15;
+    transform-style: preserve-3d;
+    max-width: 18ch;
+    padding: 0 4vw;
+  }
+  .shatter-line .c {
+    display: inline-block;
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
+  }
+  .shatter-hint {
+    position: absolute;
+    bottom: 14vh;
+    left: 50%; transform: translateX(-50%);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    opacity: 0.7;
+    pointer-events: none;
   }
 
 </style>
@@ -443,317 +417,636 @@
     <span class="sep">/</span>
     <span>text</span>
   </div>
-  <div>six experiments · scroll</div>
+  <div class="hint">use 1–6 keys</div>
 </header>
 
-<!-- ============================================ INTRO ============================================ -->
-<section class="intro">
-  <div class="eyebrow">sandbox · text</div>
-  <h1>how can a letter sit on a page?</h1>
-  <p>six experiments in how words can be shaped, revealed, and arranged when the page is treated as a surface and not a container. all text fresh, written for this sandbox.</p>
-  <div class="scroll-hint">scroll ↓</div>
-</section>
+<nav class="tabs" id="tabs">
+  <button class="pill active" data-exp="orbit"><span class="n">01</span> orbit</button>
+  <button class="pill"        data-exp="magnetic"><span class="n">02</span> magnetic</button>
+  <button class="pill"        data-exp="ripple"><span class="n">03</span> ripple</button>
+  <button class="pill"        data-exp="const"><span class="n">04</span> constellation</button>
+  <button class="pill"        data-exp="pal"><span class="n">05</span> palimpsest</button>
+  <button class="pill"        data-exp="shatter"><span class="n">06</span> shatter</button>
+</nav>
 
-<!-- ============================================ 01 — UNFOLD ============================================ -->
-<section class="exp exp-unfold" data-exp="unfold">
-  <div class="tag"><span class="num">01</span> &nbsp; unfold</div>
-  <div class="note">scroll-driven ink<br>left → right per line</div>
-  <div class="sticky">
-    <div class="letter">
-      <div class="salutation ul"><span class="inner">My dear self,</span></div>
-      <div class="ul"><span class="inner">I am writing this from a kitchen that does not exist yet.</span></div>
-      <div class="ul"><span class="inner">The window faces east. You will love that.</span></div>
-      <div class="ul"><span class="inner">There is a plant on the sill I have been speaking to</span></div>
-      <div class="ul"><span class="inner">the way you used to speak to your grandmother's piano.</span></div>
-      <div class="ul"><span class="inner">It listens the same way. Patiently. Without judgment.</span></div>
-      <div class="signoff ul"><span class="inner">— from a slightly later morning</span></div>
+<main class="stage">
+
+  <!-- ============================================ 01 ORBIT ============================================ -->
+  <section class="exp active" data-exp="orbit">
+    <div class="orbit-stage">
+      <div class="orbiter" id="orbiter"></div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ============================================ 02 — MARGINALIA ============================================ -->
-<section class="exp exp-margin" data-exp="marginalia">
-  <div class="tag"><span class="num">02</span> &nbsp; marginalia</div>
-  <div class="note">a clean column with<br>a busy mind beside it</div>
-  <div class="frame">
-    <div class="body">
-      <p>You will move to Paris in the autumn of your twenty-second year, and for the first three weeks <em class="h">you will be unbearably lonely</em>. This is not a sign that you have chosen wrongly. It is the price of the door you have opened. Pay it.</p>
-      <p>You will meet a boy with <em class="h">a green wool scarf</em> at a party in the eleventh and you will be certain, for almost two months, that he is the reason you came. He is not. He is the language teacher. You'll see.</p>
-      <p>When the homesickness arrives, and it will, do not try to outrun it. Walk to <em class="h">the bridge by the Institut</em> and let it sit beside you for an hour. Then walk home and make eggs.</p>
+  <!-- ============================================ 02 MAGNETIC ============================================ -->
+  <section class="exp" data-exp="magnetic">
+    <div class="mag-stage">
+      <div class="mag-cursor" id="magCursor"></div>
+      <div class="mag-line" id="magLine">you are not behind. you have never been behind.</div>
     </div>
+  </section>
 
-    <div class="marg left" style="top: 4vh; --rot: -3deg;">
-      this passes.<br>i promise it does.
-      <svg width="60" height="30" viewBox="0 0 60 30" fill="none" stroke="currentColor" stroke-width="1.2">
-        <path d="M2 6 Q 30 8 55 22" stroke-linecap="round"/>
-        <path d="M50 16 L 55 22 L 47 24" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+  <!-- ============================================ 03 RIPPLE ============================================ -->
+  <section class="exp" data-exp="ripple">
+    <div class="ripple-stage">
+      <div class="ripple-page" id="ripplePage">the rain in october smells like metal and almonds. it will undo something you have been holding. open the window. let it in. you are still the person who came here on purpose.</div>
     </div>
+  </section>
 
-    <div class="marg right" style="top: 14vh; --rot: 2deg;">
-      you will laugh<br>about him in 2027
-      <svg width="60" height="30" viewBox="0 0 60 30" fill="none" stroke="currentColor" stroke-width="1.2">
-        <path d="M58 6 Q 30 8 5 22" stroke-linecap="round"/>
-        <path d="M10 16 L 5 22 L 13 24" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+  <!-- ============================================ 04 CONSTELLATION ============================================ -->
+  <section class="exp" data-exp="const">
+    <div class="const-stage" id="constStage">
+      <svg class="lines" id="constLines"></svg>
+      <div class="sentence-readout" id="constReadout"></div>
     </div>
+  </section>
 
-    <div class="marg left" style="top: 32vh; --rot: -1deg;">
-      the small one,<br>with the green door
-      <svg width="60" height="30" viewBox="0 0 60 30" fill="none" stroke="currentColor" stroke-width="1.2">
-        <path d="M2 6 Q 30 14 55 22" stroke-linecap="round"/>
-        <path d="M50 16 L 55 22 L 47 24" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-
-    <div class="marg right" style="top: 44vh; --rot: 3deg;">
-      with butter.<br>always with butter.
-    </div>
-  </div>
-</section>
-
-<!-- ============================================ 03 — CONCRETE (ENVELOPE) ============================================ -->
-<section class="exp exp-concrete" data-exp="concrete">
-  <div class="tag"><span class="num">03</span> &nbsp; concrete</div>
-  <div class="note">words arranged<br>in the shape they describe</div>
-  <div class="env">
-    <div class="row flap" style="margin-bottom: 6px;">to · the · one · who · forgets</div>
-    <div class="row flap" style="margin-bottom: 6px; font-size: 0.9em;">why · she · came · here</div>
-    <div class="row seam" style="margin: 14px 0; font-size: 0.8em;">— — — — — — — — — —</div>
-    <div class="row center" style="margin: 18px 0;">open me on a tuesday</div>
-    <div class="row" style="margin: 14px 0;">when the kitchen is quiet</div>
-    <div class="row" style="margin: 14px 0;">and the kettle is the only voice in the room</div>
-    <div class="row" style="margin: 14px 0;">i wrote this for that exact morning</div>
-    <div class="row seam" style="margin: 18px 0 10px; font-size: 0.8em;">— — — — — — — — — —</div>
-    <div class="row" style="font-style: italic; color: var(--ink-soft);">from · a · person · who · already · loves · you</div>
-    <div class="stamp">
-      par avion<br>
-      — myself —
-    </div>
-  </div>
-</section>
-
-<!-- ============================================ 04 — BREATH ============================================ -->
-<section class="exp exp-breath" data-exp="breath">
-  <div class="tag"><span class="num">04</span> &nbsp; breath</div>
-  <div class="note">one sentence per screen<br>typography as emphasis</div>
-  <div class="sticky">
-    <div class="stack">
-      <div class="b" data-b="0"><span class="lg"><em>You are not behind.</em></span></div>
-      <div class="b" data-b="1">
-        <div class="stack-v">
-          <span class="md l1">you are not behind.</span>
-          <span class="md l2">you are not behind.</span>
-          <span class="lg l3"><em>you are not behind.</em></span>
+  <!-- ============================================ 05 PALIMPSEST ============================================ -->
+  <section class="exp" data-exp="pal">
+    <div class="pal-stage" id="palStage">
+      <div class="pal-layer pal-bottom">
+        <div class="pal-letter">
+          <h3>what i actually want to say</h3>
+          <p>i am scared most days. i still hide in the bathroom at parties.</p>
+          <p>the part of you that thinks she is not allowed to want this — she is wrong. she has always been wrong. i wish i could go back and shake her by the shoulders.</p>
+          <p>you are not behind. nobody is keeping score. i love you so much it makes my chest ache to write this.</p>
         </div>
       </div>
-      <div class="b" data-b="2"><span class="sm">i know you are tired.</span></div>
-      <div class="b" data-b="3"><span class="lg"><em>I know.</em></span></div>
-      <div class="b" data-b="4"><span class="md">This was always going to be<br>the hard part.</span></div>
+      <div class="pal-layer pal-top">
+        <div class="pal-letter">
+          <h3>letter, march 14</h3>
+          <p>I hope this finds you well. The apartment is fine. The weather has been agreeable. I have started a new project at work and I am, on balance, doing alright.</p>
+          <p>I am writing to let you know that everything is going to be fine. Things are progressing on schedule. There is no cause for concern.</p>
+          <p>I think of you often. I trust you are well. Please give my best to everyone.</p>
+        </div>
+      </div>
+      <div class="pal-ring" id="palRing"></div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ============================================ 05 — EMERGENCE ============================================ -->
-<section class="exp exp-emerge" data-exp="emerge">
-  <div class="tag"><span class="num">05</span> &nbsp; emergence</div>
-  <div class="note">words appear one at a time<br>a thought forming as you scroll</div>
-  <div class="sticky">
-    <div class="field">
-      <!-- positions are roughly chosen so that, when assembled, they read top-left to bottom-right -->
-      <span class="w"        style="top: 22%; left: 18%;" data-i="0">the</span>
-      <span class="w"        style="top: 24%; left: 26%;" data-i="1">rain</span>
-      <span class="w faint"  style="top: 28%; left: 36%;" data-i="2">in</span>
-      <span class="w accent" style="top: 26%; left: 44%;" data-i="3">October</span>
-      <span class="w"        style="top: 32%; left: 22%;" data-i="4">smells</span>
-      <span class="w faint"  style="top: 34%; left: 33%;" data-i="5">like</span>
-      <span class="w"        style="top: 32%; left: 42%;" data-i="6">metal</span>
-      <span class="w faint"  style="top: 36%; left: 55%;" data-i="7">and</span>
-      <span class="w accent" style="top: 34%; left: 64%;" data-i="8">almonds.</span>
+  <!-- ============================================ 06 SHATTER ============================================ -->
+  <section class="exp" data-exp="shatter">
+    <div class="shatter-stage" id="shatterStage">
+      <div class="shatter-line" id="shatterLine">I love you. I am still here. I am the future you.</div>
+      <div class="shatter-hint">click anywhere</div>
+    </div>
+  </section>
 
-      <span class="w"        style="top: 50%; left: 30%;" data-i="9">it will</span>
-      <span class="w"        style="top: 52%; left: 42%;" data-i="10">undo</span>
-      <span class="w accent" style="top: 50%; left: 53%;" data-i="11">something</span>
-      <span class="w"        style="top: 56%; left: 36%;" data-i="12">you have been</span>
-      <span class="w big"    style="top: 60%; left: 52%;" data-i="13"><em>holding.</em></span>
+</main>
 
-      <span class="w faint"  style="top: 74%; left: 38%;" data-i="14">— remember</span>
-      <span class="w accent" style="top: 76%; left: 55%;" data-i="15">this.</span>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================ 06 — ECHO ============================================ -->
-<section class="exp exp-echo" data-exp="echo">
-  <div class="tag"><span class="num">06</span> &nbsp; echo</div>
-  <div class="note">future self · past self<br>a conversation across years</div>
-  <div class="ladder">
-    <div class="row">
-      <div class="future"><span class="label">future</span>You will write to me three times<br>before I write back.</div>
-      <div class="past"></div>
-    </div>
-    <div class="row">
-      <div class="future"></div>
-      <div class="past"><span class="label">past</span>why didn't you write back sooner?</div>
-    </div>
-    <div class="row">
-      <div class="future"><span class="label">future</span>Because I needed you to keep writing<br>without knowing if anyone was listening.<br>That is the work.</div>
-      <div class="past"></div>
-    </div>
-    <div class="row">
-      <div class="future"></div>
-      <div class="past"><span class="label">past</span>that's a little cruel.</div>
-    </div>
-    <div class="row">
-      <div class="future"><span class="label">future</span>I know. I am sorry.<br>I love you anyway.</div>
-      <div class="past"></div>
-    </div>
-    <div class="row">
-      <div class="future"></div>
-      <div class="past"><span class="label">past</span>okay.<br>i'll keep writing.</div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================ END ============================================ -->
-<section class="end">
-  <p>that's all for now. tell me which ones land. we'll bring the keepers into the story.</p>
-  <a href="/letters-from-myself/">← letters from myself</a>
-</section>
+<div class="caption" id="caption">
+  <span class="label">orbit</span>move your cursor to tilt the constellation
+</div>
 
 <script>
-  // -------------------------------------------------------
-  // 01 — UNFOLD: reveal each line as it scrolls into view
-  // -------------------------------------------------------
+  // -------------------- TAB SWITCHING --------------------
+  const exps = {};
+  let current = 'orbit';
+
+  const tabs = document.querySelectorAll('.tabs .pill');
+  const sections = document.querySelectorAll('.exp');
+  const caption = document.getElementById('caption');
+
+  const captions = {
+    orbit:    { label: 'orbit',         text: 'move your cursor to tilt the constellation' },
+    magnetic: { label: 'magnetic',      text: 'the letters flee your cursor' },
+    ripple:   { label: 'ripple',        text: 'the cursor is a stone dropped in the page' },
+    const:    { label: 'constellation', text: 'hover the stars · trace the sentences' },
+    pal:      { label: 'palimpsest',    text: 'rub the page to reveal what was underneath' },
+    shatter:  { label: 'shatter',       text: 'click anywhere to break the sentence' }
+  };
+
+  function switchTo(name) {
+    if (current === name) return;
+    if (exps[current] && exps[current].stop) exps[current].stop();
+    current = name;
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.exp === name));
+    sections.forEach(s => s.classList.toggle('active', s.dataset.exp === name));
+    const c = captions[name];
+    caption.innerHTML = '<span class="label">' + c.label + '</span>' + c.text;
+    if (exps[name] && exps[name].start) exps[name].start();
+  }
+
+  tabs.forEach(t => t.addEventListener('click', () => switchTo(t.dataset.exp)));
+  window.addEventListener('keydown', (e) => {
+    const map = ['orbit','magnetic','ripple','const','pal','shatter'];
+    const idx = parseInt(e.key, 10);
+    if (idx >= 1 && idx <= 6) switchTo(map[idx - 1]);
+  });
+
+  // ========================================================
+  // 01 — ORBIT
+  // ========================================================
   (function () {
-    const section = document.querySelector('.exp-unfold');
-    if (!section) return;
-    const lines = section.querySelectorAll('.ul');
+    const orbiter = document.getElementById('orbiter');
+    const stageEl = document.querySelector('[data-exp="orbit"] .orbit-stage');
 
-    function update() {
-      const rect = section.getBoundingClientRect();
-      const vh = window.innerHeight;
-      // section progress: 0 when top of section hits top of viewport,
-      // 1 when bottom of section hits bottom of viewport.
-      const scrolled = -rect.top;
-      const max = rect.height - vh;
-      const p = Math.max(0, Math.min(1, scrolled / max));
+    const words = [
+      { t: 'october',           c: 'italic' },
+      { t: 'remember',          c: 'big' },
+      { t: 'tuesday',           c: '' },
+      { t: 'the kitchen',       c: 'script' },
+      { t: 'you',               c: 'big' },
+      { t: 'loved',             c: 'italic' },
+      { t: 'metal',             c: '' },
+      { t: 'almonds',           c: 'small' },
+      { t: 'morning',           c: 'italic' },
+      { t: 'patience',          c: 'script' },
+      { t: 'rain',              c: '' },
+      { t: 'open me',           c: 'big' },
+      { t: 'the door',          c: 'small' },
+      { t: 'her piano',         c: 'script' },
+      { t: 'the bridge',        c: '' },
+      { t: 'wait',              c: 'italic' },
+      { t: 'love',              c: 'big' },
+      { t: 'ink',               c: 'small' },
+      { t: 'paper',             c: 'small' },
+      { t: 'from myself',       c: 'script' },
+      { t: 'a slightly later',  c: 'italic' },
+      { t: 'window',            c: '' },
+      { t: 'east',              c: 'small' },
+      { t: 'plant on the sill', c: 'italic' },
+      { t: 'on purpose',        c: 'script' },
+      { t: 'still here',        c: 'big' },
+      { t: 'green scarf',       c: 'small' },
+      { t: 'paris',             c: 'italic' }
+    ];
 
-      // Reveal each line in sequence across progress range [0.05, 0.85]
-      const N = lines.length;
-      const start = 0.05;
-      const end = 0.85;
-      const per = (end - start) / N;
-      const overlap = per * 0.4; // each line takes per + overlap to fully reveal
+    const tiles = [];
+    // Distribute on a sphere using fibonacci-ish placement
+    const N = words.length;
+    const R = () => Math.max(220, Math.min(window.innerHeight, window.innerWidth) * 0.34);
+    for (let i = 0; i < N; i++) {
+      const w = words[i];
+      const el = document.createElement('span');
+      el.className = 'ow ' + w.c;
+      el.textContent = w.t;
+      orbiter.appendChild(el);
+      // golden-angle distribution
+      const phi = Math.acos(1 - 2 * (i + 0.5) / N);
+      const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
+      tiles.push({ el, phi, theta });
+    }
 
-      lines.forEach((el, i) => {
-        const lineStart = start + i * per;
-        const lineEnd = lineStart + per + overlap;
-        const lp = (p - lineStart) / (lineEnd - lineStart);
-        const clamped = Math.max(0, Math.min(1, lp));
-        // smoothstep
-        const eased = clamped * clamped * (3 - 2 * clamped);
-        const inner = el.querySelector('.inner');
-        inner.style.clipPath = `inset(0 ${(1 - eased) * 100}% 0 0)`;
+    let mouseX = 0, mouseY = 0;
+    let rotY = 0, rotX = 0;
+    let targetRotY = 0, targetRotX = 0;
+    let raf = null, running = false;
+
+    function onMove(e) {
+      mouseX = e.clientX / window.innerWidth - 0.5;
+      mouseY = e.clientY / window.innerHeight - 0.5;
+      targetRotY = mouseX * 60;
+      targetRotX = -mouseY * 40;
+    }
+
+    function tick() {
+      if (!running) return;
+      rotY += (targetRotY - rotY) * 0.06 + 0.18; // drift even when still
+      rotX += (targetRotX - rotX) * 0.06;
+      const r = R();
+      const N2 = tiles.length;
+      orbiter.style.transform = `translate(-50%, -50%) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+      for (let i = 0; i < N2; i++) {
+        const t = tiles[i];
+        // Position on sphere
+        const x = r * Math.sin(t.phi) * Math.cos(t.theta);
+        const y = r * Math.cos(t.phi);
+        const z = r * Math.sin(t.phi) * Math.sin(t.theta);
+        // Compute the world-space Z after rotation, to drive opacity
+        const ry = rotY * Math.PI / 180;
+        const rx = rotX * Math.PI / 180;
+        const x1 = x * Math.cos(ry) + z * Math.sin(ry);
+        const z1 = -x * Math.sin(ry) + z * Math.cos(ry);
+        const y2 = y * Math.cos(rx) - z1 * Math.sin(rx);
+        const z2 = y * Math.sin(rx) + z1 * Math.cos(rx);
+        const op = 0.25 + 0.75 * (z2 + r) / (2 * r);
+        const scale = 0.55 + 0.55 * (z2 + r) / (2 * r);
+        t.el.style.transform = `translate3d(${x}px, ${y}px, ${z}px) scale(${scale.toFixed(3)})`;
+        t.el.style.opacity = op.toFixed(3);
+      }
+      raf = requestAnimationFrame(tick);
+    }
+
+    function start() {
+      stageEl.addEventListener('mousemove', onMove);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.orbit = { start, stop };
+    start();
+  })();
+
+  // ========================================================
+  // 02 — MAGNETIC
+  // ========================================================
+  (function () {
+    const line = document.getElementById('magLine');
+    const cursorEl = document.getElementById('magCursor');
+    const stageEl = document.querySelector('[data-exp="magnetic"] .mag-stage');
+
+    // Wrap each character in a span
+    const text = line.textContent;
+    line.innerHTML = '';
+    const chars = [];
+    for (const ch of text) {
+      if (ch === ' ') {
+        line.appendChild(document.createTextNode(' '));
+      } else {
+        const span = document.createElement('span');
+        span.className = 'c';
+        span.textContent = ch;
+        line.appendChild(span);
+        chars.push(span);
+      }
+    }
+
+    let homes = [];
+    function measure() {
+      const stageRect = stageEl.getBoundingClientRect();
+      homes = chars.map(c => {
+        const r = c.getBoundingClientRect();
+        return { x: r.left + r.width/2 - stageRect.left, y: r.top + r.height/2 - stageRect.top };
       });
     }
 
-    let ticking = false;
-    function onScroll() {
-      if (!ticking) {
-        requestAnimationFrame(() => { update(); ticking = false; });
-        ticking = true;
-      }
+    const states = chars.map(() => ({ dx: 0, dy: 0, vx: 0, vy: 0 }));
+    let mouseX = -9999, mouseY = -9999;
+    let raf = null, running = false;
+
+    function onMove(e) {
+      const stageRect = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - stageRect.left;
+      mouseY = e.clientY - stageRect.top;
+      cursorEl.style.left = mouseX + 'px';
+      cursorEl.style.top  = mouseY + 'px';
     }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', update);
-    update();
+    function onLeave() { mouseX = -9999; mouseY = -9999; }
+
+    function tick() {
+      if (!running) return;
+      const RADIUS = 140;
+      const STRENGTH = 110;
+      const SPRING = 0.10;
+      const FRICTION = 0.78;
+      for (let i = 0; i < chars.length; i++) {
+        const home = homes[i];
+        const st = states[i];
+        const cx = home.x + st.dx;
+        const cy = home.y + st.dy;
+        const dx = cx - mouseX;
+        const dy = cy - mouseY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < RADIUS && dist > 0) {
+          const force = (1 - dist / RADIUS) * STRENGTH;
+          st.vx += (dx / dist) * force * 0.08;
+          st.vy += (dy / dist) * force * 0.08;
+          chars[i].classList.add('lit');
+        } else {
+          chars[i].classList.remove('lit');
+        }
+        st.vx -= st.dx * SPRING;
+        st.vy -= st.dy * SPRING;
+        st.vx *= FRICTION;
+        st.vy *= FRICTION;
+        st.dx += st.vx;
+        st.dy += st.vy;
+        chars[i].style.transform = `translate(${st.dx.toFixed(2)}px, ${st.dy.toFixed(2)}px)`;
+      }
+      raf = requestAnimationFrame(tick);
+    }
+
+    function start() {
+      measure();
+      stageEl.addEventListener('mousemove', onMove);
+      stageEl.addEventListener('mouseleave', onLeave);
+      window.addEventListener('resize', measure);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      stageEl.removeEventListener('mouseleave', onLeave);
+      window.removeEventListener('resize', measure);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.magnetic = { start, stop };
   })();
 
-  // -------------------------------------------------------
-  // 04 — BREATH: cross-fade between one-sentence slides
-  // -------------------------------------------------------
+  // ========================================================
+  // 03 — RIPPLE
+  // ========================================================
   (function () {
-    const section = document.querySelector('.exp-breath');
-    if (!section) return;
-    const slides = Array.from(section.querySelectorAll('.b'));
+    const page = document.getElementById('ripplePage');
+    const stageEl = document.querySelector('[data-exp="ripple"] .ripple-stage');
 
-    function update() {
-      const rect = section.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const scrolled = -rect.top;
-      const max = rect.height - vh;
-      const p = Math.max(0, Math.min(1, scrolled / max));
-
-      // p in [0, 1] maps to slide index space [0, N-1]
-      const N = slides.length;
-      const pos = p * (N - 1);
-
-      slides.forEach((el, i) => {
-        const d = Math.abs(pos - i);
-        // each slide is visible within ~0.65 of an index unit
-        let op;
-        if (d < 0.25) op = 1;
-        else if (d < 0.7) op = 1 - (d - 0.25) / 0.45;
-        else op = 0;
-        el.style.opacity = op;
-      });
-    }
-
-    let ticking = false;
-    function onScroll() {
-      if (!ticking) {
-        requestAnimationFrame(() => { update(); ticking = false; });
-        ticking = true;
+    const text = page.textContent;
+    page.innerHTML = '';
+    const chars = [];
+    for (const ch of text) {
+      if (ch === ' ') {
+        page.appendChild(document.createTextNode(' '));
+      } else {
+        const span = document.createElement('span');
+        span.className = 'c';
+        span.textContent = ch;
+        page.appendChild(span);
+        chars.push(span);
       }
     }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', update);
-    update();
+
+    let mouseX = -9999, mouseY = -9999;
+    let t0 = performance.now();
+    let raf = null, running = false;
+
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left;
+      mouseY = e.clientY - r.top;
+    }
+    function onLeave() { mouseX = -9999; mouseY = -9999; }
+
+    function tick() {
+      if (!running) return;
+      const t = (performance.now() - t0) / 1000;
+      const stageRect = stageEl.getBoundingClientRect();
+      for (let i = 0; i < chars.length; i++) {
+        const r = chars[i].getBoundingClientRect();
+        const cx = r.left + r.width / 2 - stageRect.left;
+        const cy = r.top + r.height / 2 - stageRect.top;
+        const dx = cx - mouseX;
+        const dy = cy - mouseY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const z = 70 * Math.sin(dist * 0.05 - t * 5) / (1 + dist * 0.012);
+        const tilt = 12 * Math.cos(dist * 0.05 - t * 5) / (1 + dist * 0.012);
+        chars[i].style.transform = `translateZ(${z.toFixed(2)}px) rotateX(${tilt.toFixed(2)}deg)`;
+      }
+      raf = requestAnimationFrame(tick);
+    }
+
+    function start() {
+      stageEl.addEventListener('mousemove', onMove);
+      stageEl.addEventListener('mouseleave', onLeave);
+      running = true;
+      t0 = performance.now();
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      stageEl.removeEventListener('mouseleave', onLeave);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.ripple = { start, stop };
   })();
 
-  // -------------------------------------------------------
-  // 05 — EMERGENCE: reveal words one at a time across scroll
-  // -------------------------------------------------------
+  // ========================================================
+  // 04 — CONSTELLATION
+  // ========================================================
   (function () {
-    const section = document.querySelector('.exp-emerge');
-    if (!section) return;
-    const words = Array.from(section.querySelectorAll('.w'));
+    const stageEl = document.getElementById('constStage');
+    const svg = document.getElementById('constLines');
+    const readout = document.getElementById('constReadout');
 
-    function update() {
-      const rect = section.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const scrolled = -rect.top;
-      const max = rect.height - vh;
-      const p = Math.max(0, Math.min(1, scrolled / max));
+    // sentences: each is a sequence of points in normalized [0,1] coords
+    // and the words for each star
+    const sentences = [
+      {
+        text: 'you are still the person who came here on purpose.',
+        stars: [
+          { x: 0.12, y: 0.30, w: 'you',         c: '' },
+          { x: 0.22, y: 0.22, w: 'are',         c: '' },
+          { x: 0.34, y: 0.32, w: 'still',       c: 'italic' },
+          { x: 0.45, y: 0.24, w: 'the person',  c: '' },
+          { x: 0.56, y: 0.30, w: 'who came',    c: '' },
+          { x: 0.66, y: 0.22, w: 'here',        c: 'italic' },
+          { x: 0.78, y: 0.32, w: 'on purpose',  c: 'script' }
+        ]
+      },
+      {
+        text: 'open the window and let october in.',
+        stars: [
+          { x: 0.15, y: 0.55, w: 'open',        c: 'italic' },
+          { x: 0.26, y: 0.62, w: 'the window',  c: '' },
+          { x: 0.40, y: 0.55, w: 'and',         c: '' },
+          { x: 0.52, y: 0.62, w: 'let',         c: '' },
+          { x: 0.66, y: 0.55, w: 'october',     c: 'italic' },
+          { x: 0.78, y: 0.62, w: 'in',          c: 'script' }
+        ]
+      },
+      {
+        text: 'i am writing from a kitchen that does not exist yet.',
+        stars: [
+          { x: 0.10, y: 0.75, w: 'i am',        c: 'italic' },
+          { x: 0.21, y: 0.82, w: 'writing',     c: '' },
+          { x: 0.32, y: 0.75, w: 'from',        c: '' },
+          { x: 0.44, y: 0.82, w: 'a kitchen',   c: 'italic' },
+          { x: 0.58, y: 0.75, w: 'that does not exist', c: '' },
+          { x: 0.78, y: 0.82, w: 'yet',         c: 'script' }
+        ]
+      }
+    ];
 
-      const N = words.length;
-      // map p to a position index, with each word revealing across [start, start+win]
-      const start = 0.08;
-      const end = 0.88;
-      const per = (end - start) / N;
-      const win = per * 1.6; // generous overlap so multiple appear together
+    const starEls = [];
+    const lineEls = [];
+    let ready = false;
 
-      words.forEach((el, i) => {
-        const wStart = start + i * per;
-        const wEnd = wStart + win;
-        if (p > wStart && p < (wEnd + 0.05)) el.classList.add('shown');
-        else if (p < wStart) el.classList.remove('shown');
-        // once revealed past wEnd, leave it shown (the thought completes)
+    function build() {
+      // clear
+      stageEl.querySelectorAll('.star').forEach(el => el.remove());
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+      starEls.length = 0;
+      lineEls.length = 0;
+
+      const w = stageEl.clientWidth;
+      const h = stageEl.clientHeight;
+
+      sentences.forEach((s, si) => {
+        const path = [];
+        s.stars.forEach((st, idx) => {
+          const x = st.x * w;
+          const y = st.y * h;
+          path.push({ x, y });
+          const el = document.createElement('div');
+          el.className = 'star ' + (st.c || '');
+          el.style.left = x + 'px';
+          el.style.top  = y + 'px';
+          el.innerHTML = '<span class="dot"></span><span class="w">' + st.w + '</span>';
+          el.dataset.sent = si;
+          el.dataset.idx  = idx;
+          stageEl.appendChild(el);
+          starEls.push({ el, sent: si, idx, x, y });
+        });
+        // draw the connection line behind, as polyline (hidden by default)
+        const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+        poly.setAttribute('points', path.map(p => p.x + ',' + p.y).join(' '));
+        poly.setAttribute('fill', 'none');
+        poly.setAttribute('stroke', 'currentColor');
+        poly.setAttribute('stroke-width', '1');
+        poly.setAttribute('stroke-linecap', 'round');
+        poly.setAttribute('stroke-linejoin', 'round');
+        poly.setAttribute('opacity', '0');
+        poly.style.color = 'var(--ink-faint)';
+        poly.style.transition = 'opacity 0.4s';
+        svg.appendChild(poly);
+        lineEls.push(poly);
       });
+      ready = true;
     }
 
-    let ticking = false;
-    function onScroll() {
-      if (!ticking) {
-        requestAnimationFrame(() => { update(); ticking = false; });
-        ticking = true;
+    let activeSent = -1;
+    function onMove(e) {
+      if (!ready) return;
+      const rect = stageEl.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      // find closest star
+      let best = null, bestD = Infinity;
+      for (const s of starEls) {
+        const dx = s.x - mx;
+        const dy = s.y - my;
+        const d = dx*dx + dy*dy;
+        if (d < bestD) { bestD = d; best = s; }
+      }
+      const R = 160;
+      const sent = (best && bestD < R*R) ? best.sent : -1;
+      if (sent !== activeSent) {
+        activeSent = sent;
+        starEls.forEach(s => s.el.classList.toggle('lit', s.sent === sent));
+        lineEls.forEach((p, i) => p.setAttribute('opacity', i === sent ? '0.6' : '0'));
+        if (sent >= 0) {
+          readout.textContent = sentences[sent].text;
+          readout.classList.add('show');
+        } else {
+          readout.classList.remove('show');
+        }
       }
     }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', update);
-    update();
+
+    function start() {
+      build();
+      stageEl.addEventListener('mousemove', onMove);
+      window.addEventListener('resize', build);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      window.removeEventListener('resize', build);
+    }
+    exps.const = { start, stop };
   })();
+
+  // ========================================================
+  // 05 — PALIMPSEST
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('palStage');
+
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width) * 100;
+      const y = ((e.clientY - r.top) / r.height) * 100;
+      stageEl.style.setProperty('--cx', x + '%');
+      stageEl.style.setProperty('--cy', y + '%');
+    }
+    function start() {
+      stageEl.addEventListener('mousemove', onMove);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+    }
+    exps.pal = { start, stop };
+  })();
+
+  // ========================================================
+  // 06 — SHATTER
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('shatterStage');
+    const line = document.getElementById('shatterLine');
+
+    const text = line.textContent;
+    line.innerHTML = '';
+    const chars = [];
+    for (const ch of text) {
+      if (ch === ' ') {
+        line.appendChild(document.createTextNode(' '));
+      } else {
+        const span = document.createElement('span');
+        span.className = 'c';
+        span.textContent = ch;
+        line.appendChild(span);
+        chars.push(span);
+      }
+    }
+
+    const states = chars.map(() => ({ x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0, vx: 0, vy: 0, vz: 0, vrx: 0, vry: 0, vrz: 0 }));
+    let raf = null, running = false;
+
+    function explode(originX, originY) {
+      const lineRect = line.getBoundingClientRect();
+      for (let i = 0; i < chars.length; i++) {
+        const r = chars[i].getBoundingClientRect();
+        const cx = r.left + r.width/2;
+        const cy = r.top + r.height/2;
+        const dx = cx - originX;
+        const dy = cy - originY;
+        const dist = Math.max(40, Math.sqrt(dx*dx + dy*dy));
+        const force = 14 + 320 / dist;
+        states[i].vx = (dx / dist) * force + (Math.random() - 0.5) * 8;
+        states[i].vy = (dy / dist) * force + (Math.random() - 0.5) * 8 - 4;
+        states[i].vz = (Math.random() - 0.3) * 14;
+        states[i].vrx = (Math.random() - 0.5) * 20;
+        states[i].vry = (Math.random() - 0.5) * 20;
+        states[i].vrz = (Math.random() - 0.5) * 20;
+      }
+    }
+
+    function tick() {
+      if (!running) return;
+      const SPRING = 0.05;
+      const FRICTION = 0.92;
+      for (let i = 0; i < chars.length; i++) {
+        const st = states[i];
+        st.vx += -st.x * SPRING;
+        st.vy += -st.y * SPRING;
+        st.vz += -st.z * SPRING;
+        st.vrx += -st.rx * SPRING;
+        st.vry += -st.ry * SPRING;
+        st.vrz += -st.rz * SPRING;
+        st.vx *= FRICTION; st.vy *= FRICTION; st.vz *= FRICTION;
+        st.vrx *= FRICTION; st.vry *= FRICTION; st.vrz *= FRICTION;
+        st.x += st.vx; st.y += st.vy; st.z += st.vz;
+        st.rx += st.vrx; st.ry += st.vry; st.rz += st.vrz;
+        chars[i].style.transform =
+          `translate3d(${st.x.toFixed(1)}px, ${st.y.toFixed(1)}px, ${st.z.toFixed(1)}px) ` +
+          `rotateX(${st.rx.toFixed(1)}deg) rotateY(${st.ry.toFixed(1)}deg) rotateZ(${st.rz.toFixed(1)}deg)`;
+      }
+      raf = requestAnimationFrame(tick);
+    }
+
+    function onClick(e) {
+      explode(e.clientX, e.clientY);
+    }
+
+    function start() {
+      stageEl.addEventListener('click', onClick);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('click', onClick);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.shatter = { start, stop };
+  })();
+
 </script>
 </body>
 </html>
