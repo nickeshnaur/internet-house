@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sandbox · text · internet.house</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Caveat:wght@400;600;700&family=Kalam:wght@300;400;700&family=JetBrains+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #efe6d2;
+    --paper-deep: #e8dec5;
+    --paper-bright: #f8f1de;
+    --ink: #1a1714;
+    --ink-soft: #3a342d;
+    --ink-faint: #8a8275;
+    --ink-ghost: #b8b09e;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Instrument Serif", Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-image:
+      radial-gradient(rgba(26,23,20,0.045) 1px, transparent 1px),
+      radial-gradient(rgba(26,23,20,0.025) 1px, transparent 1px);
+    background-size: 3px 3px, 7px 7px;
+    background-position: 0 0, 1px 2px;
+  }
+
+  /* ---------- chrome ---------- */
+  .chrome {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 28px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--ink-faint);
+    pointer-events: none;
+    mix-blend-mode: multiply;
+  }
+  .chrome a { color: var(--ink-soft); text-decoration: none; pointer-events: auto; }
+  .chrome a:hover { color: var(--ink); }
+  .chrome .crumbs { display: flex; gap: 10px; align-items: center; }
+  .chrome .crumbs .sep { opacity: 0.4; }
+
+  /* ---------- intro ---------- */
+  .intro {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 0 24px;
+  }
+  .intro .eyebrow {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 28px;
+  }
+  .intro h1 {
+    font-size: clamp(2.5rem, 7vw, 4.5rem);
+    line-height: 1.0;
+    margin: 0;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    max-width: 18ch;
+  }
+  .intro p {
+    margin-top: 28px;
+    font-family: "EB Garamond", serif;
+    font-size: 1.2rem;
+    color: var(--ink-soft);
+    max-width: 42ch;
+    line-height: 1.6;
+  }
+  .intro .scroll-hint {
+    position: absolute;
+    bottom: 40px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    animation: bob 2.4s ease-in-out infinite;
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); opacity: 0.6; }
+    50%      { transform: translateY(6px); opacity: 1; }
+  }
+
+  /* ---------- experiment shell ---------- */
+  .exp {
+    position: relative;
+    min-height: 100vh;
+    border-top: 1px solid rgba(26,23,20,0.08);
+    overflow: hidden;
+  }
+  .exp .tag {
+    position: absolute;
+    top: 28px;
+    left: 28px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    z-index: 5;
+  }
+  .exp .tag .num { color: var(--ink-soft); }
+  .exp .note {
+    position: absolute;
+    top: 28px;
+    right: 28px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-ghost);
+    text-align: right;
+    max-width: 28ch;
+    z-index: 5;
+  }
+
+  /* ============================================
+     EXPERIMENT 01 — UNFOLD
+     Scroll-driven left-to-right ink reveal,
+     one line at a time, like a letter being written.
+     ============================================ */
+  .exp-unfold {
+    min-height: 240vh;
+  }
+  .exp-unfold .sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .exp-unfold .letter {
+    width: clamp(420px, 50vw, 640px);
+    font-family: "EB Garamond", serif;
+    font-size: clamp(1.15rem, 1.5vw, 1.5rem);
+    line-height: 1.85;
+    color: var(--ink);
+  }
+  .exp-unfold .letter .salutation {
+    font-style: italic;
+    margin-bottom: 1.2em;
+    color: var(--ink-soft);
+  }
+  .exp-unfold .ul {
+    display: block;
+    overflow: hidden;
+  }
+  .exp-unfold .ul .inner {
+    display: inline-block;
+    width: 100%;
+    clip-path: inset(0 var(--reveal, 100%) 0 0);
+    transition: clip-path 0.1s linear;
+  }
+  .exp-unfold .signoff {
+    margin-top: 1.6em;
+    font-family: "Caveat", cursive;
+    font-size: 1.4em;
+    color: var(--ink-soft);
+  }
+
+  /* ============================================
+     EXPERIMENT 02 — MARGINALIA
+     Body text in a clean column, handwritten
+     interjections in the margins with hand-drawn
+     arrows pointing at specific phrases.
+     ============================================ */
+  .exp-margin {
+    padding: 18vh 0;
+  }
+  .exp-margin .frame {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    padding: 0 24px;
+  }
+  .exp-margin .body {
+    max-width: 38ch;
+    margin: 0 auto;
+    font-family: "EB Garamond", serif;
+    font-size: 1.35rem;
+    line-height: 1.85;
+    color: var(--ink);
+  }
+  .exp-margin .body p { margin: 0 0 1.4em; }
+  .exp-margin .body em.h {
+    font-style: normal;
+    background-image: linear-gradient(transparent 65%, rgba(26,23,20,0.12) 65%, rgba(26,23,20,0.12) 88%, transparent 88%);
+    padding: 0 1px;
+  }
+  .exp-margin .marg {
+    position: absolute;
+    font-family: "Caveat", cursive;
+    color: var(--ink-soft);
+    font-size: 1.35rem;
+    line-height: 1.25;
+    max-width: 18ch;
+    transform: rotate(var(--rot, -2deg));
+  }
+  .exp-margin .marg.left  { right: calc(50% + 22ch); text-align: right; }
+  .exp-margin .marg.right { left:  calc(50% + 22ch); text-align: left; }
+  .exp-margin .marg svg {
+    display: block;
+    margin-top: 6px;
+    color: var(--ink-faint);
+  }
+
+  /* ============================================
+     EXPERIMENT 03 — CONCRETE (ENVELOPE)
+     Words arranged in the shape of an envelope.
+     Pure layout, no animation. Read it like a poem.
+     ============================================ */
+  .exp-concrete {
+    padding: 18vh 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .exp-concrete .env {
+    font-family: "EB Garamond", serif;
+    color: var(--ink);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    text-align: center;
+    width: clamp(380px, 50vw, 620px);
+    position: relative;
+  }
+  .exp-concrete .row {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 1.5ch;
+    white-space: nowrap;
+  }
+  .exp-concrete .flap   { color: var(--ink-soft); font-style: italic; }
+  .exp-concrete .seam   { letter-spacing: 0.3em; color: var(--ink-faint); }
+  .exp-concrete .center { font-size: 1.4em; font-style: italic; }
+  .exp-concrete .stamp {
+    position: absolute;
+    top: 22%;
+    right: 4%;
+    font-family: "Caveat", cursive;
+    color: var(--ink-soft);
+    transform: rotate(8deg);
+    font-size: 0.95rem;
+    line-height: 1.2;
+    border: 1px solid var(--ink-faint);
+    padding: 8px 10px;
+    background: var(--paper-bright);
+  }
+
+  /* ============================================
+     EXPERIMENT 04 — BREATH
+     One sentence per screen. Massive whitespace.
+     Type size carries the emotional weight.
+     ============================================ */
+  .exp-breath {
+    min-height: 300vh;
+  }
+  .exp-breath .sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 8vw;
+  }
+  .exp-breath .stack {
+    position: relative;
+    width: 100%;
+    max-width: 1100px;
+  }
+  .exp-breath .b {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: opacity 0.2s ease-out;
+    opacity: 0;
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .exp-breath .b .lg { font-size: clamp(3rem, 9vw, 7rem); }
+  .exp-breath .b .md { font-size: clamp(2rem, 5vw, 3.5rem); font-style: normal; color: var(--ink-soft); }
+  .exp-breath .b .sm { font-size: clamp(1.4rem, 2.6vw, 2rem); font-style: normal; color: var(--ink-faint); font-family: "EB Garamond", serif; }
+  .exp-breath .b .stack-v { display: flex; flex-direction: column; gap: 0.4em; align-items: center; }
+  .exp-breath .b .stack-v .l1 { opacity: 0.45; }
+  .exp-breath .b .stack-v .l2 { opacity: 0.75; }
+  .exp-breath .b .stack-v .l3 { opacity: 1; }
+
+  /* ============================================
+     EXPERIMENT 05 — EMERGENCE
+     Words scattered, appearing one by one as
+     you scroll. A thought forming in real time.
+     ============================================ */
+  .exp-emerge {
+    min-height: 260vh;
+  }
+  .exp-emerge .sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .exp-emerge .field {
+    position: absolute;
+    inset: 0;
+  }
+  .exp-emerge .w {
+    position: absolute;
+    font-family: "EB Garamond", serif;
+    color: var(--ink);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    font-size: clamp(1.1rem, 1.6vw, 1.6rem);
+    line-height: 1;
+  }
+  .exp-emerge .w.shown { opacity: 1; transform: translateY(0); }
+  .exp-emerge .w.accent { font-style: italic; color: var(--ink-soft); font-family: "Instrument Serif", serif; font-size: 1.4em; }
+  .exp-emerge .w.faint  { color: var(--ink-faint); font-size: 0.9em; }
+  .exp-emerge .w.big    { font-size: 2em; font-style: italic; }
+
+  /* ============================================
+     EXPERIMENT 06 — ECHO (TWO COLUMNS)
+     Future self on the left in serif italic,
+     past self answering on the right in handwriting.
+     Staggered, never aligned.
+     ============================================ */
+  .exp-echo {
+    padding: 14vh 0 18vh;
+  }
+  .exp-echo .ladder {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+  }
+  .exp-echo .ladder::before {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--ink-ghost) 10%, var(--ink-ghost) 90%, transparent);
+    opacity: 0.5;
+  }
+  .exp-echo .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4vw;
+    margin: 4vh 0;
+    align-items: start;
+  }
+  .exp-echo .future {
+    grid-column: 1;
+    text-align: right;
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    font-size: clamp(1.3rem, 2vw, 1.7rem);
+    line-height: 1.4;
+    color: var(--ink);
+    padding-right: 2ch;
+  }
+  .exp-echo .past {
+    grid-column: 2;
+    text-align: left;
+    font-family: "Caveat", cursive;
+    font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+    line-height: 1.3;
+    color: var(--ink-soft);
+    padding-left: 2ch;
+    margin-top: 1.6em;
+  }
+  .exp-echo .label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-ghost);
+    margin-bottom: 8px;
+    display: block;
+  }
+  .exp-echo .future.alone .past { display: none; }
+
+  /* ---------- end ---------- */
+  .end {
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 24px;
+    border-top: 1px solid rgba(26,23,20,0.08);
+  }
+  .end p {
+    font-family: "EB Garamond", serif;
+    font-style: italic;
+    color: var(--ink-soft);
+    max-width: 36ch;
+    line-height: 1.6;
+  }
+  .end a {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 28px;
+  }
+
+</style>
+</head>
+<body>
+
+<header class="chrome">
+  <div class="crumbs">
+    <a href="/">internet.house</a>
+    <span class="sep">/</span>
+    <span>sandbox</span>
+    <span class="sep">/</span>
+    <span>text</span>
+  </div>
+  <div>six experiments · scroll</div>
+</header>
+
+<!-- ============================================ INTRO ============================================ -->
+<section class="intro">
+  <div class="eyebrow">sandbox · text</div>
+  <h1>how can a letter sit on a page?</h1>
+  <p>six experiments in how words can be shaped, revealed, and arranged when the page is treated as a surface and not a container. all text fresh, written for this sandbox.</p>
+  <div class="scroll-hint">scroll ↓</div>
+</section>
+
+<!-- ============================================ 01 — UNFOLD ============================================ -->
+<section class="exp exp-unfold" data-exp="unfold">
+  <div class="tag"><span class="num">01</span> &nbsp; unfold</div>
+  <div class="note">scroll-driven ink<br>left → right per line</div>
+  <div class="sticky">
+    <div class="letter">
+      <div class="salutation ul"><span class="inner">My dear self,</span></div>
+      <div class="ul"><span class="inner">I am writing this from a kitchen that does not exist yet.</span></div>
+      <div class="ul"><span class="inner">The window faces east. You will love that.</span></div>
+      <div class="ul"><span class="inner">There is a plant on the sill I have been speaking to</span></div>
+      <div class="ul"><span class="inner">the way you used to speak to your grandmother's piano.</span></div>
+      <div class="ul"><span class="inner">It listens the same way. Patiently. Without judgment.</span></div>
+      <div class="signoff ul"><span class="inner">— from a slightly later morning</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ 02 — MARGINALIA ============================================ -->
+<section class="exp exp-margin" data-exp="marginalia">
+  <div class="tag"><span class="num">02</span> &nbsp; marginalia</div>
+  <div class="note">a clean column with<br>a busy mind beside it</div>
+  <div class="frame">
+    <div class="body">
+      <p>You will move to Paris in the autumn of your twenty-second year, and for the first three weeks <em class="h">you will be unbearably lonely</em>. This is not a sign that you have chosen wrongly. It is the price of the door you have opened. Pay it.</p>
+      <p>You will meet a boy with <em class="h">a green wool scarf</em> at a party in the eleventh and you will be certain, for almost two months, that he is the reason you came. He is not. He is the language teacher. You'll see.</p>
+      <p>When the homesickness arrives, and it will, do not try to outrun it. Walk to <em class="h">the bridge by the Institut</em> and let it sit beside you for an hour. Then walk home and make eggs.</p>
+    </div>
+
+    <div class="marg left" style="top: 4vh; --rot: -3deg;">
+      this passes.<br>i promise it does.
+      <svg width="60" height="30" viewBox="0 0 60 30" fill="none" stroke="currentColor" stroke-width="1.2">
+        <path d="M2 6 Q 30 8 55 22" stroke-linecap="round"/>
+        <path d="M50 16 L 55 22 L 47 24" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="marg right" style="top: 14vh; --rot: 2deg;">
+      you will laugh<br>about him in 2027
+      <svg width="60" height="30" viewBox="0 0 60 30" fill="none" stroke="currentColor" stroke-width="1.2">
+        <path d="M58 6 Q 30 8 5 22" stroke-linecap="round"/>
+        <path d="M10 16 L 5 22 L 13 24" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="marg left" style="top: 32vh; --rot: -1deg;">
+      the small one,<br>with the green door
+      <svg width="60" height="30" viewBox="0 0 60 30" fill="none" stroke="currentColor" stroke-width="1.2">
+        <path d="M2 6 Q 30 14 55 22" stroke-linecap="round"/>
+        <path d="M50 16 L 55 22 L 47 24" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="marg right" style="top: 44vh; --rot: 3deg;">
+      with butter.<br>always with butter.
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ 03 — CONCRETE (ENVELOPE) ============================================ -->
+<section class="exp exp-concrete" data-exp="concrete">
+  <div class="tag"><span class="num">03</span> &nbsp; concrete</div>
+  <div class="note">words arranged<br>in the shape they describe</div>
+  <div class="env">
+    <div class="row flap" style="margin-bottom: 6px;">to · the · one · who · forgets</div>
+    <div class="row flap" style="margin-bottom: 6px; font-size: 0.9em;">why · she · came · here</div>
+    <div class="row seam" style="margin: 14px 0; font-size: 0.8em;">— — — — — — — — — —</div>
+    <div class="row center" style="margin: 18px 0;">open me on a tuesday</div>
+    <div class="row" style="margin: 14px 0;">when the kitchen is quiet</div>
+    <div class="row" style="margin: 14px 0;">and the kettle is the only voice in the room</div>
+    <div class="row" style="margin: 14px 0;">i wrote this for that exact morning</div>
+    <div class="row seam" style="margin: 18px 0 10px; font-size: 0.8em;">— — — — — — — — — —</div>
+    <div class="row" style="font-style: italic; color: var(--ink-soft);">from · a · person · who · already · loves · you</div>
+    <div class="stamp">
+      par avion<br>
+      — myself —
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ 04 — BREATH ============================================ -->
+<section class="exp exp-breath" data-exp="breath">
+  <div class="tag"><span class="num">04</span> &nbsp; breath</div>
+  <div class="note">one sentence per screen<br>typography as emphasis</div>
+  <div class="sticky">
+    <div class="stack">
+      <div class="b" data-b="0"><span class="lg"><em>You are not behind.</em></span></div>
+      <div class="b" data-b="1">
+        <div class="stack-v">
+          <span class="md l1">you are not behind.</span>
+          <span class="md l2">you are not behind.</span>
+          <span class="lg l3"><em>you are not behind.</em></span>
+        </div>
+      </div>
+      <div class="b" data-b="2"><span class="sm">i know you are tired.</span></div>
+      <div class="b" data-b="3"><span class="lg"><em>I know.</em></span></div>
+      <div class="b" data-b="4"><span class="md">This was always going to be<br>the hard part.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ 05 — EMERGENCE ============================================ -->
+<section class="exp exp-emerge" data-exp="emerge">
+  <div class="tag"><span class="num">05</span> &nbsp; emergence</div>
+  <div class="note">words appear one at a time<br>a thought forming as you scroll</div>
+  <div class="sticky">
+    <div class="field">
+      <!-- positions are roughly chosen so that, when assembled, they read top-left to bottom-right -->
+      <span class="w"        style="top: 22%; left: 18%;" data-i="0">the</span>
+      <span class="w"        style="top: 24%; left: 26%;" data-i="1">rain</span>
+      <span class="w faint"  style="top: 28%; left: 36%;" data-i="2">in</span>
+      <span class="w accent" style="top: 26%; left: 44%;" data-i="3">October</span>
+      <span class="w"        style="top: 32%; left: 22%;" data-i="4">smells</span>
+      <span class="w faint"  style="top: 34%; left: 33%;" data-i="5">like</span>
+      <span class="w"        style="top: 32%; left: 42%;" data-i="6">metal</span>
+      <span class="w faint"  style="top: 36%; left: 55%;" data-i="7">and</span>
+      <span class="w accent" style="top: 34%; left: 64%;" data-i="8">almonds.</span>
+
+      <span class="w"        style="top: 50%; left: 30%;" data-i="9">it will</span>
+      <span class="w"        style="top: 52%; left: 42%;" data-i="10">undo</span>
+      <span class="w accent" style="top: 50%; left: 53%;" data-i="11">something</span>
+      <span class="w"        style="top: 56%; left: 36%;" data-i="12">you have been</span>
+      <span class="w big"    style="top: 60%; left: 52%;" data-i="13"><em>holding.</em></span>
+
+      <span class="w faint"  style="top: 74%; left: 38%;" data-i="14">— remember</span>
+      <span class="w accent" style="top: 76%; left: 55%;" data-i="15">this.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ 06 — ECHO ============================================ -->
+<section class="exp exp-echo" data-exp="echo">
+  <div class="tag"><span class="num">06</span> &nbsp; echo</div>
+  <div class="note">future self · past self<br>a conversation across years</div>
+  <div class="ladder">
+    <div class="row">
+      <div class="future"><span class="label">future</span>You will write to me three times<br>before I write back.</div>
+      <div class="past"></div>
+    </div>
+    <div class="row">
+      <div class="future"></div>
+      <div class="past"><span class="label">past</span>why didn't you write back sooner?</div>
+    </div>
+    <div class="row">
+      <div class="future"><span class="label">future</span>Because I needed you to keep writing<br>without knowing if anyone was listening.<br>That is the work.</div>
+      <div class="past"></div>
+    </div>
+    <div class="row">
+      <div class="future"></div>
+      <div class="past"><span class="label">past</span>that's a little cruel.</div>
+    </div>
+    <div class="row">
+      <div class="future"><span class="label">future</span>I know. I am sorry.<br>I love you anyway.</div>
+      <div class="past"></div>
+    </div>
+    <div class="row">
+      <div class="future"></div>
+      <div class="past"><span class="label">past</span>okay.<br>i'll keep writing.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ END ============================================ -->
+<section class="end">
+  <p>that's all for now. tell me which ones land. we'll bring the keepers into the story.</p>
+  <a href="/letters-from-myself/">← letters from myself</a>
+</section>
+
+<script>
+  // -------------------------------------------------------
+  // 01 — UNFOLD: reveal each line as it scrolls into view
+  // -------------------------------------------------------
+  (function () {
+    const section = document.querySelector('.exp-unfold');
+    if (!section) return;
+    const lines = section.querySelectorAll('.ul');
+
+    function update() {
+      const rect = section.getBoundingClientRect();
+      const vh = window.innerHeight;
+      // section progress: 0 when top of section hits top of viewport,
+      // 1 when bottom of section hits bottom of viewport.
+      const scrolled = -rect.top;
+      const max = rect.height - vh;
+      const p = Math.max(0, Math.min(1, scrolled / max));
+
+      // Reveal each line in sequence across progress range [0.05, 0.85]
+      const N = lines.length;
+      const start = 0.05;
+      const end = 0.85;
+      const per = (end - start) / N;
+      const overlap = per * 0.4; // each line takes per + overlap to fully reveal
+
+      lines.forEach((el, i) => {
+        const lineStart = start + i * per;
+        const lineEnd = lineStart + per + overlap;
+        const lp = (p - lineStart) / (lineEnd - lineStart);
+        const clamped = Math.max(0, Math.min(1, lp));
+        // smoothstep
+        const eased = clamped * clamped * (3 - 2 * clamped);
+        const inner = el.querySelector('.inner');
+        inner.style.clipPath = `inset(0 ${(1 - eased) * 100}% 0 0)`;
+      });
+    }
+
+    let ticking = false;
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(() => { update(); ticking = false; });
+        ticking = true;
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // -------------------------------------------------------
+  // 04 — BREATH: cross-fade between one-sentence slides
+  // -------------------------------------------------------
+  (function () {
+    const section = document.querySelector('.exp-breath');
+    if (!section) return;
+    const slides = Array.from(section.querySelectorAll('.b'));
+
+    function update() {
+      const rect = section.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const scrolled = -rect.top;
+      const max = rect.height - vh;
+      const p = Math.max(0, Math.min(1, scrolled / max));
+
+      // p in [0, 1] maps to slide index space [0, N-1]
+      const N = slides.length;
+      const pos = p * (N - 1);
+
+      slides.forEach((el, i) => {
+        const d = Math.abs(pos - i);
+        // each slide is visible within ~0.65 of an index unit
+        let op;
+        if (d < 0.25) op = 1;
+        else if (d < 0.7) op = 1 - (d - 0.25) / 0.45;
+        else op = 0;
+        el.style.opacity = op;
+      });
+    }
+
+    let ticking = false;
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(() => { update(); ticking = false; });
+        ticking = true;
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // -------------------------------------------------------
+  // 05 — EMERGENCE: reveal words one at a time across scroll
+  // -------------------------------------------------------
+  (function () {
+    const section = document.querySelector('.exp-emerge');
+    if (!section) return;
+    const words = Array.from(section.querySelectorAll('.w'));
+
+    function update() {
+      const rect = section.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const scrolled = -rect.top;
+      const max = rect.height - vh;
+      const p = Math.max(0, Math.min(1, scrolled / max));
+
+      const N = words.length;
+      // map p to a position index, with each word revealing across [start, start+win]
+      const start = 0.08;
+      const end = 0.88;
+      const per = (end - start) / N;
+      const win = per * 1.6; // generous overlap so multiple appear together
+
+      words.forEach((el, i) => {
+        const wStart = start + i * per;
+        const wEnd = wStart + win;
+        if (p > wStart && p < (wEnd + 0.05)) el.classList.add('shown');
+        else if (p < wStart) el.classList.remove('shown');
+        // once revealed past wEnd, leave it shown (the thought completes)
+      });
+    }
+
+    let ticking = false;
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(() => { update(); ticking = false; });
+        ticking = true;
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+</script>
+</body>
+</html>
