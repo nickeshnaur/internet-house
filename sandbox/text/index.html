@@ -35,7 +35,7 @@
     background-position: 0 0, 1px 2px;
   }
 
-  /* ---------- chrome (crumbs top-right) ---------- */
+  /* ---------- chrome ---------- */
   .chrome {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     display: flex; align-items: center; justify-content: space-between;
@@ -57,13 +57,14 @@
     position: fixed; top: 56px; left: 0; right: 0; z-index: 50;
     display: flex; justify-content: center; gap: 0;
     padding: 0 28px;
+    flex-wrap: wrap;
   }
   .tabs .pill {
     background: transparent;
     border: 1px solid transparent;
     border-radius: 999px;
-    padding: 10px 18px;
-    margin: 0 4px;
+    padding: 8px 14px;
+    margin: 0 2px;
     font-family: "JetBrains Mono", monospace;
     font-size: 11px;
     letter-spacing: 2px;
@@ -71,25 +72,16 @@
     color: var(--ink-faint);
     cursor: pointer;
     transition: color 0.2s, background 0.2s, border-color 0.2s;
-    display: inline-flex;
-    align-items: baseline;
-    gap: 10px;
+    min-width: 44px;
   }
-  .tabs .pill .n {
-    font-size: 9px;
-    color: var(--ink-ghost);
-  }
-  .tabs .pill:hover {
-    color: var(--ink-soft);
-  }
+  .tabs .pill:hover { color: var(--ink-soft); }
   .tabs .pill.active {
     color: var(--ink);
     background: var(--paper-bright);
     border-color: rgba(26,23,20,0.12);
   }
-  .tabs .pill.active .n { color: var(--ink-soft); }
 
-  /* ---------- caption bottom ---------- */
+  /* ---------- caption ---------- */
   .caption {
     position: fixed; bottom: 22px; left: 0; right: 0; z-index: 50;
     text-align: center;
@@ -121,14 +113,8 @@
 
   /* ============================================
      01 — ORBIT
-     A constellation of word-fragments orbiting
-     in 3D. Cursor tilts the axis. Click to freeze.
      ============================================ */
-  .orbit-stage {
-    position: absolute;
-    inset: 0;
-    perspective: 1100px;
-  }
+  .orbit-stage { position: absolute; inset: 0; perspective: 1100px; }
   .orbit-stage .orbiter {
     position: absolute;
     left: 50%; top: 50%;
@@ -154,16 +140,10 @@
 
   /* ============================================
      02 — MAGNETIC
-     A sentence centered on screen. Each character
-     is a tiny physics body that flees the cursor
-     and springs back home.
      ============================================ */
   .mag-stage {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
     text-align: center;
   }
   .mag-line {
@@ -196,17 +176,10 @@
 
   /* ============================================
      03 — RIPPLE
-     A paragraph laid out on a 3D plane. The cursor
-     emits a sinusoidal wave that displaces each
-     character along Z. Continuous, no clicking.
      ============================================ */
   .ripple-stage {
-    position: absolute;
-    inset: 0;
-    perspective: 900px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: absolute; inset: 0; perspective: 900px;
+    display: flex; align-items: center; justify-content: center;
   }
   .ripple-page {
     width: clamp(560px, 64vw, 880px);
@@ -225,18 +198,10 @@
 
   /* ============================================
      04 — CONSTELLATION
-     Words scattered as stars. Hovering near any
-     star reveals the connecting line + word and
-     joins it with adjacent stars to form sentences.
      ============================================ */
-  .const-stage {
-    position: absolute;
-    inset: 0;
-  }
+  .const-stage { position: absolute; inset: 0; }
   .const-stage svg.lines {
-    position: absolute;
-    inset: 0;
-    width: 100%; height: 100%;
+    position: absolute; inset: 0; width: 100%; height: 100%;
     pointer-events: none;
   }
   .const-stage .star {
@@ -255,8 +220,8 @@
     transition: transform 0.3s, background 0.3s;
   }
   .const-stage .star:hover .dot,
-  .const-stage .star.active .dot {
-    transform: translate(-50%, -50%) scale(2);
+  .const-stage .star.lit .dot {
+    transform: translate(-50%, -50%) scale(1.8);
     background: var(--ink);
   }
   .const-stage .star .w {
@@ -272,16 +237,11 @@
     pointer-events: none;
   }
   .const-stage .star.lit .w { opacity: 1; }
-  .const-stage .star.lit .dot {
-    transform: translate(-50%, -50%) scale(1.8);
-    background: var(--ink);
-  }
   .const-stage .star.script .w { font-family: "Caveat", cursive; font-size: 1.25rem; color: var(--ink-soft); }
   .const-stage .star.italic .w { font-style: italic; color: var(--ink-soft); font-family: "Instrument Serif", serif; }
   .const-stage .sentence-readout {
     position: absolute;
-    bottom: 8vh;
-    left: 50%;
+    bottom: 8vh; left: 50%;
     transform: translateX(-50%);
     font-family: "Instrument Serif", serif;
     font-style: italic;
@@ -298,22 +258,14 @@
 
   /* ============================================
      05 — PALIMPSEST
-     Two letters layered. Cursor is a circular
-     mask that wipes the top one away to reveal
-     the more vulnerable letter underneath.
      ============================================ */
   .pal-stage {
-    position: absolute;
-    inset: 0;
-    --cx: 50%;
-    --cy: 50%;
+    position: absolute; inset: 0;
+    --cx: 50%; --cy: 50%;
   }
   .pal-layer {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
     padding: 14vh 6vw;
   }
   .pal-letter {
@@ -343,7 +295,6 @@
   }
   .pal-bottom .pal-letter h3 { color: var(--ink-ghost); }
   .pal-top {
-    /* the circular hole at cursor reveals what's below */
     -webkit-mask-image: radial-gradient(circle 180px at var(--cx) var(--cy), transparent 0, transparent 30%, black 100%);
             mask-image: radial-gradient(circle 180px at var(--cx) var(--cy), transparent 0, transparent 30%, black 100%);
   }
@@ -355,24 +306,16 @@
     border: 1px solid rgba(26,23,20,0.08);
     transform: translate(-50%, -50%);
     left: var(--cx); top: var(--cy);
-    transition: opacity 0.3s;
     mix-blend-mode: multiply;
   }
 
   /* ============================================
      06 — SHATTER
-     A short sentence sits at center. Click anywhere
-     and every glyph flies outward with random
-     trajectory, rotation, and depth. Drifts back
-     together over a few seconds.
      ============================================ */
   .shatter-stage {
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     perspective: 1200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     cursor: crosshair;
   }
   .shatter-line {
@@ -394,8 +337,7 @@
   }
   .shatter-hint {
     position: absolute;
-    bottom: 14vh;
-    left: 50%; transform: translateX(-50%);
+    bottom: 14vh; left: 50%; transform: translateX(-50%);
     font-family: "JetBrains Mono", monospace;
     font-size: 10px;
     letter-spacing: 3px;
@@ -404,6 +346,197 @@
     opacity: 0.7;
     pointer-events: none;
   }
+
+  /* ============================================
+     07 — HAUNTED (typewriter ghost)
+     ============================================ */
+  .typer-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .typer-paper {
+    width: clamp(440px, 50vw, 640px);
+    font-family: "JetBrains Mono", monospace;
+    font-size: clamp(0.95rem, 1.15vw, 1.15rem);
+    line-height: 1.95;
+    color: var(--ink);
+  }
+  .typer-text { display: inline; }
+  .typer-text .ch {
+    display: inline-block;
+    will-change: transform, opacity, color;
+    transform-origin: center bottom;
+  }
+  .typer-text .ch.fresh { animation: typerImpact 0.22s ease-out; }
+  .typer-text .ch.ghost { color: var(--ink-faint); }
+  @keyframes typerImpact {
+    0%   { transform: translateY(-6px) rotate(-4deg); opacity: 0.3; }
+    55%  { transform: translateY(2px)  rotate(2deg);  opacity: 1; }
+    100% { transform: translateY(0)    rotate(var(--rot, 0deg)); }
+  }
+  .typer-caret {
+    display: inline-block;
+    width: 0.55em; height: 1.05em;
+    background: var(--ink);
+    margin-left: 2px;
+    vertical-align: middle;
+    animation: typerBlink 1s steps(2) infinite;
+  }
+  @keyframes typerBlink { 50% { opacity: 0; } }
+
+  /* ============================================
+     08 — GRAVITY
+     ============================================ */
+  .gravity-stage {
+    position: absolute; inset: 0;
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .gravity-stage .p {
+    position: absolute;
+    font-family: "EB Garamond", serif;
+    color: var(--ink);
+    white-space: nowrap;
+    will-change: transform;
+    user-select: none;
+    pointer-events: none;
+    font-size: 1.1rem;
+    left: 0; top: 0;
+  }
+  .gravity-stage .p.italic { font-style: italic; color: var(--ink-soft); font-family: "Instrument Serif", serif; }
+  .gravity-stage .p.script { font-family: "Caveat", cursive; font-size: 1.4rem; color: var(--ink-soft); }
+  .gravity-well {
+    position: absolute;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(26,23,20,0.07) 0%, transparent 70%);
+    transition: opacity 0.3s;
+    opacity: 0;
+  }
+  .gravity-stage:hover .gravity-well { opacity: 1; }
+  .gravity-stage.repel .gravity-well {
+    background: radial-gradient(circle, rgba(26,23,20,0.18) 0%, transparent 60%);
+  }
+
+  /* ============================================
+     09 — INK (handwriting along cursor path)
+     ============================================ */
+  .hw-stage {
+    position: absolute; inset: 0;
+    cursor: crosshair;
+  }
+  .hw-svg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+  }
+  .hw-hint {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Caveat", cursive;
+    font-size: 1.8rem;
+    color: var(--ink-ghost);
+    pointer-events: none;
+    transition: opacity 0.5s;
+  }
+  .hw-hint.hidden { opacity: 0; }
+
+  /* ============================================
+     10 — FIREFLIES
+     ============================================ */
+  .fire-stage {
+    position: absolute; inset: 0;
+    overflow: hidden;
+    cursor: crosshair;
+    background: linear-gradient(to bottom, var(--paper) 0%, var(--paper-deep) 100%);
+  }
+  .fire-stage .fly {
+    position: absolute;
+    left: 0; top: 0;
+    font-family: "EB Garamond", serif;
+    color: var(--ink);
+    font-size: 1.05rem;
+    text-shadow:
+      0 0 6px rgba(255, 200, 110, 0.55),
+      0 0 16px rgba(255, 180, 80, 0.30);
+    white-space: nowrap;
+    user-select: none;
+    pointer-events: none;
+    will-change: transform, opacity;
+  }
+  .fire-stage .fly.script { font-family: "Caveat", cursive; font-size: 1.35rem; }
+  .fire-stage .fly.italic { font-style: italic; color: var(--ink-soft); font-family: "Instrument Serif", serif; }
+
+  /* ============================================
+     11 — HEARTBEAT
+     ============================================ */
+  .beat-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: crosshair;
+  }
+  .beat-text {
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    color: var(--ink);
+    text-align: center;
+    line-height: 1.55;
+    max-width: 28ch;
+    padding: 0 4vw;
+    transform-origin: center;
+    will-change: transform;
+  }
+  .beat-text .ephem {
+    display: inline;
+    opacity: 0;
+    color: var(--ink-soft);
+    font-family: "Caveat", cursive;
+    font-size: 1.1em;
+    transition: opacity 0.12s;
+  }
+  .beat-bpm {
+    position: absolute;
+    bottom: 14vh; left: 50%; transform: translateX(-50%);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--ink-faint);
+  }
+
+  /* ============================================
+     12 — DECAY
+     ============================================ */
+  .decay-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: crosshair;
+  }
+  .decay-text {
+    width: clamp(560px, 60vw, 800px);
+    font-family: "EB Garamond", serif;
+    font-size: clamp(1.15rem, 1.6vw, 1.6rem);
+    line-height: 2.0;
+    color: var(--ink);
+    text-align: center;
+  }
+  .decay-text .c {
+    display: inline-block;
+    will-change: transform, opacity, color;
+    transform-origin: center bottom;
+  }
+  .decay-hint {
+    position: absolute;
+    bottom: 14vh; left: 50%; transform: translateX(-50%);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--ink-ghost);
+    pointer-events: none;
+    transition: opacity 1s;
+  }
+  .decay-hint.hidden { opacity: 0; }
 
 </style>
 </head>
@@ -417,28 +550,34 @@
     <span class="sep">/</span>
     <span>text</span>
   </div>
-  <div class="hint">use 1–6 keys</div>
+  <div class="hint">1–9 0 · ← →</div>
 </header>
 
 <nav class="tabs" id="tabs">
-  <button class="pill active" data-exp="orbit"><span class="n">01</span> orbit</button>
-  <button class="pill"        data-exp="magnetic"><span class="n">02</span> magnetic</button>
-  <button class="pill"        data-exp="ripple"><span class="n">03</span> ripple</button>
-  <button class="pill"        data-exp="const"><span class="n">04</span> constellation</button>
-  <button class="pill"        data-exp="pal"><span class="n">05</span> palimpsest</button>
-  <button class="pill"        data-exp="shatter"><span class="n">06</span> shatter</button>
+  <button class="pill active" data-exp="orbit">01</button>
+  <button class="pill" data-exp="magnetic">02</button>
+  <button class="pill" data-exp="ripple">03</button>
+  <button class="pill" data-exp="const">04</button>
+  <button class="pill" data-exp="pal">05</button>
+  <button class="pill" data-exp="shatter">06</button>
+  <button class="pill" data-exp="typer">07</button>
+  <button class="pill" data-exp="gravity">08</button>
+  <button class="pill" data-exp="hw">09</button>
+  <button class="pill" data-exp="fire">10</button>
+  <button class="pill" data-exp="beat">11</button>
+  <button class="pill" data-exp="decay">12</button>
 </nav>
 
 <main class="stage">
 
-  <!-- ============================================ 01 ORBIT ============================================ -->
+  <!-- 01 ORBIT -->
   <section class="exp active" data-exp="orbit">
     <div class="orbit-stage">
       <div class="orbiter" id="orbiter"></div>
     </div>
   </section>
 
-  <!-- ============================================ 02 MAGNETIC ============================================ -->
+  <!-- 02 MAGNETIC -->
   <section class="exp" data-exp="magnetic">
     <div class="mag-stage">
       <div class="mag-cursor" id="magCursor"></div>
@@ -446,14 +585,14 @@
     </div>
   </section>
 
-  <!-- ============================================ 03 RIPPLE ============================================ -->
+  <!-- 03 RIPPLE -->
   <section class="exp" data-exp="ripple">
     <div class="ripple-stage">
       <div class="ripple-page" id="ripplePage">the rain in october smells like metal and almonds. it will undo something you have been holding. open the window. let it in. you are still the person who came here on purpose.</div>
     </div>
   </section>
 
-  <!-- ============================================ 04 CONSTELLATION ============================================ -->
+  <!-- 04 CONSTELLATION -->
   <section class="exp" data-exp="const">
     <div class="const-stage" id="constStage">
       <svg class="lines" id="constLines"></svg>
@@ -461,7 +600,7 @@
     </div>
   </section>
 
-  <!-- ============================================ 05 PALIMPSEST ============================================ -->
+  <!-- 05 PALIMPSEST -->
   <section class="exp" data-exp="pal">
     <div class="pal-stage" id="palStage">
       <div class="pal-layer pal-bottom">
@@ -484,11 +623,64 @@
     </div>
   </section>
 
-  <!-- ============================================ 06 SHATTER ============================================ -->
+  <!-- 06 SHATTER -->
   <section class="exp" data-exp="shatter">
     <div class="shatter-stage" id="shatterStage">
       <div class="shatter-line" id="shatterLine">I love you. I am still here. I am the future you.</div>
       <div class="shatter-hint">click anywhere</div>
+    </div>
+  </section>
+
+  <!-- 07 HAUNTED (typewriter ghost) -->
+  <section class="exp" data-exp="typer">
+    <div class="typer-stage">
+      <div class="typer-paper">
+        <span class="typer-text" id="typerText"></span><span class="typer-caret"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 GRAVITY -->
+  <section class="exp" data-exp="gravity">
+    <div class="gravity-stage" id="gravStage">
+      <div class="gravity-well" id="gravWell"></div>
+    </div>
+  </section>
+
+  <!-- 09 INK (handwriting along cursor) -->
+  <section class="exp" data-exp="hw">
+    <div class="hw-stage" id="hwStage">
+      <svg class="hw-svg" id="hwSvg" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <path id="hw-path" d="M 0 0" stroke="rgba(26,23,20,0.06)" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+        </defs>
+        <use href="#hw-path" />
+        <text id="hwText" font-family="Caveat, cursive" font-size="36" fill="#3a342d" opacity="0">
+          <textPath href="#hw-path" id="hwTextPath" startOffset="0">i am writing from a kitchen that does not exist yet · open the window · let the rain in · i love you i love you · remember this · remember this · you are not behind · you have never been behind · from a person who already loves you · wait wait · i am still here ·</textPath>
+        </text>
+      </svg>
+      <div class="hw-hint" id="hwHint">move your cursor — write</div>
+    </div>
+  </section>
+
+  <!-- 10 FIREFLIES -->
+  <section class="exp" data-exp="fire">
+    <div class="fire-stage" id="fireStage"></div>
+  </section>
+
+  <!-- 11 HEARTBEAT -->
+  <section class="exp" data-exp="beat">
+    <div class="beat-stage" id="beatStage">
+      <div class="beat-text" id="beatText">i am here. i am here. <span class="ephem">(i am also terrified.)</span> i am here. <span class="ephem">(i love you so much it aches.)</span> i am here.</div>
+      <div class="beat-bpm" id="beatBpm">— bpm</div>
+    </div>
+  </section>
+
+  <!-- 12 DECAY -->
+  <section class="exp" data-exp="decay">
+    <div class="decay-stage" id="decayStage">
+      <div class="decay-text" id="decayText">I am writing this from a kitchen that does not exist yet. The window faces east. You will love that. There is a plant on the sill that listens patiently, without judgment. Remember this. Remember this. Remember this.</div>
+      <div class="decay-hint" id="decayHint">keep moving — the letter forgets itself</div>
     </div>
   </section>
 
@@ -502,6 +694,7 @@
   // -------------------- TAB SWITCHING --------------------
   const exps = {};
   let current = 'orbit';
+  const order = ['orbit','magnetic','ripple','const','pal','shatter','typer','gravity','hw','fire','beat','decay'];
 
   const tabs = document.querySelectorAll('.tabs .pill');
   const sections = document.querySelectorAll('.exp');
@@ -513,7 +706,13 @@
     ripple:   { label: 'ripple',        text: 'the cursor is a stone dropped in the page' },
     const:    { label: 'constellation', text: 'hover the stars · trace the sentences' },
     pal:      { label: 'palimpsest',    text: 'rub the page to reveal what was underneath' },
-    shatter:  { label: 'shatter',       text: 'click anywhere to break the sentence' }
+    shatter:  { label: 'shatter',       text: 'click anywhere to break the sentence' },
+    typer:    { label: 'haunted',       text: 'someone is typing · sometimes it slips' },
+    gravity:  { label: 'gravity',       text: 'the cursor pulls · hold the mouse down to push' },
+    hw:       { label: 'ink',           text: 'move your cursor · the letter writes itself' },
+    fire:     { label: 'fireflies',     text: 'call the words · they will come to you' },
+    beat:     { label: 'heartbeat',     text: 'come closer · the heart speeds up' },
+    decay:    { label: 'decay',         text: 'keep moving · the letter forgets if you don\'t' }
   };
 
   function switchTo(name) {
@@ -529,9 +728,13 @@
 
   tabs.forEach(t => t.addEventListener('click', () => switchTo(t.dataset.exp)));
   window.addEventListener('keydown', (e) => {
-    const map = ['orbit','magnetic','ripple','const','pal','shatter'];
-    const idx = parseInt(e.key, 10);
-    if (idx >= 1 && idx <= 6) switchTo(map[idx - 1]);
+    if (e.key >= '1' && e.key <= '9') switchTo(order[parseInt(e.key, 10) - 1]);
+    else if (e.key === '0') switchTo(order[9]);
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      const cur = order.indexOf(current);
+      const dir = e.key === 'ArrowRight' ? 1 : -1;
+      switchTo(order[(cur + dir + order.length) % order.length]);
+    }
   });
 
   // ========================================================
@@ -540,7 +743,6 @@
   (function () {
     const orbiter = document.getElementById('orbiter');
     const stageEl = document.querySelector('[data-exp="orbit"] .orbit-stage');
-
     const words = [
       { t: 'october',           c: 'italic' },
       { t: 'remember',          c: 'big' },
@@ -571,9 +773,7 @@
       { t: 'green scarf',       c: 'small' },
       { t: 'paris',             c: 'italic' }
     ];
-
     const tiles = [];
-    // Distribute on a sphere using fibonacci-ish placement
     const N = words.length;
     const R = () => Math.max(220, Math.min(window.innerHeight, window.innerWidth) * 0.34);
     for (let i = 0; i < N; i++) {
@@ -582,43 +782,33 @@
       el.className = 'ow ' + w.c;
       el.textContent = w.t;
       orbiter.appendChild(el);
-      // golden-angle distribution
       const phi = Math.acos(1 - 2 * (i + 0.5) / N);
       const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
       tiles.push({ el, phi, theta });
     }
-
-    let mouseX = 0, mouseY = 0;
-    let rotY = 0, rotX = 0;
-    let targetRotY = 0, targetRotX = 0;
+    let rotY = 0, rotX = 0, targetRotY = 0, targetRotX = 0;
     let raf = null, running = false;
-
     function onMove(e) {
-      mouseX = e.clientX / window.innerWidth - 0.5;
-      mouseY = e.clientY / window.innerHeight - 0.5;
-      targetRotY = mouseX * 60;
-      targetRotX = -mouseY * 40;
+      const mx = e.clientX / window.innerWidth - 0.5;
+      const my = e.clientY / window.innerHeight - 0.5;
+      targetRotY = mx * 60;
+      targetRotX = -my * 40;
     }
-
     function tick() {
       if (!running) return;
-      rotY += (targetRotY - rotY) * 0.06 + 0.18; // drift even when still
+      rotY += (targetRotY - rotY) * 0.06 + 0.18;
       rotX += (targetRotX - rotX) * 0.06;
       const r = R();
-      const N2 = tiles.length;
       orbiter.style.transform = `translate(-50%, -50%) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
-      for (let i = 0; i < N2; i++) {
+      for (let i = 0; i < tiles.length; i++) {
         const t = tiles[i];
-        // Position on sphere
         const x = r * Math.sin(t.phi) * Math.cos(t.theta);
         const y = r * Math.cos(t.phi);
         const z = r * Math.sin(t.phi) * Math.sin(t.theta);
-        // Compute the world-space Z after rotation, to drive opacity
         const ry = rotY * Math.PI / 180;
         const rx = rotX * Math.PI / 180;
         const x1 = x * Math.cos(ry) + z * Math.sin(ry);
         const z1 = -x * Math.sin(ry) + z * Math.cos(ry);
-        const y2 = y * Math.cos(rx) - z1 * Math.sin(rx);
         const z2 = y * Math.sin(rx) + z1 * Math.cos(rx);
         const op = 0.25 + 0.75 * (z2 + r) / (2 * r);
         const scale = 0.55 + 0.55 * (z2 + r) / (2 * r);
@@ -627,7 +817,6 @@
       }
       raf = requestAnimationFrame(tick);
     }
-
     function start() {
       stageEl.addEventListener('mousemove', onMove);
       running = true;
@@ -649,15 +838,12 @@
     const line = document.getElementById('magLine');
     const cursorEl = document.getElementById('magCursor');
     const stageEl = document.querySelector('[data-exp="magnetic"] .mag-stage');
-
-    // Wrap each character in a span
     const text = line.textContent;
     line.innerHTML = '';
     const chars = [];
     for (const ch of text) {
-      if (ch === ' ') {
-        line.appendChild(document.createTextNode(' '));
-      } else {
+      if (ch === ' ') line.appendChild(document.createTextNode(' '));
+      else {
         const span = document.createElement('span');
         span.className = 'c';
         span.textContent = ch;
@@ -665,7 +851,6 @@
         chars.push(span);
       }
     }
-
     let homes = [];
     function measure() {
       const stageRect = stageEl.getBoundingClientRect();
@@ -674,11 +859,9 @@
         return { x: r.left + r.width/2 - stageRect.left, y: r.top + r.height/2 - stageRect.top };
       });
     }
-
     const states = chars.map(() => ({ dx: 0, dy: 0, vx: 0, vy: 0 }));
     let mouseX = -9999, mouseY = -9999;
     let raf = null, running = false;
-
     function onMove(e) {
       const stageRect = stageEl.getBoundingClientRect();
       mouseX = e.clientX - stageRect.left;
@@ -687,40 +870,27 @@
       cursorEl.style.top  = mouseY + 'px';
     }
     function onLeave() { mouseX = -9999; mouseY = -9999; }
-
     function tick() {
       if (!running) return;
-      const RADIUS = 140;
-      const STRENGTH = 110;
-      const SPRING = 0.10;
-      const FRICTION = 0.78;
+      const RADIUS = 140, STRENGTH = 110, SPRING = 0.10, FRICTION = 0.78;
       for (let i = 0; i < chars.length; i++) {
-        const home = homes[i];
-        const st = states[i];
-        const cx = home.x + st.dx;
-        const cy = home.y + st.dy;
-        const dx = cx - mouseX;
-        const dy = cy - mouseY;
+        const home = homes[i], st = states[i];
+        const cx = home.x + st.dx, cy = home.y + st.dy;
+        const dx = cx - mouseX, dy = cy - mouseY;
         const dist = Math.sqrt(dx*dx + dy*dy);
         if (dist < RADIUS && dist > 0) {
           const force = (1 - dist / RADIUS) * STRENGTH;
           st.vx += (dx / dist) * force * 0.08;
           st.vy += (dy / dist) * force * 0.08;
           chars[i].classList.add('lit');
-        } else {
-          chars[i].classList.remove('lit');
-        }
-        st.vx -= st.dx * SPRING;
-        st.vy -= st.dy * SPRING;
-        st.vx *= FRICTION;
-        st.vy *= FRICTION;
-        st.dx += st.vx;
-        st.dy += st.vy;
+        } else chars[i].classList.remove('lit');
+        st.vx -= st.dx * SPRING; st.vy -= st.dy * SPRING;
+        st.vx *= FRICTION; st.vy *= FRICTION;
+        st.dx += st.vx; st.dy += st.vy;
         chars[i].style.transform = `translate(${st.dx.toFixed(2)}px, ${st.dy.toFixed(2)}px)`;
       }
       raf = requestAnimationFrame(tick);
     }
-
     function start() {
       measure();
       stageEl.addEventListener('mousemove', onMove);
@@ -745,14 +915,12 @@
   (function () {
     const page = document.getElementById('ripplePage');
     const stageEl = document.querySelector('[data-exp="ripple"] .ripple-stage');
-
     const text = page.textContent;
     page.innerHTML = '';
     const chars = [];
     for (const ch of text) {
-      if (ch === ' ') {
-        page.appendChild(document.createTextNode(' '));
-      } else {
+      if (ch === ' ') page.appendChild(document.createTextNode(' '));
+      else {
         const span = document.createElement('span');
         span.className = 'c';
         span.textContent = ch;
@@ -760,18 +928,15 @@
         chars.push(span);
       }
     }
-
     let mouseX = -9999, mouseY = -9999;
     let t0 = performance.now();
     let raf = null, running = false;
-
     function onMove(e) {
       const r = stageEl.getBoundingClientRect();
       mouseX = e.clientX - r.left;
       mouseY = e.clientY - r.top;
     }
     function onLeave() { mouseX = -9999; mouseY = -9999; }
-
     function tick() {
       if (!running) return;
       const t = (performance.now() - t0) / 1000;
@@ -780,8 +945,7 @@
         const r = chars[i].getBoundingClientRect();
         const cx = r.left + r.width / 2 - stageRect.left;
         const cy = r.top + r.height / 2 - stageRect.top;
-        const dx = cx - mouseX;
-        const dy = cy - mouseY;
+        const dx = cx - mouseX, dy = cy - mouseY;
         const dist = Math.sqrt(dx*dx + dy*dy);
         const z = 70 * Math.sin(dist * 0.05 - t * 5) / (1 + dist * 0.012);
         const tilt = 12 * Math.cos(dist * 0.05 - t * 5) / (1 + dist * 0.012);
@@ -789,7 +953,6 @@
       }
       raf = requestAnimationFrame(tick);
     }
-
     function start() {
       stageEl.addEventListener('mousemove', onMove);
       stageEl.addEventListener('mouseleave', onLeave);
@@ -813,12 +976,8 @@
     const stageEl = document.getElementById('constStage');
     const svg = document.getElementById('constLines');
     const readout = document.getElementById('constReadout');
-
-    // sentences: each is a sequence of points in normalized [0,1] coords
-    // and the words for each star
     const sentences = [
-      {
-        text: 'you are still the person who came here on purpose.',
+      { text: 'you are still the person who came here on purpose.',
         stars: [
           { x: 0.12, y: 0.30, w: 'you',         c: '' },
           { x: 0.22, y: 0.22, w: 'are',         c: '' },
@@ -827,10 +986,8 @@
           { x: 0.56, y: 0.30, w: 'who came',    c: '' },
           { x: 0.66, y: 0.22, w: 'here',        c: 'italic' },
           { x: 0.78, y: 0.32, w: 'on purpose',  c: 'script' }
-        ]
-      },
-      {
-        text: 'open the window and let october in.',
+        ]},
+      { text: 'open the window and let october in.',
         stars: [
           { x: 0.15, y: 0.55, w: 'open',        c: 'italic' },
           { x: 0.26, y: 0.62, w: 'the window',  c: '' },
@@ -838,10 +995,8 @@
           { x: 0.52, y: 0.62, w: 'let',         c: '' },
           { x: 0.66, y: 0.55, w: 'october',     c: 'italic' },
           { x: 0.78, y: 0.62, w: 'in',          c: 'script' }
-        ]
-      },
-      {
-        text: 'i am writing from a kitchen that does not exist yet.',
+        ]},
+      { text: 'i am writing from a kitchen that does not exist yet.',
         stars: [
           { x: 0.10, y: 0.75, w: 'i am',        c: 'italic' },
           { x: 0.21, y: 0.82, w: 'writing',     c: '' },
@@ -849,68 +1004,50 @@
           { x: 0.44, y: 0.82, w: 'a kitchen',   c: 'italic' },
           { x: 0.58, y: 0.75, w: 'that does not exist', c: '' },
           { x: 0.78, y: 0.82, w: 'yet',         c: 'script' }
-        ]
-      }
+        ]}
     ];
-
-    const starEls = [];
-    const lineEls = [];
+    const starEls = [], lineEls = [];
     let ready = false;
-
     function build() {
-      // clear
       stageEl.querySelectorAll('.star').forEach(el => el.remove());
       while (svg.firstChild) svg.removeChild(svg.firstChild);
-      starEls.length = 0;
-      lineEls.length = 0;
-
-      const w = stageEl.clientWidth;
-      const h = stageEl.clientHeight;
-
+      starEls.length = 0; lineEls.length = 0;
+      const w = stageEl.clientWidth, h = stageEl.clientHeight;
       sentences.forEach((s, si) => {
         const path = [];
         s.stars.forEach((st, idx) => {
-          const x = st.x * w;
-          const y = st.y * h;
+          const x = st.x * w, y = st.y * h;
           path.push({ x, y });
           const el = document.createElement('div');
           el.className = 'star ' + (st.c || '');
           el.style.left = x + 'px';
           el.style.top  = y + 'px';
           el.innerHTML = '<span class="dot"></span><span class="w">' + st.w + '</span>';
-          el.dataset.sent = si;
-          el.dataset.idx  = idx;
           stageEl.appendChild(el);
-          starEls.push({ el, sent: si, idx, x, y });
+          starEls.push({ el, sent: si, x, y });
         });
-        // draw the connection line behind, as polyline (hidden by default)
         const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
         poly.setAttribute('points', path.map(p => p.x + ',' + p.y).join(' '));
         poly.setAttribute('fill', 'none');
-        poly.setAttribute('stroke', 'currentColor');
+        poly.setAttribute('stroke', '#8a8275');
         poly.setAttribute('stroke-width', '1');
         poly.setAttribute('stroke-linecap', 'round');
         poly.setAttribute('stroke-linejoin', 'round');
         poly.setAttribute('opacity', '0');
-        poly.style.color = 'var(--ink-faint)';
         poly.style.transition = 'opacity 0.4s';
         svg.appendChild(poly);
         lineEls.push(poly);
       });
       ready = true;
     }
-
     let activeSent = -1;
     function onMove(e) {
       if (!ready) return;
       const rect = stageEl.getBoundingClientRect();
-      const mx = e.clientX - rect.left;
-      const my = e.clientY - rect.top;
-      // find closest star
+      const mx = e.clientX - rect.left, my = e.clientY - rect.top;
       let best = null, bestD = Infinity;
       for (const s of starEls) {
-        const dx = s.x - mx;
-        const dy = s.y - my;
+        const dx = s.x - mx, dy = s.y - my;
         const d = dx*dx + dy*dy;
         if (d < bestD) { bestD = d; best = s; }
       }
@@ -920,15 +1057,10 @@
         activeSent = sent;
         starEls.forEach(s => s.el.classList.toggle('lit', s.sent === sent));
         lineEls.forEach((p, i) => p.setAttribute('opacity', i === sent ? '0.6' : '0'));
-        if (sent >= 0) {
-          readout.textContent = sentences[sent].text;
-          readout.classList.add('show');
-        } else {
-          readout.classList.remove('show');
-        }
+        if (sent >= 0) { readout.textContent = sentences[sent].text; readout.classList.add('show'); }
+        else readout.classList.remove('show');
       }
     }
-
     function start() {
       build();
       stageEl.addEventListener('mousemove', onMove);
@@ -946,7 +1078,6 @@
   // ========================================================
   (function () {
     const stageEl = document.getElementById('palStage');
-
     function onMove(e) {
       const r = stageEl.getBoundingClientRect();
       const x = ((e.clientX - r.left) / r.width) * 100;
@@ -954,13 +1085,10 @@
       stageEl.style.setProperty('--cx', x + '%');
       stageEl.style.setProperty('--cy', y + '%');
     }
-    function start() {
-      stageEl.addEventListener('mousemove', onMove);
-    }
-    function stop() {
-      stageEl.removeEventListener('mousemove', onMove);
-    }
-    exps.pal = { start, stop };
+    exps.pal = {
+      start: () => stageEl.addEventListener('mousemove', onMove),
+      stop:  () => stageEl.removeEventListener('mousemove', onMove)
+    };
   })();
 
   // ========================================================
@@ -969,14 +1097,12 @@
   (function () {
     const stageEl = document.getElementById('shatterStage');
     const line = document.getElementById('shatterLine');
-
     const text = line.textContent;
     line.innerHTML = '';
     const chars = [];
     for (const ch of text) {
-      if (ch === ' ') {
-        line.appendChild(document.createTextNode(' '));
-      } else {
+      if (ch === ' ') line.appendChild(document.createTextNode(' '));
+      else {
         const span = document.createElement('span');
         span.className = 'c';
         span.textContent = ch;
@@ -984,56 +1110,41 @@
         chars.push(span);
       }
     }
-
-    const states = chars.map(() => ({ x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0, vx: 0, vy: 0, vz: 0, vrx: 0, vry: 0, vrz: 0 }));
+    const states = chars.map(() => ({ x:0,y:0,z:0,rx:0,ry:0,rz:0,vx:0,vy:0,vz:0,vrx:0,vry:0,vrz:0 }));
     let raf = null, running = false;
-
     function explode(originX, originY) {
-      const lineRect = line.getBoundingClientRect();
       for (let i = 0; i < chars.length; i++) {
         const r = chars[i].getBoundingClientRect();
-        const cx = r.left + r.width/2;
-        const cy = r.top + r.height/2;
-        const dx = cx - originX;
-        const dy = cy - originY;
+        const cx = r.left + r.width/2, cy = r.top + r.height/2;
+        const dx = cx - originX, dy = cy - originY;
         const dist = Math.max(40, Math.sqrt(dx*dx + dy*dy));
         const force = 14 + 320 / dist;
-        states[i].vx = (dx / dist) * force + (Math.random() - 0.5) * 8;
-        states[i].vy = (dy / dist) * force + (Math.random() - 0.5) * 8 - 4;
-        states[i].vz = (Math.random() - 0.3) * 14;
-        states[i].vrx = (Math.random() - 0.5) * 20;
-        states[i].vry = (Math.random() - 0.5) * 20;
-        states[i].vrz = (Math.random() - 0.5) * 20;
+        states[i].vx = (dx/dist)*force + (Math.random()-0.5)*8;
+        states[i].vy = (dy/dist)*force + (Math.random()-0.5)*8 - 4;
+        states[i].vz = (Math.random()-0.3)*14;
+        states[i].vrx = (Math.random()-0.5)*20;
+        states[i].vry = (Math.random()-0.5)*20;
+        states[i].vrz = (Math.random()-0.5)*20;
       }
     }
-
     function tick() {
       if (!running) return;
-      const SPRING = 0.05;
-      const FRICTION = 0.92;
+      const SPRING = 0.05, FRICTION = 0.92;
       for (let i = 0; i < chars.length; i++) {
         const st = states[i];
-        st.vx += -st.x * SPRING;
-        st.vy += -st.y * SPRING;
-        st.vz += -st.z * SPRING;
-        st.vrx += -st.rx * SPRING;
-        st.vry += -st.ry * SPRING;
-        st.vrz += -st.rz * SPRING;
-        st.vx *= FRICTION; st.vy *= FRICTION; st.vz *= FRICTION;
-        st.vrx *= FRICTION; st.vry *= FRICTION; st.vrz *= FRICTION;
-        st.x += st.vx; st.y += st.vy; st.z += st.vz;
-        st.rx += st.vrx; st.ry += st.vry; st.rz += st.vrz;
+        st.vx += -st.x*SPRING; st.vy += -st.y*SPRING; st.vz += -st.z*SPRING;
+        st.vrx += -st.rx*SPRING; st.vry += -st.ry*SPRING; st.vrz += -st.rz*SPRING;
+        st.vx*=FRICTION; st.vy*=FRICTION; st.vz*=FRICTION;
+        st.vrx*=FRICTION; st.vry*=FRICTION; st.vrz*=FRICTION;
+        st.x+=st.vx; st.y+=st.vy; st.z+=st.vz;
+        st.rx+=st.vrx; st.ry+=st.vry; st.rz+=st.vrz;
         chars[i].style.transform =
-          `translate3d(${st.x.toFixed(1)}px, ${st.y.toFixed(1)}px, ${st.z.toFixed(1)}px) ` +
+          `translate3d(${st.x.toFixed(1)}px,${st.y.toFixed(1)}px,${st.z.toFixed(1)}px) ` +
           `rotateX(${st.rx.toFixed(1)}deg) rotateY(${st.ry.toFixed(1)}deg) rotateZ(${st.rz.toFixed(1)}deg)`;
       }
       raf = requestAnimationFrame(tick);
     }
-
-    function onClick(e) {
-      explode(e.clientX, e.clientY);
-    }
-
+    function onClick(e) { explode(e.clientX, e.clientY); }
     function start() {
       stageEl.addEventListener('click', onClick);
       running = true;
@@ -1047,6 +1158,495 @@
     exps.shatter = { start, stop };
   })();
 
+  // ========================================================
+  // 07 — HAUNTED (typewriter ghost)
+  // ========================================================
+  (function () {
+    const textEl = document.getElementById('typerText');
+    const fullText = "Dear me,\n\nI am writing this from a kitchen that does not exist yet. The window faces east, the kettle is the only voice in the room, and I have been thinking about you all morning.\n\nYou are not behind. You have never been behind.\n\nThere — I have said it. Now you must believe me.\n\n— still here";
+    const alts = "abcdefghijklmnopqrstuvwxyz";
+    let i = 0, timer = null, hauntTimer = null;
+    let running = false;
+    const chars = [];
+    function typeOne() {
+      if (!running) return;
+      if (i >= fullText.length) {
+        timer = setTimeout(() => {
+          if (!running) return;
+          textEl.innerHTML = ''; chars.length = 0; i = 0;
+          typeOne();
+        }, 4500);
+        return;
+      }
+      const ch = fullText[i];
+      if (ch === '\n') {
+        textEl.appendChild(document.createElement('br'));
+        i++;
+        timer = setTimeout(typeOne, 260);
+        return;
+      }
+      const span = document.createElement('span');
+      span.className = 'ch fresh';
+      span.textContent = ch === ' ' ? ' ' : ch;
+      const rot = (Math.random() - 0.5) * 3;
+      span.style.setProperty('--rot', rot.toFixed(2) + 'deg');
+      textEl.appendChild(span);
+      chars.push({ el: span, target: ch });
+      i++;
+      if (ch !== ' ' && Math.random() < 0.06) {
+        let g = 0;
+        const glitches = 3 + Math.floor(Math.random() * 4);
+        const interval = setInterval(() => {
+          if (g++ >= glitches || !running) {
+            clearInterval(interval);
+            span.textContent = ch === ' ' ? ' ' : ch;
+            span.classList.remove('ghost');
+            return;
+          }
+          span.classList.add('ghost');
+          span.textContent = alts[Math.floor(Math.random() * alts.length)];
+        }, 60);
+      }
+      setTimeout(() => span.classList.remove('fresh'), 220);
+      const punct = ch === '.' || ch === ',' || ch === '—';
+      const delay = punct ? 240 : 35 + Math.random() * 70;
+      timer = setTimeout(typeOne, delay);
+    }
+    function startHaunting() {
+      hauntTimer = setInterval(() => {
+        if (!running || chars.length < 12) return;
+        const target = chars[Math.floor(Math.random() * chars.length)];
+        if (!target || target.target === ' ') return;
+        const orig = target.target;
+        target.el.classList.add('ghost');
+        let n = 0;
+        const flick = setInterval(() => {
+          if (n++ > 4 || !running) {
+            clearInterval(flick);
+            target.el.textContent = orig;
+            target.el.classList.remove('ghost');
+            return;
+          }
+          target.el.textContent = alts[Math.floor(Math.random() * alts.length)];
+        }, 80);
+      }, 2800);
+    }
+    function start() {
+      if (running) return;
+      running = true;
+      textEl.innerHTML = ''; chars.length = 0; i = 0;
+      typeOne();
+      startHaunting();
+    }
+    function stop() {
+      running = false;
+      clearTimeout(timer);
+      clearInterval(hauntTimer);
+    }
+    exps.typer = { start, stop };
+  })();
+
+  // ========================================================
+  // 08 — GRAVITY
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('gravStage');
+    const well = document.getElementById('gravWell');
+    const wordBank = [
+      { t: 'you',          c: '' },
+      { t: 'are',          c: '' },
+      { t: 'not',          c: 'italic' },
+      { t: 'alone',        c: 'script' },
+      { t: 'i',            c: '' },
+      { t: 'am',           c: '' },
+      { t: 'here',         c: 'italic' },
+      { t: 'i have',       c: '' },
+      { t: 'always',       c: 'italic' },
+      { t: 'been',         c: '' },
+      { t: 'here',         c: 'script' },
+      { t: 'you',          c: '' },
+      { t: 'do not',       c: 'italic' },
+      { t: 'need',         c: '' },
+      { t: 'to know',      c: 'italic' },
+      { t: 'how',          c: '' },
+      { t: 'the story',    c: 'italic' },
+      { t: 'ends',         c: 'script' },
+      { t: 'just',         c: '' },
+      { t: 'keep',         c: 'italic' },
+      { t: 'walking',      c: '' },
+      { t: 'the kettle',   c: '' },
+      { t: 'will',         c: '' },
+      { t: 'whistle',      c: 'italic' },
+      { t: 'when it is',   c: '' },
+      { t: 'ready',        c: 'script' },
+      { t: 'remember',     c: 'italic' },
+      { t: 'the kettle',   c: 'script' }
+    ];
+    const particles = [];
+    let mouseX = -9999, mouseY = -9999, mouseInside = false, repel = false;
+    let raf = null, running = false;
+    function init() {
+      stageEl.querySelectorAll('.p').forEach(n => n.remove());
+      particles.length = 0;
+      const w = stageEl.clientWidth, h = stageEl.clientHeight;
+      for (let i = 0; i < wordBank.length; i++) {
+        const wb = wordBank[i];
+        const el = document.createElement('span');
+        el.className = 'p ' + (wb.c || '');
+        el.textContent = wb.t;
+        stageEl.appendChild(el);
+        particles.push({
+          el,
+          x: 60 + Math.random() * (w - 120),
+          y: 60 + Math.random() * (h - 120),
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4
+        });
+      }
+    }
+    function tick() {
+      if (!running) return;
+      const w = stageEl.clientWidth, h = stageEl.clientHeight;
+      const G = repel ? -1400 : 900;
+      const MINR = 70;
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        if (mouseInside) {
+          const dx = mouseX - p.x, dy = mouseY - p.y;
+          const d = Math.sqrt(dx*dx + dy*dy);
+          const safe = Math.max(d, MINR);
+          const a = G / (safe * safe);
+          if (d > 0) {
+            p.vx += (dx / d) * a;
+            p.vy += (dy / d) * a;
+          }
+        }
+        p.vx *= 0.985; p.vy *= 0.985;
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) { p.x = 0; p.vx *= -0.6; }
+        if (p.x > w) { p.x = w; p.vx *= -0.6; }
+        if (p.y < 0) { p.y = 0; p.vy *= -0.6; }
+        if (p.y > h) { p.y = h; p.vy *= -0.6; }
+        p.el.style.transform = `translate(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px)`;
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left; mouseY = e.clientY - r.top;
+      mouseInside = true;
+      well.style.left = mouseX + 'px';
+      well.style.top  = mouseY + 'px';
+    }
+    function onLeave() { mouseInside = false; }
+    function onDown() { repel = true; stageEl.classList.add('repel'); }
+    function onUp()   { repel = false; stageEl.classList.remove('repel'); }
+    function start() {
+      init();
+      stageEl.addEventListener('mousemove', onMove);
+      stageEl.addEventListener('mouseleave', onLeave);
+      stageEl.addEventListener('mousedown', onDown);
+      window.addEventListener('mouseup', onUp);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      stageEl.removeEventListener('mouseleave', onLeave);
+      stageEl.removeEventListener('mousedown', onDown);
+      window.removeEventListener('mouseup', onUp);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.gravity = { start, stop };
+  })();
+
+  // ========================================================
+  // 09 — INK (handwriting along cursor path)
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('hwStage');
+    const pathEl = document.getElementById('hw-path');
+    const text = document.getElementById('hwText');
+    const hint = document.getElementById('hwHint');
+    const points = [];
+    let lastMoveTime = 0;
+    let raf = null, running = false;
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      const now = performance.now();
+      const last = points[points.length - 1];
+      if (!last || Math.hypot(last.x - x, last.y - y) > 4) {
+        points.push({ x, y, t: now });
+      }
+      lastMoveTime = now;
+      hint.classList.add('hidden');
+    }
+    function tick() {
+      if (!running) return;
+      const now = performance.now();
+      const TTL = 3800;
+      while (points.length && now - points[0].t > TTL) points.shift();
+      if (points.length < 2) {
+        pathEl.setAttribute('d', 'M 0 0');
+        text.setAttribute('opacity', '0');
+      } else {
+        const d = 'M ' + points.map(p => p.x.toFixed(1) + ' ' + p.y.toFixed(1)).join(' L ');
+        pathEl.setAttribute('d', d);
+        const idle = now - lastMoveTime;
+        const op = Math.max(0, Math.min(1, 1 - idle / TTL));
+        text.setAttribute('opacity', op.toFixed(2));
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function start() {
+      points.length = 0;
+      hint.classList.remove('hidden');
+      stageEl.addEventListener('mousemove', onMove);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      running = false;
+      cancelAnimationFrame(raf);
+      pathEl.setAttribute('d', 'M 0 0');
+      text.setAttribute('opacity', '0');
+    }
+    exps.hw = { start, stop };
+  })();
+
+  // ========================================================
+  // 10 — FIREFLIES
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('fireStage');
+    const wordBank = [
+      { t: 'you', c: '' }, { t: 'are', c: '' }, { t: 'still', c: 'italic' },
+      { t: 'the', c: '' }, { t: 'person', c: '' }, { t: 'who', c: '' },
+      { t: 'came', c: '' }, { t: 'here', c: 'italic' }, { t: 'on purpose', c: 'script' },
+      { t: 'remember', c: 'italic' }, { t: 'open', c: '' }, { t: 'the window', c: '' },
+      { t: 'let it', c: 'italic' }, { t: 'in', c: 'script' }, { t: 'i love you', c: 'script' },
+      { t: 'i love you', c: 'script' }, { t: 'wait', c: 'italic' }, { t: 'i am here', c: 'script' },
+      { t: 'patience', c: '' }, { t: 'rain', c: '' }, { t: 'kitchen', c: '' },
+      { t: 'kettle', c: 'italic' }, { t: 'tuesday', c: '' }, { t: 'morning', c: '' },
+      { t: 'still here', c: 'script' }, { t: 'breathe', c: 'italic' }, { t: 'small', c: '' },
+      { t: 'gentle', c: 'italic' }, { t: 'slow', c: '' }, { t: 'enough', c: 'italic' },
+      { t: 'almost', c: '' }, { t: 'always', c: 'italic' }, { t: 'love', c: 'script' }
+    ];
+    const flies = [];
+    let mouseX = -9999, mouseY = -9999;
+    let raf = null, running = false, t0 = 0;
+    function init() {
+      stageEl.querySelectorAll('.fly').forEach(n => n.remove());
+      flies.length = 0;
+      const w = stageEl.clientWidth, h = stageEl.clientHeight;
+      wordBank.forEach((wb) => {
+        const el = document.createElement('span');
+        el.className = 'fly ' + (wb.c || '');
+        el.textContent = wb.t;
+        stageEl.appendChild(el);
+        flies.push({
+          el,
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.6,
+          vy: (Math.random() - 0.5) * 0.6,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.5 + Math.random() * 0.6
+        });
+      });
+    }
+    function tick() {
+      if (!running) return;
+      const t = (performance.now() - t0) / 1000;
+      const w = stageEl.clientWidth, h = stageEl.clientHeight;
+      const callRadius = 380;
+      for (let i = 0; i < flies.length; i++) {
+        const f = flies[i];
+        f.vx += (Math.random() - 0.5) * 0.06;
+        f.vy += (Math.random() - 0.5) * 0.06;
+        const dx = mouseX - f.x, dy = mouseY - f.y;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        if (d < callRadius && d > 0) {
+          const pull = (1 - d / callRadius) * 0.6;
+          f.vx += (dx / d) * pull;
+          f.vy += (dy / d) * pull;
+        }
+        f.vx *= 0.94; f.vy *= 0.94;
+        const sp = Math.sqrt(f.vx*f.vx + f.vy*f.vy);
+        const max = 3.2;
+        if (sp > max) { f.vx = f.vx/sp*max; f.vy = f.vy/sp*max; }
+        f.x += f.vx; f.y += f.vy;
+        if (f.x < -80) f.x = w + 60;
+        if (f.x > w + 80) f.x = -60;
+        if (f.y < -60) f.y = h + 40;
+        if (f.y > h + 60) f.y = -40;
+        const pulse = 0.55 + 0.45 * Math.sin(t * f.speed + f.phase);
+        f.el.style.transform = `translate(${f.x.toFixed(1)}px, ${f.y.toFixed(1)}px)`;
+        f.el.style.opacity = pulse.toFixed(2);
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left; mouseY = e.clientY - r.top;
+    }
+    function onLeave() { mouseX = -9999; mouseY = -9999; }
+    function start() {
+      init();
+      stageEl.addEventListener('mousemove', onMove);
+      stageEl.addEventListener('mouseleave', onLeave);
+      running = true;
+      t0 = performance.now();
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      stageEl.removeEventListener('mouseleave', onLeave);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.fire = { start, stop };
+  })();
+
+  // ========================================================
+  // 11 — HEARTBEAT
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('beatStage');
+    const textEl = document.getElementById('beatText');
+    const bpmEl = document.getElementById('beatBpm');
+    const ephems = textEl.querySelectorAll('.ephem');
+    let mouseX = -9999, mouseY = -9999;
+    let lastT = 0, phase = 0;
+    let raf = null, running = false;
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left; mouseY = e.clientY - r.top;
+    }
+    function onLeave() { mouseX = -9999; mouseY = -9999; }
+    function tick() {
+      if (!running) return;
+      const now = performance.now();
+      const dt = (now - lastT) / 1000;
+      lastT = now;
+      const r = stageEl.getBoundingClientRect();
+      const cx = r.width / 2, cy = r.height / 2;
+      let bpm;
+      if (mouseX < -1000) bpm = 54;
+      else {
+        const d = Math.sqrt((mouseX - cx)**2 + (mouseY - cy)**2);
+        const maxD = Math.sqrt(cx*cx + cy*cy);
+        const closeness = Math.max(0, 1 - d / maxD);
+        bpm = 54 + closeness * 76;
+      }
+      bpmEl.textContent = Math.round(bpm) + ' bpm';
+      const cycleDur = 60 / bpm;
+      phase += dt / cycleDur;
+      if (phase > 1) phase -= 1;
+      let scale = 1;
+      if (phase < 0.08) scale = 1 + Math.sin(phase / 0.08 * Math.PI) * 0.07;
+      else if (phase < 0.16) scale = 1;
+      else if (phase < 0.28) scale = 1 + Math.sin((phase - 0.16) / 0.12 * Math.PI) * 0.05;
+      textEl.style.transform = `scale(${scale.toFixed(3)})`;
+      const showEphem = phase > 0.18 && phase < 0.26;
+      ephems.forEach(e => e.style.opacity = showEphem ? '1' : '0');
+      raf = requestAnimationFrame(tick);
+    }
+    function start() {
+      stageEl.addEventListener('mousemove', onMove);
+      stageEl.addEventListener('mouseleave', onLeave);
+      running = true;
+      lastT = performance.now();
+      phase = 0;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      stageEl.removeEventListener('mouseleave', onLeave);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.beat = { start, stop };
+  })();
+
+  // ========================================================
+  // 12 — DECAY
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('decayStage');
+    const textEl = document.getElementById('decayText');
+    const hintEl = document.getElementById('decayHint');
+    const raw = textEl.textContent;
+    textEl.innerHTML = '';
+    const chars = [];
+    for (const ch of raw) {
+      if (ch === ' ') textEl.appendChild(document.createTextNode(' '));
+      else {
+        const sp = document.createElement('span');
+        sp.className = 'c';
+        sp.textContent = ch;
+        textEl.appendChild(sp);
+        chars.push({ el: sp, age: 0, rot: (Math.random() - 0.5) * 36, dy: 6 + Math.random() * 22 });
+      }
+    }
+    let mouseX = -9999, mouseY = -9999;
+    let lastT = 0, raf = null, running = false, interacted = false;
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left; mouseY = e.clientY - r.top;
+      if (!interacted) { interacted = true; hintEl.classList.add('hidden'); }
+    }
+    function onLeave() { mouseX = -9999; mouseY = -9999; }
+    function tick() {
+      if (!running) return;
+      const now = performance.now();
+      const dt = Math.min(0.05, (now - lastT) / 1000);
+      lastT = now;
+      const MAX_AGE = 9;
+      const HEAL_R = 110;
+      const stageRect = stageEl.getBoundingClientRect();
+      for (let i = 0; i < chars.length; i++) {
+        const c = chars[i];
+        const r = c.el.getBoundingClientRect();
+        const cx = r.left + r.width/2 - stageRect.left;
+        const cy = r.top + r.height/2 - stageRect.top;
+        const d = Math.sqrt((mouseX - cx)**2 + (mouseY - cy)**2);
+        if (d < HEAL_R) {
+          const heal = (1 - d / HEAL_R) * dt * 8;
+          c.age = Math.max(0, c.age - heal);
+        } else c.age += dt;
+        const p = Math.min(1, c.age / MAX_AGE);
+        const op = Math.max(0, 1 - p);
+        const ty = p * c.dy;
+        const rot = p * c.rot;
+        const gray = Math.floor(26 + p * 150);
+        c.el.style.transform = `translateY(${ty.toFixed(1)}px) rotate(${rot.toFixed(1)}deg)`;
+        c.el.style.opacity = op.toFixed(2);
+        c.el.style.color = `rgb(${gray}, ${gray}, ${Math.max(0, gray - 6)})`;
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function start() {
+      chars.forEach(c => { c.age = 0; });
+      interacted = false;
+      hintEl.classList.remove('hidden');
+      stageEl.addEventListener('mousemove', onMove);
+      stageEl.addEventListener('mouseleave', onLeave);
+      running = true;
+      lastT = performance.now();
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      stageEl.removeEventListener('mouseleave', onLeave);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.decay = { start, stop };
+  })();
 </script>
 </body>
 </html>
