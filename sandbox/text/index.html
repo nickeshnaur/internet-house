@@ -1461,6 +1461,192 @@
     filter: blur(3px);
   }
 
+  /* ============================================
+     39 — MATRIX
+     ============================================ */
+  .matrix-stage {
+    position: absolute; inset: 0;
+    background: #000;
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .matrix-canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+  }
+
+  /* ============================================
+     40 — LIGHTHOUSE
+     ============================================ */
+  .light-stage {
+    position: absolute; inset: 0;
+    background: #050208;
+    overflow: hidden;
+    cursor: crosshair;
+    --beam: 0deg;
+  }
+  .light-stage .word {
+    position: absolute;
+    left: 50%; top: 50%;
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    font-size: clamp(1.4rem, 2.4vw, 2.3rem);
+    color: #f4ecd6;
+    white-space: nowrap;
+    user-select: none;
+    pointer-events: none;
+    will-change: transform, opacity, text-shadow;
+  }
+  .light-beam {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 220vw; height: 220vw;
+    pointer-events: none;
+    background: conic-gradient(from var(--beam),
+      transparent 0deg,
+      rgba(255, 220, 140, 0.04) 8deg,
+      rgba(255, 220, 140, 0.14) 16deg,
+      rgba(255, 220, 140, 0.04) 24deg,
+      transparent 32deg
+    );
+    transform: translate(-50%, -50%);
+    mix-blend-mode: screen;
+    will-change: transform;
+  }
+  .light-center {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff5d0 0%, rgba(255,220,140,0) 70%);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  /* ============================================
+     41 — PLASMA
+     ============================================ */
+  .plasma-stage {
+    position: absolute; inset: 0;
+    background: #0a0612;
+    overflow: hidden;
+    cursor: crosshair;
+    --cx: 50%; --cy: 50%;
+  }
+  .plasma-bg {
+    position: absolute; inset: -15%;
+    background:
+      radial-gradient(circle at 18% 30%, #ff006e 0%, transparent 28%),
+      radial-gradient(circle at 76% 60%, #00f0ff 0%, transparent 32%),
+      radial-gradient(circle at 42% 82%, #ffbe0b 0%, transparent 28%),
+      radial-gradient(circle at 82% 18%, #8338ec 0%, transparent 30%),
+      radial-gradient(circle at 32% 50%, #06ffa5 0%, transparent 26%),
+      radial-gradient(circle at var(--cx) var(--cy), #ff79c6 0%, transparent 22%);
+    filter: blur(70px);
+    animation: plasmaFlow 22s ease-in-out infinite alternate;
+    will-change: transform, filter;
+  }
+  @keyframes plasmaFlow {
+    0%   { transform: rotate(0deg)   scale(1);   filter: blur(70px) hue-rotate(0deg); }
+    50%  { transform: rotate(180deg) scale(1.3); filter: blur(80px) hue-rotate(60deg); }
+    100% { transform: rotate(360deg) scale(1);   filter: blur(70px) hue-rotate(0deg); }
+  }
+  .plasma-text {
+    position: relative;
+    z-index: 1;
+    display: flex; align-items: center; justify-content: center;
+    height: 100%;
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    font-size: clamp(2.2rem, 5.5vw, 4.5rem);
+    color: #fff;
+    text-align: center;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+    mix-blend-mode: difference;
+    max-width: 22ch;
+    padding: 0 4vw;
+    pointer-events: none;
+  }
+
+  /* ============================================
+     42 — WIND
+     ============================================ */
+  .wind-stage {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, #efe6d2 0%, #c5b88f 100%);
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .wind-stage .leaf {
+    position: absolute;
+    left: 0; top: 0;
+    font-family: "EB Garamond", serif;
+    color: var(--ink);
+    font-size: 1.05rem;
+    white-space: nowrap;
+    user-select: none;
+    pointer-events: none;
+    will-change: transform, opacity;
+  }
+  .wind-stage .leaf.italic { font-style: italic; color: var(--ink-soft); font-family: "Instrument Serif", serif; }
+  .wind-stage .leaf.script { font-family: "Caveat", cursive; color: var(--ink-soft); font-size: 1.3rem; }
+
+  /* ============================================
+     43 — WAVE (letter field)
+     ============================================ */
+  .wave-stage {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, #efe6d2 0%, #d6c89e 100%);
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .wave-grid {
+    position: absolute;
+    inset: 0;
+  }
+  .wave-grid .wc {
+    position: absolute;
+    font-family: "EB Garamond", serif;
+    font-size: 1.05rem;
+    color: var(--ink);
+    pointer-events: none;
+    user-select: none;
+    will-change: transform;
+    white-space: nowrap;
+  }
+
+  /* ============================================
+     44 — FAULT (cursor splits the page)
+     ============================================ */
+  .fault-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--paper);
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .fault-text {
+    width: clamp(560px, 64vw, 880px);
+    font-family: "EB Garamond", serif;
+    font-size: clamp(1.3rem, 2vw, 1.9rem);
+    line-height: 1.75;
+    text-align: center;
+    color: var(--ink);
+  }
+  .fault-text .c {
+    display: inline-block;
+    will-change: transform;
+  }
+  .fault-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(26,23,20,0.35), transparent);
+    pointer-events: none;
+    transform: translateY(-0.5px);
+  }
+
 </style>
 </head>
 <body>
@@ -1515,6 +1701,12 @@
   <button class="pill" data-exp="par">36</button>
   <button class="pill" data-exp="warp">37</button>
   <button class="pill" data-exp="chalk">38</button>
+  <button class="pill" data-exp="matrix">39</button>
+  <button class="pill" data-exp="light">40</button>
+  <button class="pill" data-exp="plasma">41</button>
+  <button class="pill" data-exp="wind">42</button>
+  <button class="pill" data-exp="wave">43</button>
+  <button class="pill" data-exp="fault">44</button>
 </nav>
 
 <main class="stage">
@@ -1881,6 +2073,64 @@
     </div>
   </section>
 
+  <!-- 39 MATRIX -->
+  <section class="exp" data-exp="matrix">
+    <div class="matrix-stage" id="matrixStage">
+      <canvas class="matrix-canvas" id="matrixCanvas"></canvas>
+    </div>
+  </section>
+
+  <!-- 40 LIGHTHOUSE -->
+  <section class="exp" data-exp="light">
+    <div class="light-stage" id="lightStage">
+      <span class="word" data-angle="0"   data-r="0.30">remember</span>
+      <span class="word" data-angle="20"  data-r="0.50">october</span>
+      <span class="word" data-angle="45"  data-r="0.42">still here</span>
+      <span class="word" data-angle="70"  data-r="0.28">morning</span>
+      <span class="word" data-angle="90"  data-r="0.35">i love you</span>
+      <span class="word" data-angle="115" data-r="0.48">on purpose</span>
+      <span class="word" data-angle="140" data-r="0.32">the kitchen</span>
+      <span class="word" data-angle="165" data-r="0.45">open</span>
+      <span class="word" data-angle="190" data-r="0.30">breathe</span>
+      <span class="word" data-angle="215" data-r="0.46">the kettle</span>
+      <span class="word" data-angle="240" data-r="0.34">wait</span>
+      <span class="word" data-angle="265" data-r="0.48">come back</span>
+      <span class="word" data-angle="290" data-r="0.32">i am here</span>
+      <span class="word" data-angle="315" data-r="0.44">small enough</span>
+      <span class="word" data-angle="340" data-r="0.36">paris</span>
+      <div class="light-beam" id="lightBeam"></div>
+      <div class="light-center"></div>
+    </div>
+  </section>
+
+  <!-- 41 PLASMA -->
+  <section class="exp" data-exp="plasma">
+    <div class="plasma-stage" id="plasmaStage">
+      <div class="plasma-bg"></div>
+      <div class="plasma-text">REMEMBER · I LOVE YOU · STILL HERE · OPEN · BREATHE · WAIT</div>
+    </div>
+  </section>
+
+  <!-- 42 WIND -->
+  <section class="exp" data-exp="wind">
+    <div class="wind-stage" id="windStage"></div>
+  </section>
+
+  <!-- 43 WAVE -->
+  <section class="exp" data-exp="wave">
+    <div class="wave-stage" id="waveStage">
+      <div class="wave-grid" id="waveGrid"></div>
+    </div>
+  </section>
+
+  <!-- 44 FAULT -->
+  <section class="exp" data-exp="fault">
+    <div class="fault-stage" id="faultStage">
+      <div class="fault-text" id="faultText">the page is whole until you cross it. then it splits. then the top half goes one way and the bottom half goes the other. then you keep moving. then the page learns to follow you.</div>
+      <div class="fault-line" id="faultLine"></div>
+    </div>
+  </section>
+
 </main>
 
 <div class="caption" id="caption">
@@ -1891,7 +2141,7 @@
   // -------------------- TAB SWITCHING --------------------
   const exps = {};
   let current = 'orbit';
-  const order = ['orbit','magnetic','ripple','const','pal','shatter','typer','gravity','hw','beat','decay','channel','murmur','double','zerog','river','tunnel','kaleido','globe','vortex','helix','mirror','grow','aurora','chroma','prism','thermal','magnify','liquid','portal','holo','bloom','neon','jelly','ooze','par','warp','chalk'];
+  const order = ['orbit','magnetic','ripple','const','pal','shatter','typer','gravity','hw','beat','decay','channel','murmur','double','zerog','river','tunnel','kaleido','globe','vortex','helix','mirror','grow','aurora','chroma','prism','thermal','magnify','liquid','portal','holo','bloom','neon','jelly','ooze','par','warp','chalk','matrix','light','plasma','wind','wave','fault'];
 
   const tabs = document.querySelectorAll('.tabs .pill');
   const sections = document.querySelectorAll('.exp');
@@ -1935,7 +2185,13 @@
     ooze:     { label: 'ooze',          text: 'gooey ink spreading from your cursor' },
     par:      { label: 'parallax',      text: 'six layers of depth · cursor opens the window' },
     warp:     { label: 'warp',          text: 'hyperspace · letters streaking past' },
-    chalk:    { label: 'chalk',         text: 'your cursor is a chalkboard eraser' }
+    chalk:    { label: 'chalk',         text: 'your cursor is a chalkboard eraser' },
+    matrix:   { label: 'matrix',        text: 'green code rain · cursor catches the columns' },
+    light:    { label: 'lighthouse',    text: 'the beam rotates · you see what is illuminated' },
+    plasma:   { label: 'plasma',        text: 'color flows beneath · cursor adds another blob' },
+    wind:     { label: 'wind',          text: 'your cursor is the wind · the leaves are words' },
+    wave:     { label: 'wave field',    text: 'the page is a wave · your cursor is a stone' },
+    fault:    { label: 'fault',         text: 'cursor splits the page · the fault follows' }
   };
 
   function switchTo(name) {
@@ -4764,6 +5020,424 @@
       start: () => stageEl.addEventListener('mousemove', onMove),
       stop:  () => stageEl.removeEventListener('mousemove', onMove)
     };
+  })();
+
+  // ========================================================
+  // 39 — MATRIX (canvas code rain)
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('matrixStage');
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789·{}[]<>/\\';
+    const messages = ['STILL HERE', 'I LOVE YOU', 'REMEMBER', 'OPEN', 'BREATHE', 'WAIT', 'COME BACK'];
+    const FONT_SIZE = 16;
+    let columns = [];
+    let raf = null, running = false;
+    let mouseX = 0, mouseY = 0;
+    function resize() {
+      canvas.width = stageEl.clientWidth;
+      canvas.height = stageEl.clientHeight;
+      const N = Math.floor(canvas.width / FONT_SIZE);
+      columns = [];
+      for (let i = 0; i < N; i++) {
+        columns.push({
+          x: i * FONT_SIZE,
+          y: -Math.random() * canvas.height,
+          speed: 3 + Math.random() * 6,
+          msg: null,
+          msgIdx: 0
+        });
+      }
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    function tick() {
+      if (!running) return;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.font = FONT_SIZE + 'px "JetBrains Mono", monospace';
+      for (const col of columns) {
+        // chance to start a message
+        if (!col.msg && Math.random() < 0.002) {
+          col.msg = messages[Math.floor(Math.random() * messages.length)];
+          col.msgIdx = 0;
+        }
+        let ch;
+        if (col.msg && col.msgIdx < col.msg.length) {
+          ch = col.msg[col.msgIdx++];
+          if (col.msgIdx >= col.msg.length) col.msg = null;
+        } else {
+          ch = chars[Math.floor(Math.random() * chars.length)];
+        }
+        // cursor-aware speed
+        const dx = col.x - mouseX;
+        const speedMul = 1 + Math.exp(-Math.abs(dx) / 90) * 1.6;
+        // bright head
+        ctx.fillStyle = 'rgba(220, 255, 230, 0.95)';
+        ctx.fillText(ch, col.x, col.y);
+        // trail
+        ctx.fillStyle = 'rgba(0, 255, 90, 0.7)';
+        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], col.x, col.y - FONT_SIZE);
+        ctx.fillStyle = 'rgba(0, 200, 70, 0.45)';
+        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], col.x, col.y - FONT_SIZE * 2);
+        col.y += col.speed * speedMul;
+        if (col.y > canvas.height + 80) {
+          col.y = -Math.random() * 200;
+          col.speed = 3 + Math.random() * 6;
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left;
+      mouseY = e.clientY - r.top;
+    }
+    function start() {
+      resize();
+      stageEl.addEventListener('mousemove', onMove);
+      window.addEventListener('resize', resize);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      window.removeEventListener('resize', resize);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.matrix = { start, stop };
+  })();
+
+  // ========================================================
+  // 40 — LIGHTHOUSE
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('lightStage');
+    const words = stageEl.querySelectorAll('.word');
+    let raf = null, running = false;
+    let beam = 0;
+    function tick() {
+      if (!running) return;
+      beam = (beam + 0.55) % 360;
+      stageEl.style.setProperty('--beam', beam.toFixed(1) + 'deg');
+      const r = stageEl.getBoundingClientRect();
+      const maxR = Math.min(r.width, r.height) * 0.42;
+      for (const w of words) {
+        const angle = parseFloat(w.dataset.angle);
+        const rad = parseFloat(w.dataset.r) * maxR;
+        const a = (angle - 90) * Math.PI / 180;
+        const x = Math.cos(a) * rad;
+        const y = Math.sin(a) * rad;
+        // angle diff from beam (beam=0 is up, conic-gradient from var(--beam) starts at top-ish)
+        let angleDiff = ((angle - beam) % 360 + 360) % 360;
+        if (angleDiff > 180) angleDiff = 360 - angleDiff;
+        const beamWidth = 28;
+        let op;
+        if (angleDiff < beamWidth) {
+          op = 1 - angleDiff / beamWidth;
+          op = op * op;
+        } else {
+          op = 0.04;
+        }
+        w.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -50%)`;
+        w.style.opacity = op.toFixed(2);
+        if (op > 0.25) {
+          w.style.textShadow = `0 0 ${(op * 16).toFixed(1)}px rgba(255, 220, 140, ${(op * 0.8).toFixed(2)})`;
+          w.style.color = '#fff5d0';
+        } else {
+          w.style.textShadow = '';
+          w.style.color = '#f4ecd6';
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function start() {
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.light = { start, stop };
+  })();
+
+  // ========================================================
+  // 41 — PLASMA
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('plasmaStage');
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width) * 100;
+      const y = ((e.clientY - r.top) / r.height) * 100;
+      stageEl.style.setProperty('--cx', x + '%');
+      stageEl.style.setProperty('--cy', y + '%');
+    }
+    exps.plasma = {
+      start: () => stageEl.addEventListener('mousemove', onMove),
+      stop:  () => stageEl.removeEventListener('mousemove', onMove)
+    };
+  })();
+
+  // ========================================================
+  // 42 — WIND (leaves)
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('windStage');
+    const wordBank = [
+      { t: 'remember',  c: '' },
+      { t: 'still here', c: 'italic' },
+      { t: 'wait',      c: 'script' },
+      { t: 'open',      c: '' },
+      { t: 'breathe',   c: 'italic' },
+      { t: 'i love you', c: 'script' },
+      { t: 'the kitchen', c: '' },
+      { t: 'morning',   c: 'italic' },
+      { t: 'kettle',    c: '' },
+      { t: 'patience',  c: 'italic' },
+      { t: 'come back', c: 'script' },
+      { t: 'i am here', c: 'script' },
+      { t: 'on purpose', c: 'italic' },
+      { t: 'rain',      c: '' },
+      { t: 'paris',     c: 'italic' },
+      { t: 'almonds',   c: '' },
+      { t: 'small',     c: '' },
+      { t: 'gentle',    c: 'italic' },
+      { t: 'slow',      c: '' },
+      { t: 'enough',    c: 'italic' }
+    ];
+    const N = 55;
+    const leaves = [];
+    let raf = null, running = false;
+    let mouseX = 0, mouseY = 0;
+    let lastMouseX = 0, lastMouseY = 0;
+    let mouseVx = 0, mouseVy = 0;
+    function init() {
+      stageEl.querySelectorAll('.leaf').forEach(n => n.remove());
+      leaves.length = 0;
+      const w = stageEl.clientWidth, h = stageEl.clientHeight;
+      for (let i = 0; i < N; i++) {
+        const wb = wordBank[i % wordBank.length];
+        const el = document.createElement('span');
+        el.className = 'leaf ' + (wb.c || '');
+        el.textContent = wb.t;
+        stageEl.appendChild(el);
+        leaves.push({
+          el,
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: 0.2 + Math.random() * 0.4,
+          rot: Math.random() * 360,
+          vrot: (Math.random() - 0.5) * 1.5
+        });
+      }
+    }
+    function tick() {
+      if (!running) return;
+      const w = stageEl.clientWidth, h = stageEl.clientHeight;
+      mouseVx = mouseVx * 0.88 + (mouseX - lastMouseX) * 0.12;
+      mouseVy = mouseVy * 0.88 + (mouseY - lastMouseY) * 0.12;
+      lastMouseX = mouseX; lastMouseY = mouseY;
+      for (const l of leaves) {
+        const dx = mouseX - l.x;
+        const dy = mouseY - l.y;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        const influence = Math.max(0, 1 - d / 300);
+        l.vx += mouseVx * 0.05 * influence;
+        l.vy += mouseVy * 0.05 * influence;
+        l.vrot += mouseVx * 0.02 * influence;
+        l.vy += 0.012;
+        l.vx += (Math.random() - 0.5) * 0.08;
+        l.vx *= 0.985;
+        l.vy *= 0.992;
+        l.rot += l.vrot;
+        l.vrot *= 0.97;
+        l.x += l.vx;
+        l.y += l.vy;
+        if (l.y > h + 40) {
+          l.y = -40;
+          l.x = Math.random() * w;
+          l.vx = (Math.random() - 0.5) * 0.4;
+          l.vy = 0.2 + Math.random() * 0.4;
+        }
+        if (l.x < -120) l.x = w + 80;
+        if (l.x > w + 120) l.x = -80;
+        l.el.style.transform = `translate(${l.x.toFixed(1)}px, ${l.y.toFixed(1)}px) rotate(${l.rot.toFixed(1)}deg)`;
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left;
+      mouseY = e.clientY - r.top;
+    }
+    function start() {
+      init();
+      const r = stageEl.getBoundingClientRect();
+      mouseX = r.width / 2; mouseY = r.height / 2;
+      lastMouseX = mouseX; lastMouseY = mouseY;
+      mouseVx = 0; mouseVy = 0;
+      stageEl.addEventListener('mousemove', onMove);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.wind = { start, stop };
+  })();
+
+  // ========================================================
+  // 43 — WAVE (letter grid)
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('waveStage');
+    const grid = document.getElementById('waveGrid');
+    const phrase = "remember · still here · i love you · open · breathe · wait · come back · the kettle · october · morning · patience · paris · ";
+    const cells = [];
+    let raf = null, running = false;
+    let mouseX = -9999, mouseY = -9999;
+    let t0 = 0;
+    function init() {
+      grid.innerHTML = '';
+      cells.length = 0;
+      const COLS = 40;
+      const ROWS = 20;
+      const cellW = stageEl.clientWidth / COLS;
+      const cellH = stageEl.clientHeight / ROWS;
+      let p = 0;
+      for (let row = 0; row < ROWS; row++) {
+        for (let col = 0; col < COLS; col++) {
+          let ch = phrase[p % phrase.length];
+          p++;
+          if (ch === ' ') continue;
+          const el = document.createElement('span');
+          el.className = 'wc';
+          el.textContent = ch;
+          const x = col * cellW;
+          const y = row * cellH;
+          el.style.left = x.toFixed(1) + 'px';
+          el.style.top  = y.toFixed(1) + 'px';
+          grid.appendChild(el);
+          cells.push({ el, x: x + cellW/2, y: y + cellH/2 });
+        }
+      }
+    }
+    function tick() {
+      if (!running) return;
+      const t = (performance.now() - t0) / 1000;
+      for (const c of cells) {
+        const wave = Math.sin(c.x * 0.018 + t * 1.4) * 14
+                   + Math.cos(c.y * 0.020 + t * 0.9) * 8;
+        const dx = c.x - mouseX, dy = c.y - mouseY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const disturb = Math.exp(-dist / 90) * 40 * Math.sin(t * 6 - dist * 0.03);
+        const ty = wave + disturb;
+        c.el.style.transform = `translateY(${ty.toFixed(1)}px)`;
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left;
+      mouseY = e.clientY - r.top;
+    }
+    function onLeave() { mouseX = -9999; mouseY = -9999; }
+    function start() {
+      init();
+      stageEl.addEventListener('mousemove', onMove);
+      stageEl.addEventListener('mouseleave', onLeave);
+      window.addEventListener('resize', init);
+      running = true;
+      t0 = performance.now();
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      stageEl.removeEventListener('mouseleave', onLeave);
+      window.removeEventListener('resize', init);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.wave = { start, stop };
+  })();
+
+  // ========================================================
+  // 44 — FAULT
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('faultStage');
+    const textEl = document.getElementById('faultText');
+    const lineEl = document.getElementById('faultLine');
+    const raw = textEl.textContent;
+    textEl.innerHTML = '';
+    const chars = [];
+    for (const ch of raw) {
+      if (ch === ' ') textEl.appendChild(document.createTextNode(' '));
+      else {
+        const sp = document.createElement('span');
+        sp.className = 'c';
+        sp.textContent = ch;
+        textEl.appendChild(sp);
+        chars.push(sp);
+      }
+    }
+    let positions = [];
+    let mouseY = -9999;
+    let raf = null, running = false;
+    function measure() {
+      const stageRect = stageEl.getBoundingClientRect();
+      positions = chars.map(c => {
+        const r = c.getBoundingClientRect();
+        return { y: r.top + r.height/2 - stageRect.top };
+      });
+    }
+    function tick() {
+      if (!running) return;
+      const SHIFT = 60;
+      for (let i = 0; i < chars.length; i++) {
+        const p = positions[i];
+        if (!p) continue;
+        const above = p.y < mouseY;
+        // distance from fault line, smoothed
+        const dist = Math.abs(p.y - mouseY);
+        const falloff = Math.exp(-dist / 120);
+        const off = (above ? -1 : 1) * SHIFT * falloff;
+        chars[i].style.transform = `translateX(${off.toFixed(1)}px)`;
+      }
+      lineEl.style.top = (mouseY) + 'px';
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseY = e.clientY - r.top;
+    }
+    function onLeave() { mouseY = -9999; }
+    function start() {
+      measure();
+      const r = stageEl.getBoundingClientRect();
+      mouseY = r.height / 2;
+      stageEl.addEventListener('mousemove', onMove);
+      stageEl.addEventListener('mouseleave', onLeave);
+      window.addEventListener('resize', measure);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      stageEl.removeEventListener('mouseleave', onLeave);
+      window.removeEventListener('resize', measure);
+      running = false;
+      cancelAnimationFrame(raf);
+      chars.forEach(c => c.style.transform = '');
+    }
+    exps.fault = { start, stop };
   })();
 </script>
 </body>
