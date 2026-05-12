@@ -1227,6 +1227,320 @@
     pointer-events: none;
   }
 
+  /* ============================================
+     33 — CANDLELIGHT
+     ============================================ */
+  .candle-stage {
+    position: absolute; inset: 0;
+    background: #08050a;
+    cursor: crosshair;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    --cx: 50%; --cy: 50%;
+  }
+  .candle-letter {
+    position: relative;
+    z-index: 1;
+    width: clamp(440px, 50vw, 640px);
+    font-family: "EB Garamond", serif;
+    font-size: clamp(1.2rem, 1.7vw, 1.55rem);
+    line-height: 1.95;
+    color: #f9be78;
+    text-align: center;
+    text-shadow: 0 0 8px rgba(255, 180, 100, 0.35);
+    -webkit-mask-image: radial-gradient(circle 220px at var(--cx) var(--cy), black 0%, black 25%, transparent 95%);
+            mask-image: radial-gradient(circle 220px at var(--cx) var(--cy), black 0%, black 25%, transparent 95%);
+  }
+  .candle-glow {
+    position: absolute;
+    width: 640px; height: 640px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 200, 110, 0.22) 0%, rgba(255, 160, 60, 0.07) 40%, transparent 70%);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    left: var(--cx); top: var(--cy);
+    mix-blend-mode: screen;
+  }
+
+  /* ============================================
+     34 — INK (drying ink)
+     ============================================ */
+  .ink-stage {
+    position: absolute; inset: 0;
+    background: #efe6d2;
+    cursor: crosshair;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ink-text {
+    width: clamp(540px, 60vw, 800px);
+    font-family: "EB Garamond", serif;
+    font-size: clamp(1.2rem, 1.7vw, 1.55rem);
+    line-height: 1.95;
+    text-align: center;
+    color: var(--ink);
+  }
+  .ink-text .c {
+    display: inline-block;
+    will-change: color, text-shadow, transform;
+  }
+
+  /* ============================================
+     35 — AGES (handwriting through time)
+     ============================================ */
+  .ages-stage {
+    position: absolute; inset: 0;
+    background: var(--paper);
+    cursor: ew-resize;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .ages-text-layers {
+    position: relative;
+    width: clamp(540px, 60vw, 800px);
+    height: 220px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ages-text {
+    position: absolute;
+    left: 0; right: 0;
+    text-align: center;
+    color: var(--ink);
+    opacity: 0;
+    will-change: opacity, transform;
+    user-select: none;
+  }
+  .ages-text.age7  { font-family: "Kalam", cursive; font-size: 3rem; font-weight: 400; letter-spacing: 0.02em; }
+  .ages-text.age14 { font-family: "Caveat", cursive; font-size: 3.2rem; font-weight: 600; transform: rotate(-1.5deg); }
+  .ages-text.age22 { font-family: "Instrument Serif", serif; font-style: italic; font-size: 3.4rem; }
+  .ages-text.age40 { font-family: "EB Garamond", serif; font-size: 2.7rem; letter-spacing: 0.01em; color: var(--ink); }
+  .ages-text.age80 { font-family: "Caveat", cursive; font-size: 2.5rem; color: var(--ink-soft); transform: rotate(1deg); letter-spacing: 0.04em; }
+  .ages-year {
+    position: absolute;
+    top: 14vh;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+  .ages-track {
+    position: absolute;
+    bottom: 14vh;
+    left: 50%; transform: translateX(-50%);
+    width: clamp(440px, 60vw, 760px);
+    height: 1px;
+    background: rgba(26,23,20,0.15);
+  }
+  .ages-progress {
+    position: absolute;
+    top: -3px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--ink);
+    transform: translateX(-50%);
+    transition: left 0.05s linear;
+  }
+
+  /* ============================================
+     36 — DRAFT
+     ============================================ */
+  .draft-stage {
+    position: absolute; inset: 0;
+    cursor: crosshair;
+    overflow: hidden;
+    --cx: 50%; --cy: 50%;
+  }
+  .draft-layer {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 14vh 6vw;
+  }
+  .draft-layer .draft-letter {
+    width: clamp(480px, 54vw, 720px);
+    line-height: 1.95;
+  }
+  .draft-bottom {
+    background: #efe6d2;
+  }
+  .draft-bottom .draft-letter {
+    font-family: "Caveat", cursive;
+    font-size: clamp(1.35rem, 1.85vw, 1.7rem);
+    color: var(--ink-soft);
+    text-align: left;
+  }
+  .draft-bottom .draft-letter s {
+    color: var(--ink-faint);
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--ink-soft);
+  }
+  .draft-top {
+    background: var(--paper);
+    -webkit-mask-image: radial-gradient(circle 180px at var(--cx) var(--cy), transparent 0, transparent 45%, black 100%);
+            mask-image: radial-gradient(circle 180px at var(--cx) var(--cy), transparent 0, transparent 45%, black 100%);
+  }
+  .draft-top .draft-letter {
+    font-family: "EB Garamond", serif;
+    font-size: clamp(1.15rem, 1.5vw, 1.4rem);
+    color: var(--ink);
+    text-align: left;
+  }
+  .draft-ring {
+    position: absolute;
+    width: 360px; height: 360px;
+    border-radius: 50%;
+    pointer-events: none;
+    border: 1px solid rgba(26,23,20,0.08);
+    transform: translate(-50%, -50%);
+    left: var(--cx); top: var(--cy);
+  }
+
+  /* ============================================
+     37 — DUET
+     ============================================ */
+  .duet-stage {
+    position: absolute; inset: 0;
+    display: flex;
+    cursor: crosshair;
+    overflow: hidden;
+    background: var(--paper);
+  }
+  .duet-col {
+    flex: 1;
+    padding: 16vh 5vw;
+    display: flex; flex-direction: column; justify-content: flex-start;
+    position: relative;
+  }
+  .duet-left  { text-align: right; padding-right: 5vw; align-items: flex-end; }
+  .duet-right { text-align: left;  padding-left: 5vw;  align-items: flex-start; }
+  .duet-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 22px;
+  }
+  .duet-body {
+    max-width: 30ch;
+  }
+  .duet-text {
+    font-family: "EB Garamond", serif;
+    font-size: clamp(1.1rem, 1.5vw, 1.4rem);
+    line-height: 1.75;
+    color: var(--ink);
+    display: inline;
+  }
+  .duet-left .duet-text {
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+  .duet-right .duet-text {
+    font-family: "Caveat", cursive;
+    font-size: clamp(1.4rem, 1.95vw, 1.85rem);
+    color: var(--ink);
+  }
+  .duet-caret {
+    display: inline-block;
+    width: 0.45em; height: 1em;
+    background: var(--ink);
+    margin-left: 2px;
+    vertical-align: -0.1em;
+    animation: duetBlink 1.1s steps(2) infinite;
+  }
+  .duet-divider {
+    position: absolute;
+    left: 50%; top: 18vh; bottom: 18vh;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--ink-ghost) 15%, var(--ink-ghost) 85%, transparent);
+    opacity: 0.45;
+  }
+  @keyframes duetBlink { 50% { opacity: 0; } }
+
+  /* ============================================
+     38 — UNFOLD
+     ============================================ */
+  .unfold-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 50% 50%, #f8f1de 0%, #c5b88f 100%);
+    cursor: ns-resize;
+    overflow: hidden;
+  }
+  .unfold-scene {
+    width: 460px;
+    height: 320px;
+    perspective: 1500px;
+  }
+  .unfold-card {
+    position: relative;
+    width: 100%; height: 100%;
+    transform-style: preserve-3d;
+    transform: rotateX(50deg);
+    will-change: transform;
+  }
+  .unfold-cover, .unfold-inside {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    background: var(--paper-bright);
+    border: 1px solid rgba(26,23,20,0.12);
+    box-shadow: 0 12px 36px rgba(26,23,20,0.18);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  .unfold-cover {
+    transform-origin: top center;
+    will-change: transform;
+  }
+  .unfold-cover .cover-name {
+    font-family: "Caveat", cursive;
+    font-size: 3rem;
+    color: var(--ink);
+  }
+  .unfold-cover .cover-from {
+    font-family: "Caveat", cursive;
+    font-size: 1.3rem;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+  .unfold-cover .cover-stamp {
+    position: absolute;
+    top: 20px; right: 24px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border: 1px solid var(--ink-faint);
+    padding: 5px 8px;
+    transform: rotate(4deg);
+  }
+  .unfold-inside .inside-letter {
+    font-family: "EB Garamond", serif;
+    color: var(--ink);
+    text-align: center;
+    line-height: 1.8;
+    padding: 28px;
+  }
+  .unfold-inside .inside-letter p {
+    margin: 0 0 8px;
+    font-size: 1rem;
+  }
+  .unfold-inside .inside-letter .sig {
+    font-family: "Caveat", cursive;
+    color: var(--ink-soft);
+    margin-top: 14px;
+    font-size: 1.3rem;
+  }
+  .unfold-hint {
+    position: absolute;
+    bottom: 14vh; left: 50%; transform: translateX(-50%);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px; letter-spacing: 3px;
+    color: var(--ink-faint);
+    pointer-events: none;
+  }
+
 </style>
 </head>
 <body>
@@ -1275,6 +1589,12 @@
   <button class="pill" data-exp="portal">30</button>
   <button class="pill" data-exp="holo">31</button>
   <button class="pill" data-exp="bloom">32</button>
+  <button class="pill" data-exp="candle">33</button>
+  <button class="pill" data-exp="ink">34</button>
+  <button class="pill" data-exp="ages">35</button>
+  <button class="pill" data-exp="draft">36</button>
+  <button class="pill" data-exp="duet">37</button>
+  <button class="pill" data-exp="unfold">38</button>
 </nav>
 
 <main class="stage">
@@ -1578,6 +1898,98 @@
     </div>
   </section>
 
+  <!-- 33 CANDLELIGHT -->
+  <section class="exp" data-exp="candle">
+    <div class="candle-stage" id="candleStage">
+      <div class="candle-letter">My dear self,<br><br>I am writing this from a place where the light is small. There is one candle. It is enough. It has always been enough.<br><br>You will read this in another room, with other light. It does not matter. The words are the same. The flame is the same.<br><br>— still here</div>
+      <div class="candle-glow" id="candleGlow"></div>
+    </div>
+  </section>
+
+  <!-- 34 INK -->
+  <section class="exp" data-exp="ink">
+    <div class="ink-stage" id="inkStage">
+      <div class="ink-text" id="inkText">I am writing this in fresh ink. The pen is wet. The paper is hungry. By the time you read this, the ink will be dry and these words will be permanent. Try to remember they were wet once. Try to remember they came from a hand that had not yet finished. — still writing</div>
+    </div>
+  </section>
+
+  <!-- 35 AGES -->
+  <section class="exp" data-exp="ages">
+    <div class="ages-stage" id="agesStage">
+      <div class="ages-text-layers">
+        <div class="ages-text age7">i am writing this to you.</div>
+        <div class="ages-text age14">i am writing this to you.</div>
+        <div class="ages-text age22">i am writing this to you.</div>
+        <div class="ages-text age40">i am writing this to you.</div>
+        <div class="ages-text age80">i am writing this to you.</div>
+      </div>
+      <div class="ages-year" id="agesYear">age 22</div>
+      <div class="ages-track">
+        <div class="ages-progress" id="agesProgress"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 36 DRAFT -->
+  <section class="exp" data-exp="draft">
+    <div class="draft-stage" id="draftStage">
+      <div class="draft-layer draft-bottom">
+        <div class="draft-letter">
+          <p>I am <s>scared</s> <s>worried</s> trying not to <s>fall apart</s> overthink this. I <s>love you</s> <s>need you</s> miss you. I <s>need you to</s> hope you are well. I am writing <s>because I don't know what else to do</s> to say hello.</p>
+          <p>It has been <s>so hard</s> a transition. The <s>nights</s> evenings are <s>brutal</s> long. I am <s>not sleeping</s> trying to sleep. <s>Everything hurts.</s> <s>please come back</s> <s>i can't do this</s> It is fine.</p>
+          <p><s>p.s. i love you</s> <s>p.s. write back soon</s> <s>p.s.</s></p>
+        </div>
+      </div>
+      <div class="draft-layer draft-top">
+        <div class="draft-letter">
+          <p>I am trying not to overthink this. I miss you. I hope you are well. I am writing to say hello.</p>
+          <p>It has been a transition. The evenings are long. I am trying to sleep. It is fine.</p>
+          <p>&nbsp;</p>
+        </div>
+      </div>
+      <div class="draft-ring" id="draftRing"></div>
+    </div>
+  </section>
+
+  <!-- 37 DUET -->
+  <section class="exp" data-exp="duet">
+    <div class="duet-stage" id="duetStage">
+      <div class="duet-col duet-left">
+        <div class="duet-label">past · 22</div>
+        <div class="duet-body"><span class="duet-text" id="duetPast"></span><span class="duet-caret"></span></div>
+      </div>
+      <div class="duet-col duet-right">
+        <div class="duet-label">future · 40</div>
+        <div class="duet-body"><span class="duet-text" id="duetFuture"></span><span class="duet-caret"></span></div>
+      </div>
+      <div class="duet-divider"></div>
+    </div>
+  </section>
+
+  <!-- 38 UNFOLD -->
+  <section class="exp" data-exp="unfold">
+    <div class="unfold-stage" id="unfoldStage">
+      <div class="unfold-scene">
+        <div class="unfold-card" id="unfoldCard">
+          <div class="unfold-cover">
+            <div class="cover-name">Mira</div>
+            <div class="cover-from">— from yourself</div>
+            <div class="cover-stamp">par avion</div>
+          </div>
+          <div class="unfold-inside">
+            <div class="inside-letter">
+              <p>i am writing this folded.</p>
+              <p>you will read it open.</p>
+              <p>the difference is everything.</p>
+              <p class="sig">— still here</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="unfold-hint">move up and down · the letter opens</div>
+    </div>
+  </section>
+
 </main>
 
 <div class="caption" id="caption">
@@ -1588,7 +2000,7 @@
   // -------------------- TAB SWITCHING --------------------
   const exps = {};
   let current = 'orbit';
-  const order = ['orbit','magnetic','ripple','const','pal','shatter','typer','gravity','hw','beat','decay','channel','murmur','double','zerog','river','tunnel','kaleido','globe','vortex','helix','mirror','grow','aurora','chroma','prism','thermal','magnify','liquid','portal','holo','bloom'];
+  const order = ['orbit','magnetic','ripple','const','pal','shatter','typer','gravity','hw','beat','decay','channel','murmur','double','zerog','river','tunnel','kaleido','globe','vortex','helix','mirror','grow','aurora','chroma','prism','thermal','magnify','liquid','portal','holo','bloom','candle','ink','ages','draft','duet','unfold'];
 
   const tabs = document.querySelectorAll('.tabs .pill');
   const sections = document.querySelectorAll('.exp');
@@ -1626,7 +2038,13 @@
     liquid:   { label: 'liquid',        text: 'the letters are melting · your cursor adds heat' },
     portal:   { label: 'portal',        text: 'the cursor opens into another reality' },
     holo:     { label: 'hologram',      text: 'iridescent foil · move your cursor to shift the colors' },
-    bloom:    { label: 'bloom',         text: 'move toward the center · let it open' }
+    bloom:    { label: 'bloom',         text: 'move toward the center · let it open' },
+    candle:   { label: 'candlelight',   text: 'your cursor is the only light · the candle flickers' },
+    ink:      { label: 'drying ink',    text: 'the words are drying · move your cursor to keep them wet' },
+    ages:     { label: 'ages',          text: 'scrub left to right · your handwriting grows up' },
+    draft:    { label: 'draft',         text: 'rub the page · see what she crossed out' },
+    duet:     { label: 'duet',          text: 'past and future, writing at once · cursor sets the rhythm' },
+    unfold:   { label: 'unfold',        text: 'move up and down · the letter opens' }
   };
 
   function switchTo(name) {
@@ -4090,6 +4508,294 @@
       cancelAnimationFrame(raf);
     }
     exps.bloom = { start, stop };
+  })();
+
+  // ========================================================
+  // 33 — CANDLELIGHT
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('candleStage');
+    let baseX = 0, baseY = 0;
+    let raf = null, running = false;
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      baseX = e.clientX - r.left;
+      baseY = e.clientY - r.top;
+    }
+    function tick() {
+      if (!running) return;
+      const flickX = baseX + (Math.random() - 0.5) * 7;
+      const flickY = baseY + (Math.random() - 0.5) * 7;
+      const r = stageEl.getBoundingClientRect();
+      const px = (flickX / r.width) * 100;
+      const py = (flickY / r.height) * 100;
+      stageEl.style.setProperty('--cx', px.toFixed(2) + '%');
+      stageEl.style.setProperty('--cy', py.toFixed(2) + '%');
+      raf = requestAnimationFrame(tick);
+    }
+    function start() {
+      const r = stageEl.getBoundingClientRect();
+      baseX = r.width / 2;
+      baseY = r.height / 2;
+      stageEl.addEventListener('mousemove', onMove);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.candle = { start, stop };
+  })();
+
+  // ========================================================
+  // 34 — INK (drying ink)
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('inkStage');
+    const textEl = document.getElementById('inkText');
+    const raw = textEl.textContent;
+    textEl.innerHTML = '';
+    const chars = [];
+    for (const ch of raw) {
+      if (ch === ' ') textEl.appendChild(document.createTextNode(' '));
+      else {
+        const sp = document.createElement('span');
+        sp.className = 'c';
+        sp.textContent = ch;
+        textEl.appendChild(sp);
+        chars.push({ el: sp, age: 0 });
+      }
+    }
+    let positions = [];
+    let mouseX = -9999, mouseY = -9999;
+    let raf = null, running = false;
+    let lastT = 0;
+    function measure() {
+      const stageRect = stageEl.getBoundingClientRect();
+      positions = chars.map(c => {
+        const r = c.el.getBoundingClientRect();
+        return { x: r.left + r.width/2 - stageRect.left, y: r.top + r.height/2 - stageRect.top };
+      });
+    }
+    function tick() {
+      if (!running) return;
+      const now = performance.now();
+      const dt = Math.min(0.05, (now - lastT) / 1000);
+      lastT = now;
+      const WET_R = 130;
+      const MAX = 1.0;
+      const RATE = 0.06;
+      for (let i = 0; i < chars.length; i++) {
+        const c = chars[i];
+        const p = positions[i];
+        if (!p) continue;
+        const dx = p.x - mouseX, dy = p.y - mouseY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < WET_R) {
+          const wet = (1 - dist / WET_R) * dt * 3.5;
+          c.age = Math.max(0, c.age - wet);
+        } else {
+          c.age = Math.min(MAX, c.age + RATE * dt);
+        }
+        const t = c.age;
+        const r = Math.floor(10 + t * 122);
+        const g = Math.floor(10 + t * 100);
+        const b = Math.floor(20 + t * 60);
+        c.el.style.color = `rgb(${r},${g},${b})`;
+        const shadowOp = (1 - t) * 0.50;
+        c.el.style.textShadow = shadowOp > 0.06 ? `0 1px 2px rgba(0,0,0,${shadowOp.toFixed(2)})` : '';
+        const scale = 1 + (1 - t) * 0.05;
+        c.el.style.transform = `scale(${scale.toFixed(3)})`;
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left;
+      mouseY = e.clientY - r.top;
+    }
+    function onLeave() { mouseX = -9999; mouseY = -9999; }
+    function start() {
+      chars.forEach(c => { c.age = 0; });
+      measure();
+      stageEl.addEventListener('mousemove', onMove);
+      stageEl.addEventListener('mouseleave', onLeave);
+      window.addEventListener('resize', measure);
+      running = true;
+      lastT = performance.now();
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      stageEl.removeEventListener('mouseleave', onLeave);
+      window.removeEventListener('resize', measure);
+      running = false;
+      cancelAnimationFrame(raf);
+      chars.forEach(c => { c.el.style.color = ''; c.el.style.textShadow = ''; c.el.style.transform = ''; });
+    }
+    exps.ink = { start, stop };
+  })();
+
+  // ========================================================
+  // 35 — AGES (handwriting through time)
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('agesStage');
+    const layers = stageEl.querySelectorAll('.ages-text');
+    const yearEl = document.getElementById('agesYear');
+    const progressEl = document.getElementById('agesProgress');
+    const ages = [7, 14, 22, 40, 80];
+    function applyT(tt) {
+      const N = layers.length;
+      const pos = tt * (N - 1);
+      layers.forEach((el, i) => {
+        const d = Math.abs(pos - i);
+        let op = 0;
+        if (d < 0.75) op = Math.max(0, 1 - d / 0.75);
+        el.style.opacity = op.toFixed(2);
+      });
+      const ageIdx = Math.round(pos);
+      yearEl.textContent = 'age ' + ages[Math.max(0, Math.min(ages.length - 1, ageIdx))];
+      progressEl.style.left = (tt * 100).toFixed(1) + '%';
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      const tt = (e.clientX - r.left) / r.width;
+      applyT(Math.max(0, Math.min(1, tt)));
+    }
+    function start() {
+      applyT(0.5);
+      stageEl.addEventListener('mousemove', onMove);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+    }
+    exps.ages = { start, stop };
+  })();
+
+  // ========================================================
+  // 36 — DRAFT
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('draftStage');
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width) * 100;
+      const y = ((e.clientY - r.top) / r.height) * 100;
+      stageEl.style.setProperty('--cx', x + '%');
+      stageEl.style.setProperty('--cy', y + '%');
+    }
+    exps.draft = {
+      start: () => stageEl.addEventListener('mousemove', onMove),
+      stop:  () => stageEl.removeEventListener('mousemove', onMove)
+    };
+  })();
+
+  // ========================================================
+  // 37 — DUET
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('duetStage');
+    const pastEl = document.getElementById('duetPast');
+    const futureEl = document.getElementById('duetFuture');
+    const pastText = "I am writing this from a small apartment in the eleventh. The kitchen does not exist yet. The window faces west, not east. I am still learning how to be alone. I am writing to ask you for patience. With me. With us.";
+    const futureText = "the kitchen will exist. it faces east. you were close. i am writing back to tell you that you were always going to be alone for a while, and that is the part that becomes the thing you write from. so write more. i love you i love you.";
+    let pastI = 0, futureI = 0;
+    let pastT = 0, futureT = 0;
+    let raf = null, running = false;
+    let mouseY = 0.5;
+    let restartScheduled = false;
+    function tick() {
+      if (!running) return;
+      const balance = mouseY;
+      const pastSpeed = 15 + (1 - balance) * 30;
+      const futureSpeed = 15 + balance * 30;
+      pastT += pastSpeed / 60;
+      futureT += futureSpeed / 60;
+      while (pastT >= 1 && pastI < pastText.length) {
+        pastT -= 1;
+        const sp = document.createElement('span');
+        sp.textContent = pastText[pastI++];
+        pastEl.appendChild(sp);
+      }
+      while (futureT >= 1 && futureI < futureText.length) {
+        futureT -= 1;
+        const sp = document.createElement('span');
+        sp.textContent = futureText[futureI++];
+        futureEl.appendChild(sp);
+      }
+      if (pastI >= pastText.length && futureI >= futureText.length && !restartScheduled) {
+        restartScheduled = true;
+        setTimeout(() => {
+          if (running) {
+            pastEl.innerHTML = '';
+            futureEl.innerHTML = '';
+            pastI = 0; futureI = 0; pastT = 0; futureT = 0;
+            restartScheduled = false;
+          }
+        }, 5000);
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      mouseY = (e.clientY - r.top) / r.height;
+    }
+    function start() {
+      pastEl.innerHTML = '';
+      futureEl.innerHTML = '';
+      pastI = 0; futureI = 0;
+      pastT = 0; futureT = 0;
+      mouseY = 0.5;
+      restartScheduled = false;
+      stageEl.addEventListener('mousemove', onMove);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    exps.duet = { start, stop };
+  })();
+
+  // ========================================================
+  // 38 — UNFOLD
+  // ========================================================
+  (function () {
+    const stageEl = document.getElementById('unfoldStage');
+    const cover = document.querySelector('#unfoldCard .unfold-cover');
+    let raf = null, running = false;
+    let targetY = 0, currentY = 0;
+    function onMove(e) {
+      const r = stageEl.getBoundingClientRect();
+      targetY = (e.clientY - r.top) / r.height;
+    }
+    function tick() {
+      if (!running) return;
+      currentY += (targetY - currentY) * 0.08;
+      const openness = Math.max(0, Math.min(1, currentY));
+      const angle = -openness * 170;
+      cover.style.transform = `rotateX(${angle.toFixed(1)}deg)`;
+      raf = requestAnimationFrame(tick);
+    }
+    function start() {
+      targetY = 0; currentY = 0;
+      cover.style.transform = 'rotateX(0deg)';
+      stageEl.addEventListener('mousemove', onMove);
+      running = true;
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() {
+      stageEl.removeEventListener('mousemove', onMove);
+      running = false;
+      cancelAnimationFrame(raf);
+      cover.style.transform = '';
+    }
+    exps.unfold = { start, stop };
   })();
 </script>
 </body>
