@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0b10" />
+<title>Point at the Landmark</title>
+<style>
+  :root {
+    --bg: #0b0b10;
+    --fg: #f5f5f7;
+    --dim: #9aa0a6;
+    --accent: #ffd34d;
+    --good: #4ade80;
+    --bad: #f87171;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif;
+    height: 100%;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body {
+    display: flex; flex-direction: column;
+    min-height: 100dvh;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  main {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 24px; text-align: center;
+    gap: 24px;
+  }
+  h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  p { margin: 0; color: var(--dim); line-height: 1.45; max-width: 32ch; }
+  button {
+    appearance: none; border: 0; cursor: pointer;
+    background: var(--accent); color: #1a1a1a;
+    font: inherit; font-weight: 600; font-size: 17px;
+    padding: 16px 28px; border-radius: 999px;
+    transition: transform 0.08s ease, opacity 0.2s ease;
+  }
+  button:active { transform: scale(0.97); }
+  button.ghost { background: transparent; color: var(--fg); border: 1px solid #2a2a32; }
+
+  .landmark { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; }
+  .sub { color: var(--dim); font-size: 15px; }
+
+  .timer {
+    font-variant-numeric: tabular-nums;
+    font-size: 96px; font-weight: 700; letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .compass {
+    width: min(72vw, 280px); aspect-ratio: 1;
+    border-radius: 50%;
+    border: 1px solid #2a2a32;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .needle {
+    position: absolute; top: 6%; bottom: 50%;
+    width: 4px; background: var(--accent);
+    border-radius: 2px;
+    transform-origin: 50% 100%;
+    transition: transform 60ms linear;
+  }
+  .pivot {
+    width: 10px; height: 10px; background: var(--fg);
+    border-radius: 50%; position: absolute;
+  }
+  .north {
+    position: absolute; top: 8px;
+    font-size: 12px; color: var(--dim); letter-spacing: 0.1em;
+  }
+
+  .result-score { font-size: 88px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; }
+  .result-degrees { font-size: 18px; color: var(--dim); }
+  .result-label { font-size: 20px; font-weight: 600; }
+  .good { color: var(--good); }
+  .bad { color: var(--bad); }
+
+  .error {
+    color: var(--bad);
+    background: rgba(248, 113, 113, 0.08);
+    border: 1px solid rgba(248, 113, 113, 0.25);
+    padding: 12px 16px; border-radius: 12px;
+    font-size: 14px; max-width: 36ch;
+  }
+
+  .footer {
+    padding: 12px 24px 20px;
+    text-align: center; color: var(--dim); font-size: 12px;
+  }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <section id="screen-intro">
+    <h1>Point at the Landmark</h1>
+    <p>You'll get 5 seconds to point your phone toward a famous landmark. Hold flat and rotate your body — top of the phone is the pointer.</p>
+    <button id="btn-start">Start</button>
+    <div id="intro-error" class="error hidden"></div>
+  </section>
+
+  <section id="screen-play" class="hidden">
+    <div class="sub">Point toward</div>
+    <div class="landmark" id="landmark-name">—</div>
+    <div class="compass" aria-hidden="true">
+      <span class="north">N</span>
+      <div class="needle" id="needle"></div>
+      <div class="pivot"></div>
+    </div>
+    <div class="timer" id="timer">5</div>
+    <div class="sub" id="heading-readout">heading —°</div>
+  </section>
+
+  <section id="screen-result" class="hidden">
+    <div class="sub">You pointed at</div>
+    <div class="landmark" id="result-landmark">—</div>
+    <div class="result-score" id="result-score">—</div>
+    <div class="result-degrees" id="result-degrees">—</div>
+    <div class="result-label" id="result-label">—</div>
+    <button id="btn-restart">Play again</button>
+  </section>
+</main>
+<div class="footer">point your phone &middot; <span id="version">v1</span></div>
+
+<script>
+(() => {
+  const LANDMARKS = [
+    { name: "Eiffel Tower",        lat: 48.8584,   lng: 2.2945    },
+    { name: "Taj Mahal",           lat: 27.1751,   lng: 78.0421   },
+    { name: "Statue of Liberty",   lat: 40.6892,   lng: -74.0445  },
+    { name: "Pyramids of Giza",    lat: 29.9792,   lng: 31.1342   },
+    { name: "Sydney Opera House",  lat: -33.8568,  lng: 151.2153  },
+    { name: "Christ the Redeemer", lat: -22.9519,  lng: -43.2105  },
+    { name: "Big Ben",             lat: 51.5007,   lng: -0.1246   },
+    { name: "Colosseum",           lat: 41.8902,   lng: 12.4922   },
+    { name: "Mount Fuji",          lat: 35.3606,   lng: 138.7274  },
+    { name: "Machu Picchu",        lat: -13.1631,  lng: -72.5450  },
+  ];
+
+  const $ = (id) => document.getElementById(id);
+  const screens = {
+    intro:  $("screen-intro"),
+    play:   $("screen-play"),
+    result: $("screen-result"),
+  };
+  const show = (name) => {
+    for (const k in screens) screens[k].classList.toggle("hidden", k !== name);
+  };
+
+  // --- math ---
+  const toRad = (d) => d * Math.PI / 180;
+  const toDeg = (r) => r * 180 / Math.PI;
+
+  function bearingDeg(lat1, lng1, lat2, lng2) {
+    const φ1 = toRad(lat1), φ2 = toRad(lat2);
+    const Δλ = toRad(lng2 - lng1);
+    const y = Math.sin(Δλ) * Math.cos(φ2);
+    const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+    return (toDeg(Math.atan2(y, x)) + 360) % 360;
+  }
+
+  function angularDiff(a, b) {
+    let d = Math.abs(a - b) % 360;
+    return d > 180 ? 360 - d : d;
+  }
+
+  // --- compass ---
+  let currentHeading = null;       // 0..360, true north, clockwise
+  let orientationHandler = null;
+
+  function startCompass() {
+    return new Promise((resolve, reject) => {
+      const needsPerm = typeof DeviceOrientationEvent !== "undefined"
+        && typeof DeviceOrientationEvent.requestPermission === "function";
+
+      const attach = () => {
+        // Prefer absolute orientation (true north) when available
+        const useAbsolute = "ondeviceorientationabsolute" in window;
+        const evt = useAbsolute ? "deviceorientationabsolute" : "deviceorientation";
+
+        orientationHandler = (e) => {
+          let heading = null;
+          if (typeof e.webkitCompassHeading === "number") {
+            // iOS: already true north, clockwise
+            heading = e.webkitCompassHeading;
+          } else if (typeof e.alpha === "number") {
+            // Android (absolute): alpha is degrees from north, counter-clockwise.
+            // Compass heading clockwise = (360 - alpha) mod 360.
+            heading = (360 - e.alpha) % 360;
+          }
+          if (heading !== null && !Number.isNaN(heading)) {
+            currentHeading = heading;
+          }
+        };
+        window.addEventListener(evt, orientationHandler, true);
+
+        // Give the sensor a moment to start producing values
+        const t0 = Date.now();
+        const wait = () => {
+          if (currentHeading !== null) return resolve();
+          if (Date.now() - t0 > 2500) return reject(new Error("Couldn't read compass. Try moving your phone in a figure-8 and tap Start again."));
+          setTimeout(wait, 100);
+        };
+        wait();
+      };
+
+      if (needsPerm) {
+        DeviceOrientationEvent.requestPermission()
+          .then((state) => {
+            if (state === "granted") attach();
+            else reject(new Error("Compass permission denied."));
+          })
+          .catch(() => reject(new Error("Compass permission denied.")));
+      } else {
+        attach();
+      }
+    });
+  }
+
+  function stopCompass() {
+    if (orientationHandler) {
+      window.removeEventListener("deviceorientation", orientationHandler, true);
+      window.removeEventListener("deviceorientationabsolute", orientationHandler, true);
+      orientationHandler = null;
+    }
+  }
+
+  // --- location ---
+  function getLocation() {
+    return new Promise((resolve, reject) => {
+      if (!("geolocation" in navigator)) {
+        return reject(new Error("Geolocation not supported on this device."));
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (err) => {
+          const msg = err.code === 1
+            ? "Location permission denied. The game needs your location to compute which way the landmark is."
+            : "Couldn't get your location. Try again outside or with location services on.";
+          reject(new Error(msg));
+        },
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+      );
+    });
+  }
+
+  // --- game flow ---
+  let raf = null;
+  let countdownTimer = null;
+
+  function pickLandmark() {
+    return LANDMARKS[Math.floor(Math.random() * LANDMARKS.length)];
+  }
+
+  function setNeedle(deg) {
+    // Needle rotates so it points at compass heading 0 (north) when device is held flat.
+    // We rotate the needle by -heading so that "north" stays fixed at top while the needle
+    // shows the direction the phone is facing.
+    $("needle").style.transform = `rotate(${deg}deg)`;
+  }
+
+  function updateLoop() {
+    if (currentHeading !== null) {
+      setNeedle(currentHeading);
+      $("heading-readout").textContent = `heading ${Math.round(currentHeading)}°`;
+    }
+    raf = requestAnimationFrame(updateLoop);
+  }
+
+  function startCountdown(seconds, onTick, onDone) {
+    let remaining = seconds;
+    onTick(remaining);
+    countdownTimer = setInterval(() => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+        onTick(0);
+        onDone();
+      } else {
+        onTick(remaining);
+      }
+    }, 1000);
+  }
+
+  function labelForScore(score, deg) {
+    if (deg <= 5)  return { text: "Bullseye 🎯", cls: "good" };
+    if (deg <= 15) return { text: "Excellent",    cls: "good" };
+    if (deg <= 35) return { text: "Pretty close", cls: "" };
+    if (deg <= 75) return { text: "Not quite",    cls: "" };
+    return { text: "Way off",   cls: "bad" };
+  }
+
+  async function startGame() {
+    $("intro-error").classList.add("hidden");
+    $("btn-start").disabled = true;
+    $("btn-start").textContent = "Getting ready…";
+
+    try {
+      // These both require a user gesture on iOS — that's why we're here.
+      await startCompass();
+      const userPos = await getLocation();
+      const target = pickLandmark();
+      const trueBearing = bearingDeg(userPos.lat, userPos.lng, target.lat, target.lng);
+
+      $("landmark-name").textContent = target.name;
+      show("play");
+      raf = requestAnimationFrame(updateLoop);
+
+      startCountdown(
+        5,
+        (s) => { $("timer").textContent = String(s); },
+        () => finishRound(target, trueBearing)
+      );
+    } catch (err) {
+      $("intro-error").textContent = err.message || String(err);
+      $("intro-error").classList.remove("hidden");
+      $("btn-start").disabled = false;
+      $("btn-start").textContent = "Start";
+    }
+  }
+
+  function finishRound(target, trueBearing) {
+    if (raf) cancelAnimationFrame(raf);
+    raf = null;
+    const guess = currentHeading == null ? 0 : currentHeading;
+    const diff = angularDiff(guess, trueBearing);
+    const score = Math.max(0, Math.round(100 - (diff * 100 / 180)));
+    const label = labelForScore(score, diff);
+
+    $("result-landmark").textContent = target.name;
+    $("result-score").textContent = String(score);
+    $("result-degrees").textContent =
+      `You were ${diff.toFixed(1)}° off · pointed ${Math.round(guess)}°, target ${Math.round(trueBearing)}°`;
+    const labelEl = $("result-label");
+    labelEl.textContent = label.text;
+    labelEl.className = "result-label " + label.cls;
+
+    show("result");
+  }
+
+  function resetForRestart() {
+    if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+    if (raf) { cancelAnimationFrame(raf); raf = null; }
+    stopCompass();
+    currentHeading = null;
+    $("btn-start").disabled = false;
+    $("btn-start").textContent = "Start";
+    show("intro");
+  }
+
+  $("btn-start").addEventListener("click", startGame);
+  $("btn-restart").addEventListener("click", resetForRestart);
+})();
+</script>
+</body>
+</html>
