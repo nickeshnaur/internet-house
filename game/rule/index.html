@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Rule · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .phase-rail {
+    display: flex; align-items: center; justify-content: center; gap: 18px;
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+  }
+  .phase-rail span.now { color: var(--accent); }
+  .phase-rail .dot { width: 4px; height: 4px; background: var(--hairline-strong); border-radius: 50%; display: inline-block; margin: 0 2px; }
+
+  .probe-area, .challenge-area, .result-area { width: 100%; max-width: 520px; }
+
+  .probe-input-row {
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--ink-soft);
+    padding: 0 4px 10px;
+  }
+  .probe-input {
+    flex: 1;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    color: var(--ink);
+    letter-spacing: 0.06em;
+    padding: 4px 0;
+  }
+  .probe-input::placeholder { color: var(--ink-faint); text-transform: none; font-family: 'Fraunces', serif; font-style: italic; letter-spacing: 0; }
+  .probe-go {
+    font: 500 0.7rem 'Inter', sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding: 6px 14px;
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  }
+  .probe-go[disabled] { opacity: 0.35; pointer-events: none; }
+  @media (hover: hover) { .probe-go:hover { background: var(--accent); color: var(--paper); } }
+
+  .probe-meta {
+    display: flex; justify-content: space-between;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 8px 4px 14px;
+  }
+  .probe-meta .num { color: var(--ink); }
+
+  .probe-table {
+    width: 100%; border-collapse: collapse;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 1.04rem;
+    letter-spacing: 0.05em;
+  }
+  .probe-table tr { border-top: 1px solid var(--hairline); }
+  .probe-table tr:last-child { border-bottom: 1px solid var(--hairline); }
+  .probe-table td {
+    padding: 10px 4px;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .probe-table td.arrow {
+    color: var(--ink-faint);
+    width: 26px; text-align: center;
+    font-family: 'Inter', sans-serif;
+  }
+  .probe-table td.out { color: var(--accent); font-weight: 500; }
+
+  .advance-row { text-align: center; margin-top: 18px; }
+  .advance-btn {
+    padding: 10px 20px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+    border-radius: 999px;
+    transition: transform var(--t-fast) var(--ease);
+  }
+  .advance-btn[disabled] { opacity: 0.4; pointer-events: none; }
+
+  .challenge-card {
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    padding: 22px 18px 18px;
+    text-align: center;
+    background: var(--paper-soft);
+  }
+  .challenge-card .label {
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+  }
+  .challenge-card .word {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 2.1rem;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .challenge-card .arrow-down {
+    font-size: 1.4rem; color: var(--ink-faint);
+    margin: 4px 0 10px;
+  }
+  .challenge-input {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 1.9rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-align: center;
+    width: 100%;
+    border-bottom: 1px solid var(--accent);
+    padding: 4px 0 8px;
+  }
+  .challenge-input.invalid { animation: shake 320ms var(--ease); }
+  .challenge-submit {
+    margin-top: 14px;
+  }
+
+  .result-card {
+    display: grid;
+    grid-template-columns: 1fr 24px 1fr;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid var(--hairline);
+    padding: 14px 4px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 1.05rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .result-card:last-child { border-bottom: 1px solid var(--hairline); }
+  .result-card .you { text-align: center; font-weight: 500; }
+  .result-card .truth { text-align: center; color: var(--ink-faint); }
+  .result-card.right .you { color: var(--accent); }
+  .result-card.wrong .you { color: #C25E3A; text-decoration: line-through; }
+  .result-card .mark { font-family: 'Inter', sans-serif; text-align: center; }
+  .result-card.right .mark { color: var(--accent); }
+  .result-card.wrong .mark { color: #C25E3A; }
+  .result-card .src { text-align: center; color: var(--ink-soft); }
+</style>
+</head>
+<body data-game="rule" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="rule">
+      <div class="game-head">
+        <div class="eyebrow">No. 017 · Rule</div>
+        <h1 class="title">Rule</h1>
+        <p class="rule">A hidden transformation is in effect today.</p>
+        <p class="howto"><b>How to play.</b> Type any word; the box returns its transformation. Five free probes. Then three prediction challenges — given a new word, predict its output. Score is correct predictions out of three.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="rule">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="rule" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="rule" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="rule" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="rule" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="rule" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-rule">
+        <div class="phase-rail" id="phase-rail">
+          <span class="now" id="phase-probe">Probe</span>
+          <span class="dot"></span>
+          <span id="phase-challenge">Challenge</span>
+          <span class="dot"></span>
+          <span id="phase-result">Result</span>
+        </div>
+
+        <div class="probe-area" id="probe-area">
+          <div class="probe-input-row">
+            <input class="probe-input" id="probe-input" type="text" maxlength="14" autocomplete="off" autocapitalize="characters" placeholder="type any word">
+            <button class="probe-go" id="probe-go" disabled>Probe</button>
+          </div>
+          <div class="probe-meta"><span><span class="num" id="probes-used">0</span> / 5 probes</span><span id="probe-hint">type to probe</span></div>
+          <table class="probe-table"><tbody id="probe-tbody"></tbody></table>
+          <div class="advance-row"><button class="advance-btn" id="advance-btn" disabled>Begin challenge</button></div>
+        </div>
+
+        <div class="challenge-area" id="challenge-area" hidden>
+          <div class="challenge-card" id="challenge-card">
+            <div class="label">Challenge <span id="challenge-num">1</span> of 3</div>
+            <div class="word" id="challenge-word"></div>
+            <div class="arrow-down">↓</div>
+            <input class="challenge-input" id="challenge-input" type="text" maxlength="20" autocomplete="off" autocapitalize="characters" placeholder="your prediction">
+            <div class="challenge-submit"><button class="advance-btn" id="challenge-go">Submit</button></div>
+          </div>
+        </div>
+
+        <div class="solved" id="solved-rule"><span class="check">✓</span><span class="solved-text">Result</span></div>
+
+        <div class="result-area" id="result-area" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Rule() {
+    const PUZZLES = [
+      {
+        id: 'rule-001',
+        name: 'vowel-shift forward',
+        transform(s) {
+          const m = {a:'e',e:'i',i:'o',o:'u',u:'a',A:'E',E:'I',I:'O',O:'U',U:'A'};
+          return s.split('').map(c => m[c] || c).join('');
+        },
+        challenges: ['PIZZA', 'MUSIC', 'ANSWER'],
+      },
+      {
+        id: 'rule-002',
+        name: 'reverse the word',
+        transform(s) { return s.split('').reverse().join(''); },
+        challenges: ['GARDEN', 'WINDOW', 'LADDER'],
+      },
+      {
+        id: 'rule-003',
+        name: 'first letter moves to end',
+        transform(s) { return s.length < 2 ? s : s.slice(1) + s[0]; },
+        challenges: ['ORANGE', 'CASTLE', 'BRIDGE'],
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const probeArea  = $('#probe-area');
+    const probeInput = $('#probe-input');
+    const probeGo    = $('#probe-go');
+    const probesUsedEl = $('#probes-used');
+    const probeHint  = $('#probe-hint');
+    const probeTbody = $('#probe-tbody');
+    const advanceBtn = $('#advance-btn');
+    const phaseProbe = $('#phase-probe');
+    const phaseChallenge = $('#phase-challenge');
+    const phaseResult= $('#phase-result');
+
+    const challengeArea = $('#challenge-area');
+    const challengeNum  = $('#challenge-num');
+    const challengeWord = $('#challenge-word');
+    const challengeInput= $('#challenge-input');
+    const challengeGo   = $('#challenge-go');
+
+    const resultArea = $('#result-area');
+    const solvedEl   = $('#solved-rule');
+    const stageEl    = $('#stage-rule');
+    const shareBtn   = document.querySelector('.tool-btn[data-game="rule"][data-action="share"]');
+
+    const MAX_PROBES = 5;
+    let probes = [];       // [{in, out}, ...]
+    let predictions = [];  // [{in, you, right}, ...]
+    let cidx = 0;
+    let phase = 'probe';   // 'probe' | 'challenge' | 'done'
+
+    function setPhase(p) {
+      phase = p;
+      phaseProbe.classList.toggle('now', p === 'probe');
+      phaseChallenge.classList.toggle('now', p === 'challenge');
+      phaseResult.classList.toggle('now', p === 'done');
+    }
+
+    function build() {
+      probes = []; predictions = []; cidx = 0;
+      probeInput.value = ''; probeInput.disabled = false;
+      probeGo.disabled = true;
+      probesUsedEl.textContent = '0';
+      probeHint.textContent = 'type to probe';
+      probeTbody.innerHTML = '';
+      advanceBtn.disabled = true;
+      advanceBtn.textContent = 'Begin challenge';
+      probeArea.hidden = false;
+      challengeArea.hidden = true;
+      resultArea.hidden = true;
+      resultArea.innerHTML = '';
+      solvedEl.classList.remove('show', 'is-revealed');
+      shareBtn.hidden = true;
+      setPhase('probe');
+    }
+
+    function clean(s) { return s.trim().replace(/[^A-Za-z]/g, '').toUpperCase(); }
+
+    probeInput.addEventListener('input', () => {
+      const v = clean(probeInput.value);
+      probeGo.disabled = v.length < 2 || phase !== 'probe';
+    });
+    probeInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); doProbe(); }
+    });
+    probeGo.addEventListener('click', doProbe);
+
+    function doProbe() {
+      if (phase !== 'probe') return;
+      const w = clean(probeInput.value);
+      if (w.length < 2) return;
+      if (probes.length >= MAX_PROBES) return;
+      const out = PUZZLE.transform(w);
+      probes.push({ in: w, out });
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${w}</td><td class="arrow">→</td><td class="out">${out}</td>`;
+      probeTbody.appendChild(tr);
+      probeInput.value = ''; probeGo.disabled = true;
+      probesUsedEl.textContent = String(probes.length);
+      if (probes.length >= MAX_PROBES) {
+        probeInput.disabled = true;
+        probeHint.textContent = 'probes spent';
+      } else if (probes.length >= 3) {
+        probeHint.textContent = 'ready when you are';
+      }
+      advanceBtn.disabled = probes.length < 1;
+      haptic(8);
+    }
+
+    advanceBtn.addEventListener('click', beginChallenge);
+
+    function beginChallenge() {
+      if (phase !== 'probe') return;
+      setPhase('challenge');
+      probeArea.hidden = true;
+      challengeArea.hidden = false;
+      cidx = 0;
+      showChallenge();
+    }
+
+    function showChallenge() {
+      challengeNum.textContent = String(cidx + 1);
+      challengeWord.textContent = PUZZLE.challenges[cidx];
+      challengeInput.value = '';
+      challengeInput.disabled = false;
+      challengeGo.disabled = false;
+      challengeInput.focus();
+    }
+
+    challengeInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); submitChallenge(); }
+    });
+    challengeGo.addEventListener('click', submitChallenge);
+
+    function submitChallenge() {
+      const guess = clean(challengeInput.value);
+      if (!guess) {
+        challengeInput.classList.add('invalid');
+        setTimeout(() => challengeInput.classList.remove('invalid'), 380);
+        return;
+      }
+      const w = PUZZLE.challenges[cidx];
+      const truth = PUZZLE.transform(w);
+      const right = guess === truth;
+      predictions.push({ in: w, you: guess, truth, right });
+      haptic(right ? 14 : 6);
+      cidx++;
+      if (cidx >= PUZZLE.challenges.length) finish();
+      else showChallenge();
+    }
+
+    function finish() {
+      setPhase('done');
+      challengeArea.hidden = true;
+      const correct = predictions.filter(p => p.right).length;
+      solvedEl.querySelector('.solved-text').textContent =
+        `${correct} of ${PUZZLE.challenges.length} predicted`;
+      solvedEl.classList.add('show');
+      if (correct !== PUZZLE.challenges.length) solvedEl.classList.add('is-revealed');
+      resultArea.innerHTML = predictions.map(p => `
+        <div class="result-card ${p.right ? 'right' : 'wrong'}">
+          <div class="src">${p.in}</div>
+          <div class="mark">${p.right ? '✓' : '✗'}</div>
+          <div class="you">${p.you}${p.right ? '' : ` <small style="display:block;color:var(--ink-faint);font-size:0.7em;letter-spacing:0.05em;text-decoration:none">→ ${p.truth}</small>`}</div>
+        </div>`).join('') +
+        `<div style="text-align:center;margin-top:14px;font-family:Fraunces,serif;font-style:italic;color:var(--ink-soft);font-size:0.92rem">The rule was <strong style="color:var(--accent);font-style:normal">${PUZZLE.name}</strong>.</div>`;
+      resultArea.hidden = false;
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      const grid = predictions.map(p => p.right ? '🟪' : '⬛').join('');
+      copyShare(`Rule · ${predictions.filter(p=>p.right).length}/${PUZZLE.challenges.length}\n${grid}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.rule = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

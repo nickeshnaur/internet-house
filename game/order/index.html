@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Order · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .order-prompt {
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    margin: 0 auto 12px;
+    max-width: 24em;
+  }
+
+  .order-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 64px;
+    gap: 14px;
+    width: 100%;
+    max-width: 540px;
+  }
+
+  .order-list {
+    list-style: none;
+    margin: 0; padding: 0;
+    position: relative;
+    user-select: none;
+  }
+  .order-item {
+    position: relative;
+    padding: 14px 50px 14px 44px;
+    margin-bottom: 8px;
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    background: var(--paper-soft);
+    transition: transform 220ms var(--ease), border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: pan-y;
+  }
+  .order-item .rank {
+    position: absolute; top: 50%; left: 12px; transform: translateY(-50%);
+    font-family: 'Fraunces', serif;
+    font-weight: 500; font-size: 1.2rem;
+    color: var(--accent);
+    width: 1.4em; text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .order-item .title {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.04rem;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    line-height: 1.3;
+  }
+  .order-item .meta {
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 2px;
+    opacity: 0;
+    transition: opacity var(--t-med) var(--ease);
+  }
+  body.revealed .order-item .meta { opacity: 1; }
+  .order-item .handle {
+    position: absolute; top: 0; right: 0; bottom: 0;
+    width: 40px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: grab;
+    touch-action: none;
+  }
+  .order-item .handle::before {
+    content: '';
+    width: 16px; height: 2px; background: var(--ink-faint);
+    box-shadow: 0 5px 0 var(--ink-faint), 0 -5px 0 var(--ink-faint);
+    border-radius: 2px;
+    opacity: 0.45;
+  }
+  .order-item.dragging {
+    z-index: 10;
+    box-shadow: 0 12px 24px -8px rgba(0,0,0,0.18);
+    border-color: var(--accent);
+    background: var(--paper);
+  }
+
+  /* feedback chip after submit, anchored to right edge of item */
+  .order-item .feedback {
+    position: absolute; top: 8px; right: 50px;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: none;
+    align-items: center; justify-content: center;
+    font: 500 0.78rem 'Inter', sans-serif;
+    color: var(--paper);
+    background: var(--ink-faint);
+  }
+  .order-item.fb-shown .feedback { display: flex; }
+  .order-item.fb-correct .feedback { background: #2E7D5F; }
+  .order-item.fb-up      .feedback { background: var(--accent); }
+  .order-item.fb-down    .feedback { background: #4A6FA5; }
+  .order-item.fb-correct { border-color: #2E7D5F; }
+
+  /* history rail */
+  .history-rail {
+    display: flex; flex-direction: column; gap: 6px;
+    align-items: center;
+    padding-top: 4px;
+  }
+  .history-row {
+    display: flex; flex-direction: row; gap: 3px;
+    justify-content: center;
+    border: 1px solid var(--hairline);
+    padding: 5px;
+    border-radius: 4px;
+  }
+  .history-cell {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    background: var(--hairline-strong);
+  }
+  .history-cell.c { background: #2E7D5F; }
+  .history-cell.u { background: var(--accent); }
+  .history-cell.d { background: #4A6FA5; }
+
+  .order-submit {
+    margin-top: 12px;
+    padding: 10px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+    border-radius: 999px;
+    transition: opacity var(--t-fast) var(--ease);
+  }
+  .order-submit[disabled] { opacity: 0.4; pointer-events: none; }
+
+  .order-meta {
+    display: flex; justify-content: space-between;
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 6px;
+    width: 100%;
+    max-width: 540px;
+  }
+  .order-meta .num { color: var(--ink); font-family: 'Fraunces', serif; font-size: 0.84rem; }
+
+  @media (max-width: 480px) {
+    .order-layout { grid-template-columns: minmax(0, 1fr) 44px; }
+    .history-cell { width: 6px; height: 6px; }
+  }
+</style>
+</head>
+<body data-game="order" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="order">
+      <div class="game-head">
+        <div class="eyebrow">No. 018 · Order</div>
+        <h1 class="title">Order</h1>
+        <p class="rule">Six items. One hidden sequence. Five guesses.</p>
+        <p class="howto"><b>How to play.</b> Drag the cards into the order you propose, then submit. For each slot you'll see: <b>✓</b> right position · <b>↑</b> item belongs earlier · <b>↓</b> item belongs later.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="order">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="order" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="order" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="order" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="order" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="order" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-order">
+        <p class="order-prompt" id="order-prompt"></p>
+
+        <div class="order-meta"><span><span class="num" id="guess-num">0</span> / 5 guesses</span><span id="order-status"></span></div>
+
+        <div class="order-layout">
+          <ol class="order-list" id="order-list"></ol>
+          <div class="history-rail" id="history-rail"></div>
+        </div>
+
+        <button class="order-submit" id="order-submit">Submit guess</button>
+
+        <div class="solved" id="solved-order"><span class="check">✓</span><span class="solved-text">Ordered</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Order() {
+    const PUZZLES = [
+      {
+        id: 'order-001',
+        prompt: 'Order these novels by publication year, earliest to latest.',
+        items: [
+          { id: 'hm', title: 'Hamlet',                meta: 'Shakespeare · 1603' },
+          { id: 'pp', title: 'Pride and Prejudice',   meta: 'Austen · 1813' },
+          { id: 'md', title: 'Moby-Dick',             meta: 'Melville · 1851' },
+          { id: 'gg', title: 'The Great Gatsby',      meta: 'Fitzgerald · 1925' },
+          { id: '84', title: '1984',                  meta: 'Orwell · 1949' },
+          { id: 'cr', title: 'The Catcher in the Rye',meta: 'Salinger · 1951' },
+        ],
+        order: ['hm','pp','md','gg','84','cr'],
+      },
+      {
+        id: 'order-002',
+        prompt: 'Order these inventions by year first demonstrated.',
+        items: [
+          { id: 'pp', title: 'Printing press',  meta: 'Gutenberg · ~1440' },
+          { id: 'tg', title: 'Telegraph',       meta: 'Morse · 1837' },
+          { id: 'tp', title: 'Telephone',       meta: 'Bell · 1876' },
+          { id: 'ra', title: 'Radio',           meta: 'Marconi · 1895' },
+          { id: 'tv', title: 'Television',      meta: 'Baird · 1927' },
+          { id: 'in', title: 'The Internet',    meta: 'ARPANET · 1969' },
+        ],
+        order: ['pp','tg','tp','ra','tv','in'],
+      },
+      {
+        id: 'order-003',
+        prompt: 'Order these wars by the year they began.',
+        items: [
+          { id: 'hy', title: "Hundred Years' War",  meta: '1337' },
+          { id: 'ty', title: "Thirty Years' War",   meta: '1618' },
+          { id: 'ar', title: 'American Revolution', meta: '1775' },
+          { id: 'cw', title: 'American Civil War',  meta: '1861' },
+          { id: 'w1', title: 'World War I',         meta: '1914' },
+          { id: 'w2', title: 'World War II',        meta: '1939' },
+        ],
+        order: ['hy','ty','ar','cw','w1','w2'],
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const promptEl = $('#order-prompt');
+    const listEl   = $('#order-list');
+    const historyEl= $('#history-rail');
+    const submitBtn= $('#order-submit');
+    const stageEl  = $('#stage-order');
+    const solvedEl = $('#solved-order');
+    const guessNumEl = $('#guess-num');
+    const statusEl = $('#order-status');
+    const shareBtn = document.querySelector('.tool-btn[data-game="order"][data-action="share"]');
+
+    const MAX_GUESSES = 5;
+    let order = [];
+    let guesses = []; // [[ 'c'|'u'|'d', ... ] x 6]
+    let solved = false;
+
+    function build() {
+      document.body.classList.remove('revealed');
+      order = PUZZLE.items.map(i => i.id);
+      shuffle(order);
+      guesses = []; solved = false;
+      promptEl.textContent = PUZZLE.prompt;
+      guessNumEl.textContent = '0';
+      statusEl.textContent = '';
+      submitBtn.hidden = false; submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit guess';
+      solvedEl.classList.remove('show', 'is-revealed');
+      shareBtn.hidden = true;
+      historyEl.innerHTML = '';
+      render();
+    }
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = (i * 11 + 5) % (i + 1);
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    function render() {
+      listEl.innerHTML = '';
+      order.forEach((id, idx) => {
+        const it = PUZZLE.items.find(x => x.id === id);
+        const li = document.createElement('li');
+        li.className = 'order-item';
+        li.dataset.id = id;
+        li.innerHTML = `
+          <span class="rank">${idx + 1}</span>
+          <div class="title">${it.title}</div>
+          <div class="meta">${it.meta}</div>
+          <span class="feedback"></span>
+          <span class="handle" aria-label="drag"></span>`;
+        attachDrag(li);
+        listEl.appendChild(li);
+      });
+    }
+
+    function attachDrag(li) {
+      let dragging = false;
+      let startY = 0;
+      let liHeight = 0;
+      const handle = li.querySelector('.handle');
+      function onDown(e) {
+        if (solved) return;
+        e.preventDefault();
+        startY = e.clientY;
+        liHeight = li.getBoundingClientRect().height + 8;
+        dragging = true;
+        li.classList.add('dragging');
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup',   onUp);
+        document.addEventListener('pointercancel', onUp);
+        haptic(6);
+      }
+      function onMove(e) {
+        if (!dragging) return;
+        const dy = e.clientY - startY;
+        li.style.transform = `translateY(${dy}px)`;
+        const others = [...listEl.children].filter(c => c !== li);
+        const lr = li.getBoundingClientRect();
+        const midY = (lr.top + lr.bottom) / 2;
+        let newIdx = 0;
+        for (const o of others) {
+          const r = o.getBoundingClientRect();
+          if (midY > (r.top + r.bottom) / 2) newIdx++;
+        }
+        others.forEach((o, i) => {
+          const tgt = i < newIdx ? i : i + 1;
+          const src = [...listEl.children].indexOf(o);
+          o.style.transform = `translateY(${(tgt - src) * liHeight}px)`;
+        });
+      }
+      function onUp() {
+        if (!dragging) return;
+        dragging = false;
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup',   onUp);
+        document.removeEventListener('pointercancel', onUp);
+        const lr = li.getBoundingClientRect();
+        const midY = (lr.top + lr.bottom) / 2;
+        let newIdx = 0;
+        [...listEl.children].forEach(c => {
+          if (c === li) return;
+          const r = c.getBoundingClientRect();
+          if (midY > (r.top + r.bottom) / 2) newIdx++;
+        });
+        const id = li.dataset.id;
+        order.splice(order.indexOf(id), 1);
+        order.splice(newIdx, 0, id);
+        [...listEl.children].forEach(c => { c.style.transform = ''; });
+        li.classList.remove('dragging');
+        render();
+        haptic(10);
+      }
+      handle.addEventListener('pointerdown', onDown);
+      li.addEventListener('pointerdown', e => { if (!e.target.closest('.handle')) onDown(e); });
+    }
+
+    submitBtn.addEventListener('click', submitGuess);
+
+    function submitGuess() {
+      if (solved) return;
+      const truth = PUZZLE.order;
+      const feedback = order.map((id, i) => {
+        const trueIdx = truth.indexOf(id);
+        if (trueIdx === i) return 'c';
+        if (trueIdx >  i) return 'd';      // true position is later → belongs later
+        return 'u';                         // true position is earlier → belongs earlier
+      });
+      guesses.push(feedback);
+      guessNumEl.textContent = String(guesses.length);
+      // Render feedback on current order
+      [...listEl.children].forEach((li, i) => {
+        li.classList.remove('fb-correct','fb-up','fb-down');
+        li.classList.add('fb-shown');
+        const fbEl = li.querySelector('.feedback');
+        const f = feedback[i];
+        if (f === 'c') { li.classList.add('fb-correct'); fbEl.textContent = '✓'; }
+        else if (f === 'u') { li.classList.add('fb-up'); fbEl.textContent = '↑'; }
+        else { li.classList.add('fb-down'); fbEl.textContent = '↓'; }
+      });
+      // History rail
+      const row = document.createElement('div');
+      row.className = 'history-row';
+      row.innerHTML = feedback.map(f => `<span class="history-cell ${f}"></span>`).join('');
+      historyEl.appendChild(row);
+      const allCorrect = feedback.every(f => f === 'c');
+      if (allCorrect) win();
+      else if (guesses.length >= MAX_GUESSES) lose();
+      else {
+        statusEl.textContent = `${MAX_GUESSES - guesses.length} guesses left`;
+      }
+      haptic(allCorrect ? 22 : 8);
+    }
+
+    function win() {
+      solved = true;
+      document.body.classList.add('revealed');
+      [...listEl.children].forEach(li => li.classList.add('fb-correct','fb-shown'));
+      submitBtn.hidden = true;
+      solvedEl.querySelector('.solved-text').textContent = `Solved in ${guesses.length}`;
+      solvedEl.classList.add('show');
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+
+    function lose() {
+      solved = true;
+      document.body.classList.add('revealed');
+      // Snap to truth so the player can see the right order
+      order = PUZZLE.order.slice();
+      render();
+      [...listEl.children].forEach(li => { li.classList.add('fb-correct','fb-shown'); li.querySelector('.feedback').textContent = '✓'; });
+      submitBtn.hidden = true;
+      solvedEl.querySelector('.solved-text').textContent = 'Out of guesses';
+      solvedEl.classList.add('show', 'is-revealed');
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      const grid = guesses.map(g => g.map(f => f === 'c' ? '🟩' : f === 'u' ? '⬆️' : '⬇️').join('')).join('\n');
+      copyShare(`Order · ${guesses.some(g=>g.every(f=>f==='c')) ? guesses.length+'/5' : 'X/5'}\n${grid}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.order = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

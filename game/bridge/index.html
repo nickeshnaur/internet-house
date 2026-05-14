@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Bridge · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .bridge-stage { gap: 20px; }
+
+  .bridge-anchors {
+    width: 100%;
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(2.2rem, 9vw, 3.6rem);
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+    color: var(--ink);
+    margin: 8px 0 4px;
+  }
+  .bridge-anchors .slot {
+    display: inline-block;
+    min-width: 4ch;
+    margin: 0 0.16em;
+    padding: 0 0.06em;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    font-style: italic;
+    font-weight: 400;
+  }
+  .bridge-anchors .slot.empty { color: var(--ink-faint); }
+
+  .bridge-input-row {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; max-width: 380px;
+    border-bottom: 1px solid var(--ink-soft);
+    padding: 0 4px 10px;
+  }
+  .bridge-input {
+    flex: 1;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.6rem;
+    color: var(--ink);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 4px 0;
+  }
+  .bridge-input::placeholder { color: var(--ink-faint); font-weight: 400; font-style: italic; letter-spacing: 0; text-transform: none; }
+  .bridge-submit {
+    padding: 8px 18px;
+    font: 500 0.7rem 'Inter', sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  }
+  .bridge-submit[disabled] { opacity: 0.4; pointer-events: none; }
+  @media (hover: hover) { .bridge-submit:hover { background: var(--accent); color: var(--paper); } }
+  .bridge-input.shake { animation: shake 320ms var(--ease); }
+
+  .bridge-meta {
+    width: 100%; max-width: 380px;
+    display: flex; justify-content: space-between;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .bridge-meta .num { color: var(--ink); font-family: 'Fraunces', serif; font-size: 0.86rem; }
+
+  .bridge-history {
+    width: 100%; max-width: 480px;
+    list-style: none; padding: 0; margin: 4px 0 0;
+  }
+  .bridge-row {
+    display: grid;
+    grid-template-columns: 1fr 28px 1fr;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 4px;
+    border-top: 1px solid var(--hairline);
+    font-family: 'Fraunces', serif;
+  }
+  .bridge-row:last-child { border-bottom: 1px solid var(--hairline); }
+  .bridge-row .left, .bridge-row .right {
+    font-weight: 500;
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .bridge-row .left { text-align: right; }
+  .bridge-row .right { text-align: left; }
+  .bridge-row .word { color: var(--accent); }
+  .bridge-row .mark {
+    font: 500 1rem 'Inter', sans-serif;
+    text-align: center;
+    color: var(--ink-faint);
+  }
+  .bridge-row.ll .left .mark, .bridge-row .left .mark { display: inline-block; margin-left: 4px; font-size: 0.9em; }
+  .bridge-row .check { color: var(--accent); }
+  .bridge-row .cross { color: #C25E3A; }
+  .bridge-row.solve { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  .bridge-row.solve .left, .bridge-row.solve .right { color: var(--accent); }
+
+  .bridge-result {
+    margin-top: 8px;
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 1.06rem;
+  }
+  .bridge-result em { color: var(--accent); font-style: normal; font-weight: 500; }
+  .bridge-result .compounds {
+    margin-top: 10px;
+    font-family: 'Fraunces', serif;
+    font-style: normal;
+    font-size: 1.4rem;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .bridge-result .compounds .accent { color: var(--accent); font-weight: 500; }
+</style>
+</head>
+<body data-game="bridge" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="bridge">
+      <div class="game-head">
+        <div class="eyebrow">No. 020 · Bridge</div>
+        <h1 class="title">Bridge</h1>
+        <p class="rule">A word that joins to both sides.</p>
+        <p class="howto"><b>How to play.</b> Find a word that forms a valid compound with both anchors — left side and right side. Five guesses. Each guess shows ✓ on the side that worked, ✗ on the side that didn't.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="bridge">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="bridge" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="bridge" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="bridge" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="bridge" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="bridge" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage bridge-stage" id="stage-bridge">
+        <div class="bridge-anchors">
+          <span id="anchor-left"></span>
+          <span class="slot empty" id="slot">____</span>
+          <span id="anchor-right"></span>
+        </div>
+
+        <div class="bridge-input-row">
+          <input class="bridge-input" id="bridge-input" type="text" maxlength="14" autocomplete="off" autocapitalize="characters" placeholder="bridge word">
+          <button class="bridge-submit" id="bridge-submit" disabled>Guess</button>
+        </div>
+        <div class="bridge-meta"><span><span class="num" id="guess-num">0</span> / 5 guesses</span><span id="bridge-status"></span></div>
+
+        <ul class="bridge-history" id="bridge-history"></ul>
+
+        <div class="solved" id="solved-bridge"><span class="check">✓</span><span class="solved-text">Bridged</span></div>
+        <div class="bridge-result" id="bridge-result" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Bridge() {
+    // Each puzzle defines left/right anchors and accept-lists per side.
+    // A guess is a "left-success" if it appears in `leftAccept`, etc.
+    const PUZZLES = [
+      {
+        id: 'bridge-001',
+        left: 'FIRE', right: 'WORK',
+        canonical: 'WOOD',
+        leftAccept:  ['WOOD','HOUSE','STONE','ARM','FLY','PROOF','MAN','BALL','BIRD','STORM','BRAND'],
+        rightAccept: ['WOOD','HOUSE','STONE','ART','NET','HOME','TEAM','GROUND','GUESS','PATCH','BOOK','SHOP','PIECE','BENCH','OUT','OVER','LOAD','ROOM','MAN','HORSE','FLOW','FORCE','PLACE','SHEET','SPACE','STATION','TOP'],
+        // intersection = ['WOOD','HOUSE','STONE','MAN']  (MAN only marginal; we accept canonical + close ones)
+        examples: ['WOOD → FIREWOOD + WOODWORK', 'HOUSE → FIREHOUSE + HOUSEWORK'],
+      },
+      {
+        id: 'bridge-002',
+        left: 'SUN', right: 'LIGHT',
+        canonical: 'DAY',
+        leftAccept:  ['DAY','SPOT','LAMP','DOWN','FLOWER','SHINE','BEAM','BURN','FISH','BLOCK','LIT','SET','RISE','STROKE','GLASSES','DIAL','DRESS','HAT','DECK','TAN','BATHE','BAKED','ROOM','BLOCK','TAN','BONNET'],
+        rightAccept: ['DAY','SPOT','LAMP','DOWN','MOON','STAR','HOUSE','HEART','HEAD','WEIGHT','SHIP','SOME','WORK','GHT','FLASH','TWI','LIME','SEARCH','TORCH','GAS'],
+        // intersection canonical: DAY (SUNDAY+DAYLIGHT), SPOT (SUNSPOT+SPOTLIGHT), LAMP (SUNLAMP+LAMPLIGHT), DOWN (SUNDOWN+DOWNLIGHT)
+        examples: ['DAY → SUNDAY + DAYLIGHT', 'SPOT → SUNSPOT + SPOTLIGHT', 'LAMP → SUNLAMP + LAMPLIGHT'],
+      },
+      {
+        id: 'bridge-003',
+        left: 'BACK', right: 'SIDE',
+        canonical: 'ROAD',
+        leftAccept:  ['ROAD','COUNTRY','FIRE','HAND','BONE','PACK','LASH','BOARD','STROKE','STAGE','REST','GAMMON','SLIDE','TRACK','UP','WARDS','YARD','SPACE','PEDAL','BENCH','SEAT','STAB','OFF','BURNER','LIGHT','LOG','DROP','GROUND','BIT','WATER'],
+        rightAccept: ['ROAD','COUNTRY','FIRE','SEA','POOL','CURB','BED','HILL','BLIND','RIVER','RING','OFF','WALK','WAYS','LINE','BAR','TRACK','OUT','EFFECT','BOARD','LONG','STREET','UP','KICK','DOWN','STEP','TONE','WAY','PIECE','ARM','DISH','SLIP','CAR','BURN','LANE','POCKET','SADDLE','SHOW'],
+        // canonical = ROAD (BACKROAD + ROADSIDE), COUNTRY (BACKCOUNTRY+COUNTRYSIDE), FIRE (BACKFIRE+FIRESIDE)
+        examples: ['ROAD → BACKROAD + ROADSIDE', 'COUNTRY → BACKCOUNTRY + COUNTRYSIDE', 'FIRE → BACKFIRE + FIRESIDE'],
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const anchorLeft  = $('#anchor-left');
+    const anchorRight = $('#anchor-right');
+    const slotEl      = $('#slot');
+    const input       = $('#bridge-input');
+    const submitBtn   = $('#bridge-submit');
+    const historyEl   = $('#bridge-history');
+    const guessNumEl  = $('#guess-num');
+    const statusEl    = $('#bridge-status');
+    const solvedEl    = $('#solved-bridge');
+    const resultEl    = $('#bridge-result');
+    const stageEl     = $('#stage-bridge');
+    const shareBtn    = document.querySelector('.tool-btn[data-game="bridge"][data-action="share"]');
+
+    const MAX_GUESSES = 5;
+    let guesses = []; // [{word, left, right}]
+    let solved = false;
+
+    function build() {
+      anchorLeft.textContent = PUZZLE.left;
+      anchorRight.textContent = PUZZLE.right;
+      slotEl.textContent = '____';
+      slotEl.classList.add('empty');
+      input.value = ''; input.disabled = false;
+      submitBtn.disabled = true;
+      historyEl.innerHTML = '';
+      guesses = []; solved = false;
+      guessNumEl.textContent = '0';
+      statusEl.textContent = '';
+      solvedEl.classList.remove('show', 'is-revealed');
+      resultEl.hidden = true; resultEl.innerHTML = '';
+      shareBtn.hidden = true;
+      input.focus();
+    }
+
+    function clean(s) { return s.trim().replace(/[^A-Za-z]/g, '').toUpperCase(); }
+
+    input.addEventListener('input', () => {
+      const v = clean(input.value);
+      if (v) { slotEl.textContent = v; slotEl.classList.remove('empty'); }
+      else { slotEl.textContent = '____'; slotEl.classList.add('empty'); }
+      submitBtn.disabled = v.length < 2 || solved;
+    });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); submitBtn.click(); }
+    });
+
+    submitBtn.addEventListener('click', () => {
+      if (solved) return;
+      const w = clean(input.value);
+      if (w.length < 2) { input.classList.add('shake'); setTimeout(() => input.classList.remove('shake'), 380); return; }
+      const left  = PUZZLE.leftAccept.includes(w);
+      const right = PUZZLE.rightAccept.includes(w);
+      guesses.push({ word: w, left, right });
+      guessNumEl.textContent = String(guesses.length);
+      // history
+      const li = document.createElement('li');
+      const both = left && right;
+      li.className = 'bridge-row' + (both ? ' solve' : '');
+      li.innerHTML = `
+        <div class="left">${PUZZLE.left}<span class="word">${w}</span> <span class="${left?'check':'cross'}">${left?'✓':'✗'}</span></div>
+        <div class="mark"></div>
+        <div class="right"><span class="${right?'check':'cross'}">${right?'✓':'✗'}</span> <span class="word">${w}</span>${PUZZLE.right}</div>`;
+      historyEl.appendChild(li);
+      input.value = ''; submitBtn.disabled = true;
+      slotEl.textContent = '____'; slotEl.classList.add('empty');
+      haptic(both ? 22 : (left || right ? 12 : 6));
+      if (both) win(w);
+      else if (guesses.length >= MAX_GUESSES) lose();
+      else statusEl.textContent = `${MAX_GUESSES - guesses.length} left`;
+    });
+
+    function win(w) {
+      solved = true;
+      input.disabled = true;
+      slotEl.textContent = w; slotEl.classList.remove('empty');
+      solvedEl.querySelector('.solved-text').textContent = `Bridged in ${guesses.length}`;
+      solvedEl.classList.add('show');
+      resultEl.innerHTML = `
+        <div>The bridge:</div>
+        <div class="compounds">${PUZZLE.left}<span class="accent">${w}</span> · <span class="accent">${w}</span>${PUZZLE.right}</div>`;
+      resultEl.hidden = false;
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+
+    function lose() {
+      solved = true;
+      input.disabled = true;
+      slotEl.textContent = PUZZLE.canonical; slotEl.classList.remove('empty');
+      solvedEl.querySelector('.solved-text').textContent = 'Out of guesses';
+      solvedEl.classList.add('show', 'is-revealed');
+      resultEl.innerHTML = `
+        <div>One bridge was <em>${PUZZLE.canonical}</em>.</div>
+        <div class="compounds">${PUZZLE.left}<span class="accent">${PUZZLE.canonical}</span> · <span class="accent">${PUZZLE.canonical}</span>${PUZZLE.right}</div>
+        <div style="color:var(--ink-faint);font-style:italic;font-size:0.84rem;margin-top:6px">${PUZZLE.examples.slice(1).join(' · ')}</div>`;
+      resultEl.hidden = false;
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      const grid = guesses.map(g =>
+        (g.left ? '✅' : '❌') + (g.right ? '✅' : '❌')
+      ).join('\n');
+      const won = guesses.some(g => g.left && g.right);
+      copyShare(`Bridge · ${won ? guesses.length+'/5' : 'X/5'}\n${PUZZLE.left} ___ ${PUZZLE.right}\n${grid}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.bridge = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

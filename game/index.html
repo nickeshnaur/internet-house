@@ -158,6 +158,10 @@
   .card[data-game="trace"]      { --card-accent: var(--trace); }
   .card[data-game="echo"]       { --card-accent: var(--echo); }
   .card[data-game="glyph"]      { --card-accent: var(--glyph); }
+  .card[data-game="rule"]       { --card-accent: var(--rule); }
+  .card[data-game="order"]      { --card-accent: var(--order); }
+  .card[data-game="trio"]       { --card-accent: var(--trio); }
+  .card[data-game="bridge"]     { --card-accent: var(--bridge); }
 
   @media (max-width: 480px) {
     .grid { grid-template-columns: 1fr; gap: 10px; }
@@ -358,6 +362,52 @@
           </div>
           <h3 class="card-name">Glyph</h3>
           <p class="card-desc">Study a symbol. Then draw it back from memory.</p>
+        </a>
+
+      </div>
+    </section>
+
+    <section class="group" aria-labelledby="grp-sharp">
+      <div class="group-head">
+        <h2 class="group-name" id="grp-sharp">Sharp</h2>
+        <span class="group-tagline">Closed answers. Daily strategy. Tight grids.</span>
+      </div>
+      <div class="grid">
+
+        <a class="card" data-game="rule" href="rule/">
+          <span class="card-tag">No. 017</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><text x="6" y="34" font-family="Fraunces, serif" font-size="18" fill="currentColor">A</text><path d="M22 28 L34 28 M30 24 L34 28 L30 32" stroke="currentColor" stroke-width="1.6" fill="none"/><rect x="38" y="20" width="20" height="16" rx="2" stroke="currentColor" stroke-width="1.4" fill="none"/><text x="42" y="32" font-family="Inter, sans-serif" font-size="9" fill="currentColor" font-style="italic">?</text><path d="M62 28 L74 28 M70 24 L74 28 L70 32" stroke="currentColor" stroke-width="1.6" fill="none"/><text x="76" y="34" font-family="Fraunces, serif" font-size="18" fill="currentColor">E</text></svg>
+          </div>
+          <h3 class="card-name">Rule</h3>
+          <p class="card-desc">Probe a hidden transform. Predict three.</p>
+        </a>
+
+        <a class="card" data-game="order" href="order/">
+          <span class="card-tag">No. 018</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><g stroke="currentColor" stroke-width="1.2"><rect x="4"  y="6"  width="76" height="9" rx="2" fill="currentColor" fill-opacity="0.85"/><rect x="4"  y="18" width="76" height="9" rx="2" fill="currentColor" fill-opacity="0.18"/><rect x="4"  y="30" width="76" height="9" rx="2" fill="currentColor" fill-opacity="0.55"/><rect x="4"  y="42" width="76" height="9" rx="2" fill="currentColor" fill-opacity="0.35"/></g></svg>
+          </div>
+          <h3 class="card-name">Order</h3>
+          <p class="card-desc">Sequence six items in five tries.</p>
+        </a>
+
+        <a class="card" data-game="trio" href="trio/">
+          <span class="card-tag">No. 019</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><g><rect x="6"  y="6"  width="20" height="14" rx="2" fill="currentColor"/><rect x="32" y="6"  width="20" height="14" rx="2" fill="currentColor" fill-opacity="0.22"/><rect x="58" y="6"  width="20" height="14" rx="2" fill="currentColor"/><rect x="6"  y="24" width="20" height="14" rx="2" fill="currentColor" fill-opacity="0.22"/><rect x="32" y="24" width="20" height="14" rx="2" fill="currentColor" fill-opacity="0.22"/><rect x="58" y="24" width="20" height="14" rx="2" fill="currentColor" fill-opacity="0.22"/><rect x="6"  y="42" width="20" height="9"  rx="2" fill="currentColor" fill-opacity="0.22"/><rect x="32" y="42" width="20" height="9"  rx="2" fill="currentColor"/><rect x="58" y="42" width="20" height="9"  rx="2" fill="currentColor" fill-opacity="0.22"/></g></svg>
+          </div>
+          <h3 class="card-name">Trio</h3>
+          <p class="card-desc">Find the three that share a hidden category.</p>
+        </a>
+
+        <a class="card" data-game="bridge" href="bridge/">
+          <span class="card-tag">No. 020</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="92" height="42" viewBox="0 0 92 42" fill="none"><text x="0" y="28" font-family="Fraunces, serif" font-weight="500" font-size="16" fill="currentColor">FIRE</text><text x="34" y="28" font-family="Fraunces, serif" font-size="16" fill="currentColor" fill-opacity="0.25" letter-spacing="2">___</text><text x="66" y="28" font-family="Fraunces, serif" font-weight="500" font-size="16" fill="currentColor">WORK</text></svg>
+          </div>
+          <h3 class="card-name">Bridge</h3>
+          <p class="card-desc">A word that joins to both sides.</p>
         </a>
 
       </div>

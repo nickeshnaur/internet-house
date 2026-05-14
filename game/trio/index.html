@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Trio · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .trio-prompt {
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    margin-bottom: 16px;
+    max-width: 22em;
+  }
+
+  .trio-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 90px;
+    gap: 16px;
+    width: 100%;
+    max-width: 540px;
+  }
+
+  .trio-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .trio-tile {
+    aspect-ratio: 1 / 1;
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    background: var(--paper-soft);
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    padding: 8px;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 0.96rem;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    text-transform: uppercase;
+    transition: transform var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  @media (hover: hover) {
+    .trio-tile:hover:not(.disabled) { border-color: var(--ink-soft); }
+  }
+  .trio-tile.selected {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .trio-tile.correct {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    color: var(--accent);
+  }
+  .trio-tile.disabled { opacity: 0.55; pointer-events: none; }
+
+  .trio-side {
+    display: flex; flex-direction: column; gap: 6px;
+    align-items: stretch;
+    font-family: 'Fraunces', serif;
+  }
+  .trio-side .meta {
+    font: 500 0.58rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .guess-row {
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 6px 4px;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    text-align: center;
+    background: var(--paper-soft);
+  }
+  .guess-row .count {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--ink);
+  }
+  .guess-row .count .of { color: var(--ink-faint); font-size: 0.74em; }
+  .guess-row.solve { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  .guess-row.solve .count { color: var(--accent); }
+
+  .trio-actions { text-align: center; margin-top: 14px; }
+  .trio-submit {
+    padding: 10px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+    border-radius: 999px;
+  }
+  .trio-submit[disabled] { opacity: 0.4; pointer-events: none; }
+
+  .trio-reveal {
+    margin-top: 18px;
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 1.04rem;
+  }
+  .trio-reveal em { color: var(--accent); font-style: normal; font-weight: 500; }
+
+  @media (max-width: 480px) {
+    .trio-layout { grid-template-columns: minmax(0, 1fr) 64px; }
+    .trio-tile { font-size: 0.82rem; }
+  }
+</style>
+</head>
+<body data-game="trio" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="trio">
+      <div class="game-head">
+        <div class="eyebrow">No. 019 · Trio</div>
+        <h1 class="title">Trio</h1>
+        <p class="rule">Three of these nine share a hidden category.</p>
+        <p class="howto"><b>How to play.</b> Tap exactly three tiles and submit. You'll see how many of your three are in the hidden trio. Four guesses. Find all three to reveal the category.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="trio">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="trio" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="trio" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="trio" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="trio" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="trio" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-trio">
+        <p class="trio-prompt" id="trio-prompt">Find the three that share a category.</p>
+
+        <div class="trio-layout">
+          <div class="trio-grid" id="trio-grid"></div>
+          <div class="trio-side">
+            <div class="meta">guesses</div>
+            <div id="trio-history"></div>
+          </div>
+        </div>
+
+        <div class="trio-actions">
+          <button class="trio-submit" id="trio-submit" disabled>Submit · 0 / 3</button>
+        </div>
+
+        <div class="solved" id="solved-trio"><span class="check">✓</span><span class="solved-text">Found</span></div>
+        <p class="trio-reveal" id="trio-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Trio() {
+    const PUZZLES = [
+      {
+        id: 'trio-001',
+        prompt: 'Three of these nine share a hidden category.',
+        words: ['HARP','SAW','DRILL','VIOLIN','HAMMER','PIANO','BRUSH','CELLO','WRENCH'],
+        trio:  ['HARP','VIOLIN','CELLO'],
+        category: 'stringed instruments',
+        trap: 'PIANO is an instrument — but not a stringed one in the orchestral sense.',
+      },
+      {
+        id: 'trio-002',
+        prompt: 'Three of these nine share a hidden category.',
+        words: ['LEMON','APPLE','LIME','CHERRY','ORANGE','BANANA','GRAPE','PLUM','PEAR'],
+        trio:  ['LEMON','LIME','ORANGE'],
+        category: 'citrus fruits',
+        trap: 'All nine are fruits. Only three are citrus.',
+      },
+      {
+        id: 'trio-003',
+        prompt: 'Three of these nine share a hidden category.',
+        words: ['SHARK','EAGLE','TIGER','WOLF','OWL','DOLPHIN','WHALE','BEAR','FALCON'],
+        trio:  ['EAGLE','OWL','FALCON'],
+        category: 'birds',
+        trap: 'Land mammals and sea creatures fill the rest of the field.',
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const promptEl  = $('#trio-prompt');
+    const gridEl    = $('#trio-grid');
+    const historyEl = $('#trio-history');
+    const submitBtn = $('#trio-submit');
+    const solvedEl  = $('#solved-trio');
+    const revealEl  = $('#trio-reveal');
+    const stageEl   = $('#stage-trio');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="trio"][data-action="share"]');
+
+    const MAX_GUESSES = 4;
+    let selected = new Set();
+    let guesses = []; // [{picks: [..], count: n, solve: bool}]
+    let solved = false;
+
+    function build() {
+      promptEl.textContent = PUZZLE.prompt;
+      selected.clear();
+      guesses = []; solved = false;
+      gridEl.innerHTML = '';
+      historyEl.innerHTML = '';
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      solvedEl.classList.remove('show', 'is-revealed');
+      shareBtn.hidden = true;
+      submitBtn.hidden = false; submitBtn.disabled = true;
+      submitBtn.textContent = 'Submit · 0 / 3';
+
+      PUZZLE.words.forEach(w => {
+        const t = document.createElement('button');
+        t.className = 'trio-tile';
+        t.dataset.word = w;
+        t.textContent = w;
+        t.addEventListener('click', () => toggle(t, w));
+        gridEl.appendChild(t);
+      });
+      updateSubmit();
+    }
+
+    function toggle(el, w) {
+      if (solved) return;
+      if (selected.has(w)) {
+        selected.delete(w);
+        el.classList.remove('selected');
+      } else {
+        if (selected.size >= 3) return;
+        selected.add(w);
+        el.classList.add('selected');
+      }
+      updateSubmit();
+      haptic(4);
+    }
+
+    function updateSubmit() {
+      submitBtn.textContent = `Submit · ${selected.size} / 3`;
+      submitBtn.disabled = selected.size !== 3 || solved;
+    }
+
+    submitBtn.addEventListener('click', submit);
+
+    function submit() {
+      if (solved || selected.size !== 3) return;
+      const picks = [...selected];
+      const count = picks.filter(w => PUZZLE.trio.includes(w)).length;
+      const solve = count === 3;
+      guesses.push({ picks, count, solve });
+      // Render history
+      const row = document.createElement('div');
+      row.className = 'guess-row' + (solve ? ' solve' : '');
+      row.innerHTML = `<div class="count">${count}<span class="of">/3</span></div>`;
+      historyEl.appendChild(row);
+      // Clear selection
+      gridEl.querySelectorAll('.trio-tile.selected').forEach(el => el.classList.remove('selected'));
+      selected.clear();
+      updateSubmit();
+      haptic(solve ? 22 : 8);
+      if (solve) win();
+      else if (guesses.length >= MAX_GUESSES) lose();
+    }
+
+    function win() {
+      solved = true;
+      // Highlight the trio
+      gridEl.querySelectorAll('.trio-tile').forEach(t => {
+        const w = t.dataset.word;
+        if (PUZZLE.trio.includes(w)) t.classList.add('correct');
+        else t.classList.add('disabled');
+      });
+      submitBtn.hidden = true;
+      solvedEl.querySelector('.solved-text').textContent = `Found in ${guesses.length}`;
+      solvedEl.classList.add('show');
+      revealEl.innerHTML = `The category was <em>${PUZZLE.category}</em>.`;
+      revealEl.hidden = false;
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+
+    function lose() {
+      solved = true;
+      gridEl.querySelectorAll('.trio-tile').forEach(t => {
+        const w = t.dataset.word;
+        if (PUZZLE.trio.includes(w)) t.classList.add('correct');
+        else t.classList.add('disabled');
+      });
+      submitBtn.hidden = true;
+      solvedEl.querySelector('.solved-text').textContent = 'Out of guesses';
+      solvedEl.classList.add('show', 'is-revealed');
+      revealEl.innerHTML = `The category was <em>${PUZZLE.category}</em>. <span style="color:var(--ink-faint);font-size:0.86em;display:block;margin-top:6px">${PUZZLE.trap}</span>`;
+      revealEl.hidden = false;
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      const grid = guesses.map(g =>
+        '🟩'.repeat(g.count) + '⬛'.repeat(3 - g.count)
+      ).join('\n');
+      const result = guesses.some(g => g.solve) ? `${guesses.length}/4` : 'X/4';
+      copyShare(`Trio · ${result}\n${grid}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.trio = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

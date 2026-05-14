@@ -1,6 +1,6 @@
 # /game
 
-Sixteen daily-puzzle prototypes, one per folder, served straight out of
+Twenty daily-puzzle prototypes, one per folder, served straight out of
 `game/`. No build step.
 
 ```
@@ -24,6 +24,10 @@ game/
   trace/index.html       ← Game 14    Still
   echo/index.html        ← Game 15    Still
   glyph/index.html       ← Game 16    Still
+  rule/index.html        ← Game 17    Sharp
+  order/index.html       ← Game 18    Sharp
+  trio/index.html        ← Game 19    Sharp
+  bridge/index.html      ← Game 20    Sharp
 ```
 
 Each game lives in its own folder; visiting `/game/<slug>/` loads only
@@ -42,9 +46,9 @@ with three puzzles selectable from a `1 · 2 · 3` picker in the toolbar.
   `.toolbar`, `.stage`. CSS for game-specific surfaces is inlined in
   that game's file.
 
-## Four groups
+## Five groups
 
-The hub clusters the sixteen games:
+The hub clusters the twenty games:
 
 - **Logic** — Tableau, Filament, Beat Sheet. Editorial paper.
 - **Feeling** — Knot, Bloom. Dark, gestural, atmospheric.
@@ -52,6 +56,9 @@ The hub clusters the sixteen games:
   Average. Editorial typography carries the experience.
 - **Still** — Glance, Trace, Echo, Glyph. One verb each — see, move,
   write, remember. Contemplative, no urgent timers, no scores.
+- **Sharp** — Rule, Order, Trio, Bridge. Closed-answer Wordle-DNA:
+  hidden answer, info-rich feedback per guess, daily cadence,
+  emoji-grid share artifact.
 
 The hub itself (`game/index.html`) is a card grid — each card has a
 glyph, name, one-line description, and a tinted accent border.
@@ -305,7 +312,109 @@ attempts; in production these would be the player's own history.
 
 ---
 
-## Adding a seventeenth game
+## The Sharp group
+
+Four closed-answer strategy games. Hidden answer, info-rich per-guess
+feedback, emoji-grid share artifact. Aesthetic: tighter and more
+confident than the contemplative batch — closer to a chess interface
+than a notebook.
+
+### Rule · probe a hidden transform · `game/rule/`
+
+A hidden function maps inputs to outputs. The player makes up to five
+free probes (any word in → transformed word out), then faces three
+prediction challenges: given a new input, predict its output. Score
+is correct predictions out of three.
+
+```js
+{
+  id: 'rule-NNN',
+  name: 'vowel-shift forward',
+  transform(s) { /* string → string */ },
+  challenges: ['PIZZA', 'MUSIC', 'ANSWER'],
+}
+```
+
+Three rules ship: vowel-shift (a→e, e→i, i→o, o→u, u→a), reverse the
+word, and "first letter moves to end." The challenge correct-answer
+is just `transform(challenge)` evaluated client-side. Calibration
+target: solvable in three to four well-chosen probes.
+
+### Order · sequence Mastermind · `game/order/`
+
+Six items in a hidden order. Drag into a proposed sequence and
+submit. Per-slot feedback: ✓ (right position), ↑ (item belongs
+earlier), ↓ (item belongs later). Five guesses. Solve = all six
+correct.
+
+```js
+{
+  id: 'order-NNN',
+  prompt: 'Order these novels by publication year, earliest to latest.',
+  items: [
+    { id: 'hm', title: 'Hamlet', meta: 'Shakespeare · 1603' },
+    // …
+  ],
+  order: ['hm','pp','md','gg','84','cr'],   // truth (earliest → latest)
+}
+```
+
+Three puzzles ship: novels by year, inventions by year, wars by
+year. Drag uses pointer events with translateY offsets (same pattern
+as Curator). The history rail to the right shows the per-slot
+emoji portrait of every guess so you can see your progress.
+
+### Trio · three of nine with hidden category · `game/trio/`
+
+Nine word tiles in a 3×3 grid. Three share a hidden category; six
+are decoys. Tap exactly three and submit; feedback is the count of
+your three that were in the hidden trio. Four guesses. The strategy
+that emerges: probe with controlled substitutions to isolate which
+member of a previous guess was correct.
+
+```js
+{
+  id: 'trio-NNN',
+  words: ['HARP','SAW','DRILL','VIOLIN','HAMMER','PIANO','BRUSH','CELLO','WRENCH'],
+  trio:  ['HARP','VIOLIN','CELLO'],
+  category: 'stringed instruments',
+  trap: 'PIANO is an instrument — but not a stringed one in the orchestral sense.',
+}
+```
+
+The category reveals only on solve (or after a loss, alongside the
+trap explainer). Three puzzles ship: stringed instruments, citrus
+fruits, birds.
+
+### Bridge · find the compound bridge word · `game/bridge/`
+
+Two anchor words with a blank between them: `FIRE __ WORK`. The
+player guesses a word that forms a valid compound with each side
+(`WOOD` → FIREWOOD + WOODWORK). Five guesses. Per-guess feedback:
+✓/✗ on each side independently.
+
+```js
+{
+  id: 'bridge-NNN',
+  left: 'FIRE', right: 'WORK',
+  canonical: 'WOOD',
+  leftAccept:  ['WOOD','HOUSE','STONE',...],   // forms compound on left
+  rightAccept: ['WOOD','HOUSE','STONE',...],   // forms compound on right
+  examples: ['WOOD → FIREWOOD + WOODWORK', 'HOUSE → FIREHOUSE + HOUSEWORK'],
+}
+```
+
+A guess succeeds on a side iff it appears in that side's accept-list.
+A solve requires both. Three puzzles ship: FIRE/WORK (canonical
+WOOD; also accepts HOUSE, STONE), SUN/LIGHT (DAY; also SPOT, LAMP,
+DOWN), BACK/SIDE (ROAD; also COUNTRY, FIRE).
+
+Production version would replace the hand-authored accept lists with
+a compound-word corpus lookup.
+
+---
+
+## Adding a twenty-first game
 
 1. Create `/game/<slug>/index.html` modeled on any existing game.
 2. Add an accent color in `shared.css`:
