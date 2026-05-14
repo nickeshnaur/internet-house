@@ -23,6 +23,10 @@
     --tableau: #B33A3A;
     --filament: #1F3A5F;
     --beatsheet: #B8862C;
+    --knot: #5EE3D6;
+    --bloom: #E8A0C8;
+    --cleave: #E8B14C;
+    --strand: #A78BFA;
 
     --accent: var(--tableau);
     --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -33,9 +37,20 @@
     --max-content: 640px;
   }
 
+  /* Dark "after-hours" mood for the Feeling group */
+  body[data-mood="dark"] {
+    --paper:           #0E1218;
+    --paper-soft:      #161B23;
+    --paper-deep:      #1E2530;
+    --ink:             #ECE7DA;
+    --ink-soft:        #B0A99A;
+    --ink-faint:       #6B6557;
+    --hairline:        #232932;
+    --hairline-strong: #3A4250;
+  }
+
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
-  html { background: var(--paper); }
   body {
     background: var(--paper);
     color: var(--ink);
@@ -46,7 +61,18 @@
     text-rendering: optimizeLegibility;
     min-height: 100vh;
     min-height: 100dvh;
+    transition:
+      background-color var(--t-slow) var(--ease),
+      color           var(--t-slow) var(--ease);
   }
+  /* Smoothly recolor chrome elements when mood flips */
+  html, .tabs-wrap, .masthead, footer, .tab, .clues li,
+  .tableau-cell, .tableau-grid, .timer .num, .tool-btn,
+  .rule, .eyebrow, .title { transition:
+    background-color var(--t-slow) var(--ease),
+    color           var(--t-slow) var(--ease),
+    border-color    var(--t-slow) var(--ease); }
+  html { background: var(--paper); }
 
   button { font: inherit; color: inherit; background: none; border: none; padding: 0; cursor: pointer; }
 
@@ -80,21 +106,32 @@
     position: sticky; top: 0; z-index: 50;
     background: var(--paper);
     border-bottom: 1px solid var(--hairline);
-    transition: border-color var(--t-med) var(--ease);
   }
-  .tabs {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
+  .tabs-scroll {
     max-width: var(--max-content);
     margin: 0 auto;
-    padding: 0 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    /* fade the edges so scrollable tabs read clearly */
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+  }
+  .tabs-scroll::-webkit-scrollbar { display: none; }
+  .tabs {
+    display: inline-flex;
+    align-items: stretch;
+    gap: 2px;
+    min-width: 100%;
+    padding: 0 16px;
     position: relative;
+    justify-content: center;
   }
   .tab {
-    flex: 1 1 0;
-    max-width: 180px;
-    padding: 16px 10px 14px;
+    flex: 0 0 auto;
+    padding: 16px 14px 14px;
     font-family: 'Fraunces', serif;
     font-weight: 500;
     font-size: 1.02rem;
@@ -104,9 +141,32 @@
     text-align: center;
     transition: color var(--t-med) var(--ease);
     white-space: nowrap;
+    scroll-snap-align: center;
   }
   .tab:hover { color: var(--ink-soft); }
   .tab[aria-selected="true"] { color: var(--ink); }
+  .tab-group-label {
+    flex: 0 0 auto;
+    align-self: center;
+    padding: 0 6px 0 10px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.58rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    opacity: 0.6;
+    pointer-events: none;
+    user-select: none;
+  }
+  .tab-divider {
+    flex: 0 0 1px;
+    align-self: stretch;
+    width: 1px;
+    background: var(--hairline-strong);
+    margin: 14px 6px;
+    opacity: 0.7;
+  }
   .tab-underline {
     position: absolute;
     bottom: -1px; left: 0;
@@ -117,7 +177,9 @@
                 background-color var(--t-med) var(--ease);
     border-radius: 1px;
     pointer-events: none;
+    box-shadow: 0 0 8px var(--accent);
   }
+  body[data-mood="light"] .tab-underline { box-shadow: none; }
 
   /* ───────── game container ───────── */
   main {
@@ -509,14 +571,326 @@
   body[data-game="tableau"]   { --accent: var(--tableau); }
   body[data-game="filament"]  { --accent: var(--filament); }
   body[data-game="beatsheet"] { --accent: var(--beatsheet); }
+  body[data-game="knot"]      { --accent: var(--knot); }
+  body[data-game="bloom"]     { --accent: var(--bloom); }
+  body[data-game="cleave"]    { --accent: var(--cleave); }
+  body[data-game="strand"]    { --accent: var(--strand); }
+
+  /* ═════════ KNOT ═════════ */
+  .knot-board {
+    width: min(94vw, 460px);
+    aspect-ratio: 1;
+    position: relative;
+    touch-action: none;
+  }
+  .knot-svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .knot-target {
+    fill: rgba(94, 227, 214, 0.06);
+    stroke: rgba(94, 227, 214, 0.18);
+    stroke-width: 0.6;
+    pointer-events: none;
+    transition: opacity var(--t-slow) var(--ease);
+  }
+  .knot-board.solved .knot-target { opacity: 0; }
+  .knot-edge {
+    stroke: var(--accent);
+    stroke-opacity: 0.5;
+    stroke-width: 1.4;
+    fill: none;
+    pointer-events: none;
+    transition: stroke-opacity var(--t-med) var(--ease), stroke-width var(--t-med) var(--ease);
+    filter: drop-shadow(0 0 6px rgba(94,227,214,0.0));
+  }
+  .knot-edge.near { stroke-opacity: 0.85; }
+  .knot-board.solved .knot-edge {
+    stroke-opacity: 1;
+    stroke-width: 1.8;
+    filter: drop-shadow(0 0 6px rgba(94,227,214,0.45));
+  }
+  .knot-node {
+    fill: var(--accent);
+    cursor: grab;
+    transition: r var(--t-fast) var(--ease), filter var(--t-fast) var(--ease);
+    filter: drop-shadow(0 0 6px var(--accent));
+  }
+  .knot-node:active, .knot-node.dragging { cursor: grabbing; }
+  .knot-node.tight {
+    animation: knot-pulse 900ms var(--ease) infinite;
+  }
+  .knot-board.solved .knot-node {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 700ms var(--ease);
+  }
+  @keyframes knot-pulse {
+    0%, 100% { filter: drop-shadow(0 0 6px var(--accent)); }
+    50%      { filter: drop-shadow(0 0 14px var(--accent)); }
+  }
+
+  /* ═════════ BLOOM ═════════ */
+  .bloom-board {
+    --cell: clamp(34px, 10.5vw, 50px);
+    display: grid;
+    grid-template-columns: repeat(7, var(--cell));
+    grid-template-rows:    repeat(7, var(--cell));
+    gap: 3px;
+    padding: 10px;
+    border-radius: 14px;
+    background: var(--paper-soft);
+    box-shadow: inset 0 0 0 1px var(--hairline);
+  }
+  .bloom-cell {
+    position: relative;
+    background: var(--paper-deep);
+    border-radius: 6px;
+    transition: background var(--t-med) var(--ease), transform var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    overflow: hidden;
+  }
+  .bloom-cell.wall {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px rgba(232, 160, 200, 0.18);
+  }
+  .bloom-cell.wall::after {
+    content: '';
+    position: absolute;
+    inset: 8%;
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(232, 160, 200, 0.18) 0,
+      rgba(232, 160, 200, 0.18) 1px,
+      transparent 1px,
+      transparent 6px
+    );
+    border-radius: 4px;
+  }
+  .bloom-cell.target::before {
+    content: '';
+    position: absolute;
+    inset: 18%;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.10;
+    transition: opacity var(--t-slow) var(--ease);
+  }
+  .bloom-cell.filled {
+    background: var(--accent);
+    box-shadow: 0 0 12px rgba(232, 160, 200, 0.35),
+                inset 0 0 0 1px rgba(255,255,255,0.06);
+  }
+  .bloom-cell.filled::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 6px;
+    background: var(--accent);
+    animation: bloom-pop 460ms var(--ease);
+    pointer-events: none;
+  }
+  @keyframes bloom-pop {
+    0%   { transform: scale(0.3); opacity: 0.9; }
+    60%  { opacity: 0.4; }
+    100% { transform: scale(1.0); opacity: 0; }
+  }
+  .bloom-board.solved .bloom-cell.target::before { opacity: 0; }
+  .bloom-board.solved .bloom-cell.filled {
+    box-shadow: 0 0 22px rgba(232, 160, 200, 0.6),
+                inset 0 0 0 1px rgba(255,255,255,0.08);
+  }
+  .bloom-legend {
+    display: flex;
+    gap: 18px;
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .bloom-legend .swatch {
+    display: inline-block;
+    width: 10px; height: 10px;
+    vertical-align: -1px;
+    border-radius: 2px;
+    margin-right: 6px;
+  }
+
+  /* ═════════ CLEAVE ═════════ */
+  .cleave-stage {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    padding: 22px 4px 16px;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(1.8rem, 9.5vw, 3.6rem);
+    letter-spacing: -0.008em;
+    line-height: 1.1;
+    color: var(--ink);
+    user-select: none;
+  }
+  .cleave-letter {
+    display: inline-block;
+    transition: margin var(--t-med) var(--ease),
+                color var(--t-med) var(--ease),
+                text-shadow var(--t-med) var(--ease);
+  }
+  .cleave-gap {
+    display: inline-block;
+    position: relative;
+    width: 0.22em;
+    height: 1em;
+    vertical-align: -0.05em;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    flex: 0 0 auto;
+  }
+  .cleave-gap::before {
+    /* enlarge hit area */
+    content: '';
+    position: absolute;
+    inset: -0.3em -0.1em;
+  }
+  .cleave-gap::after {
+    content: '';
+    position: absolute;
+    top: 0.12em; bottom: 0.12em;
+    left: 50%;
+    width: 1.2px;
+    background: var(--accent);
+    transform: translateX(-50%) scaleY(0);
+    transform-origin: center;
+    transition: transform var(--t-med) var(--ease), background var(--t-med) var(--ease);
+    border-radius: 1px;
+    box-shadow: 0 0 6px rgba(232, 177, 76, 0.0);
+  }
+  .cleave-gap.cut::after {
+    transform: translateX(-50%) scaleY(1);
+    box-shadow: 0 0 6px rgba(232, 177, 76, 0.5);
+  }
+  .cleave-gap:hover::after {
+    transform: translateX(-50%) scaleY(0.4);
+    background: var(--ink-faint);
+  }
+  .cleave-gap.cut:hover::after {
+    background: var(--accent);
+    transform: translateX(-50%) scaleY(1);
+  }
+  .cleave-stage.solved .cleave-gap.cut::after {
+    transform: translateX(-50%) scaleY(0);
+    opacity: 0;
+  }
+  .cleave-stage.solved .cleave-gap.cut {
+    width: 0.42em;
+  }
+  .cleave-stage.solved .cleave-letter {
+    animation: cleave-shimmer 1100ms var(--ease);
+  }
+  @keyframes cleave-shimmer {
+    0%   { text-shadow: 0 0 0 rgba(232, 177, 76, 0); }
+    40%  { text-shadow: 0 0 14px rgba(232, 177, 76, 0.55); }
+    100% { text-shadow: 0 0 0 rgba(232, 177, 76, 0); }
+  }
+  .cleave-attribution {
+    margin-top: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.66rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+    opacity: 0;
+    transition: opacity var(--t-slow) var(--ease);
+  }
+  .cleave-stage.solved + .cleave-attribution { opacity: 1; }
+
+  /* ═════════ STRAND ═════════ */
+  .strand-board {
+    width: min(96vw, 480px);
+    aspect-ratio: 5 / 6;
+    position: relative;
+    border-radius: 18px;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 35%, rgba(167, 139, 250, 0.10), transparent 65%),
+      radial-gradient(ellipse 70% 50% at 70% 80%, rgba(167, 139, 250, 0.05), transparent 70%);
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+  }
+  .strand-svg { width: 100%; height: 100%; display: block; }
+  .strand-letter-bg {
+    fill: rgba(167, 139, 250, 0.0);
+    transition: fill var(--t-fast) var(--ease);
+  }
+  .strand-letter-bg.touched { fill: rgba(167, 139, 250, 0.18); }
+  .strand-letter {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 500;
+    fill: var(--ink-soft);
+    text-anchor: middle;
+    dominant-baseline: central;
+    cursor: pointer;
+    transition: fill var(--t-fast) var(--ease);
+    pointer-events: none;
+  }
+  .strand-letter.touched { fill: var(--ink); }
+  .strand-letter.locked  { fill: var(--accent); }
+  .strand-path-locked {
+    stroke: var(--accent);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-opacity: 0.78;
+    fill: none;
+    filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.55));
+  }
+  .strand-path-draft {
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-opacity: 0.55;
+    stroke-dasharray: 3 5;
+    fill: none;
+  }
+  .strand-themelist {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 6px 14px;
+    margin-top: 4px;
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.06em;
+  }
+  .strand-theme-word {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--ink-faint);
+    transition: color var(--t-med) var(--ease), text-decoration-color var(--t-med) var(--ease);
+    text-decoration: line-through transparent;
+  }
+  .strand-theme-word.found {
+    color: var(--accent);
+    text-decoration: line-through var(--accent);
+  }
+  .strand-eyebrow {
+    text-align: center;
+    margin: -4px 0 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
 
   /* ───────── small-screen tweaks ───────── */
   @media (max-width: 420px) {
     main { padding: 24px 16px 64px; }
     .masthead { padding-left: 16px; padding-right: 16px; }
-    .tabs { padding: 0 4px; }
-    .tab { font-size: 0.96rem; padding: 14px 8px 12px; }
+    .tabs { padding: 0 12px; }
+    .tab { font-size: 0.96rem; padding: 14px 10px 12px; }
     .clues li { font-size: 0.92rem; }
+    .cleave-stage { font-size: clamp(1.6rem, 11vw, 2.4rem); }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -535,11 +909,18 @@
 </header>
 
 <nav class="tabs-wrap" aria-label="Games">
-  <div class="tabs" id="tabs" role="tablist">
-    <button class="tab" role="tab" id="tab-tableau"   aria-selected="true"  data-game="tableau">Tableau</button>
-    <button class="tab" role="tab" id="tab-filament"  aria-selected="false" data-game="filament">Filament</button>
-    <button class="tab" role="tab" id="tab-beatsheet" aria-selected="false" data-game="beatsheet">Beat Sheet</button>
-    <span class="tab-underline" id="tab-underline" aria-hidden="true"></span>
+  <div class="tabs-scroll" id="tabs-scroll">
+    <div class="tabs" id="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-tableau"   aria-selected="true"  data-game="tableau"   data-group="logic">Tableau</button>
+      <button class="tab" role="tab" id="tab-filament"  aria-selected="false" data-game="filament"  data-group="logic">Filament</button>
+      <button class="tab" role="tab" id="tab-beatsheet" aria-selected="false" data-game="beatsheet" data-group="logic">Beat Sheet</button>
+      <span class="tab-divider" aria-hidden="true"></span>
+      <button class="tab" role="tab" id="tab-knot"      aria-selected="false" data-game="knot"      data-group="feeling">Knot</button>
+      <button class="tab" role="tab" id="tab-bloom"     aria-selected="false" data-game="bloom"     data-group="feeling">Bloom</button>
+      <button class="tab" role="tab" id="tab-cleave"    aria-selected="false" data-game="cleave"    data-group="feeling">Cleave</button>
+      <button class="tab" role="tab" id="tab-strand"    aria-selected="false" data-game="strand"    data-group="feeling">Strand</button>
+      <span class="tab-underline" id="tab-underline" aria-hidden="true"></span>
+    </div>
   </div>
 </nav>
 
@@ -608,6 +989,97 @@
       <div class="beat-board" id="beat-board"></div>
       <div class="solved" id="solved-beatsheet"><span class="check">✓</span><span class="solved-text">Solved</span></div>
       <ol class="clues" id="beat-clues"></ol>
+    </div>
+  </section>
+
+  <!-- ─────────── KNOT ─────────── -->
+  <section class="game" id="game-knot" data-game="knot" data-mood="dark" role="tabpanel" aria-labelledby="tab-knot">
+    <div class="game-head">
+      <div class="eyebrow">No. 001 · Knot</div>
+      <h1 class="title">Knot</h1>
+      <p class="rule">Drag the lights home. The shape will know when you are close.</p>
+    </div>
+
+    <div class="toolbar">
+      <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-knot">0:00</span></span>
+      <span class="sep"></span>
+      <button class="tool-btn" data-action="reset" data-game="knot">Reset</button>
+      <button class="tool-btn" data-action="share" data-game="knot" hidden>Share</button>
+    </div>
+
+    <div class="stage" id="stage-knot">
+      <div class="knot-board" id="knot-board"></div>
+      <div class="solved" id="solved-knot"><span class="check">✦</span><span class="solved-text">Resolved</span></div>
+    </div>
+  </section>
+
+  <!-- ─────────── BLOOM ─────────── -->
+  <section class="game" id="game-bloom" data-game="bloom" data-mood="dark" role="tabpanel" aria-labelledby="tab-bloom">
+    <div class="game-head">
+      <div class="eyebrow">No. 001 · Bloom</div>
+      <h1 class="title">Bloom</h1>
+      <p class="rule">One seed grows into today's shape. Find which cell.</p>
+    </div>
+
+    <div class="toolbar">
+      <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-bloom">0:00</span></span>
+      <span class="sep"></span>
+      <button class="tool-btn" data-action="reset" data-game="bloom">Reset</button>
+      <button class="tool-btn" data-action="share" data-game="bloom" hidden>Share</button>
+    </div>
+
+    <div class="stage" id="stage-bloom">
+      <div class="bloom-board" id="bloom-board"></div>
+      <div class="bloom-legend" aria-hidden="true">
+        <span><span class="swatch" style="background: var(--accent); opacity: 0.18;"></span>Target</span>
+        <span><span class="swatch" style="background: var(--accent);"></span>Bloom</span>
+      </div>
+      <div class="solved" id="solved-bloom"><span class="check">✦</span><span class="solved-text">Bloomed</span></div>
+    </div>
+  </section>
+
+  <!-- ─────────── CLEAVE ─────────── -->
+  <section class="game" id="game-cleave" data-game="cleave" data-mood="dark" role="tabpanel" aria-labelledby="tab-cleave">
+    <div class="game-head">
+      <div class="eyebrow">No. 001 · Cleave</div>
+      <h1 class="title">Cleave</h1>
+      <p class="rule">Find the spaces in the sentence. A familiar phrase is hiding.</p>
+    </div>
+
+    <div class="toolbar">
+      <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-cleave">0:00</span></span>
+      <span class="sep"></span>
+      <button class="tool-btn" data-action="reset" data-game="cleave">Reset</button>
+      <button class="tool-btn" data-action="share" data-game="cleave" hidden>Share</button>
+    </div>
+
+    <div class="stage" id="stage-cleave">
+      <div class="cleave-stage" id="cleave-stage" aria-label="letter string"></div>
+      <div class="cleave-attribution" id="cleave-attr"></div>
+      <div class="solved" id="solved-cleave"><span class="check">✦</span><span class="solved-text">Cleaved</span></div>
+    </div>
+  </section>
+
+  <!-- ─────────── STRAND ─────────── -->
+  <section class="game" id="game-strand" data-game="strand" data-mood="dark" role="tabpanel" aria-labelledby="tab-strand">
+    <div class="game-head">
+      <div class="eyebrow">No. 001 · Strand</div>
+      <h1 class="title">Strand</h1>
+      <p class="rule">Trace the night sky. Five words are hiding in the field.</p>
+    </div>
+
+    <div class="toolbar">
+      <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-strand">0:00</span></span>
+      <span class="sep"></span>
+      <button class="tool-btn" data-action="reset" data-game="strand">Reset</button>
+      <button class="tool-btn" data-action="share" data-game="strand" hidden>Share</button>
+    </div>
+
+    <div class="stage" id="stage-strand">
+      <div class="strand-eyebrow" id="strand-theme">Theme · Night Sky</div>
+      <div class="strand-board" id="strand-board"></div>
+      <div class="strand-themelist" id="strand-themelist"></div>
+      <div class="solved" id="solved-strand"><span class="check">✦</span><span class="solved-text">Constellation Found</span></div>
     </div>
   </section>
 
@@ -699,6 +1171,25 @@ function shake(el) {
   setTimeout(() => el.classList.remove('shake'), 360);
 }
 
+// Haptics — works on Android, no-op on iOS (which won't expose Taptic to web).
+function haptic(ms = 10) {
+  if (navigator.vibrate) try { navigator.vibrate(ms); } catch(e) {}
+}
+
+// Lightweight per-frame throttle for pointer-heavy work.
+function rafThrottle(fn) {
+  let pending = false, lastArgs = null;
+  return (...args) => {
+    lastArgs = args;
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(() => {
+      pending = false;
+      fn.apply(null, lastArgs);
+    });
+  };
+}
+
 // Today date
 (function setToday() {
   const d = new Date();
@@ -711,16 +1202,34 @@ function shake(el) {
 // ─────────────────────────────────────────────
 
 const tabsEl = $('#tabs');
+const tabsScrollEl = $('#tabs-scroll');
 const underlineEl = $('#tab-underline');
+
 function selectTab(game) {
+  const tab = $$('.tab', tabsEl).find(b => b.dataset.game === game);
+  if (!tab) return;
   document.body.dataset.game = game;
+  document.body.dataset.mood = tab.dataset.group === 'feeling' ? 'dark' : 'light';
   $$('.tab', tabsEl).forEach(b => {
     b.setAttribute('aria-selected', String(b.dataset.game === game));
   });
   $$('.game').forEach(s => {
     s.classList.toggle('active', s.dataset.game === game);
   });
+  // Scroll active tab into view (centered) on small screens.
+  scrollTabIntoView(tab);
   positionUnderline();
+  // Active game's IIFE may need to react to becoming visible (e.g. measuring layout).
+  const mod = GAMES[game];
+  if (mod && mod.onShow) mod.onShow();
+  haptic(8);
+}
+function scrollTabIntoView(tab) {
+  const scroller = tabsScrollEl;
+  const sr = scroller.getBoundingClientRect();
+  const tr = tab.getBoundingClientRect();
+  const targetLeft = tab.offsetLeft - (scroller.clientWidth - tab.clientWidth) / 2;
+  scroller.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
 }
 function positionUnderline() {
   const active = $('.tab[aria-selected="true"]', tabsEl);
@@ -735,10 +1244,14 @@ tabsEl.addEventListener('click', e => {
   if (!t) return;
   selectTab(t.dataset.game);
 });
+// Keep underline glued to active tab while scrolling the tab bar.
+tabsScrollEl.addEventListener('scroll', positionUnderline, { passive: true });
 window.addEventListener('resize', positionUnderline);
 window.addEventListener('load', positionUnderline);
-// run once after fonts/styles settle
 setTimeout(positionUnderline, 60);
+
+// Default mood for first paint
+document.body.dataset.mood = 'light';
 
 // Toolbar wiring (reset / share)
 document.addEventListener('click', e => {
@@ -1346,6 +1859,730 @@ internet.house/game`;
 
   build();
   GAMES.beatsheet = { reset, share };
+})();
+
+// ═════════════════════════════════════════════
+//  GAME 4 — KNOT
+// ═════════════════════════════════════════════
+(function Knot() {
+  // Hexagram-flower: 6 inner ring + 6 outer petals = 12 nodes.
+  // viewBox 0..600 on both axes; center at (300, 300).
+  const TARGETS = [
+    // Inner hexagon (radius 90, starting at top, clockwise)
+    [300, 210], [378, 255], [378, 345], [300, 390], [222, 345], [222, 255],
+    // Outer petals (radius 180, offset 30°, clockwise from NE)
+    [390, 144], [480, 300], [390, 456], [210, 456], [120, 300], [210, 144],
+  ];
+  // Scattered starting positions — deliberately tangled.
+  const STARTS = [
+    [140, 480], [520, 130], [ 90, 200], [450, 530],
+    [560, 410], [160, 110], [300, 540], [440, 200],
+    [110, 320], [500, 360], [260,  70], [370, 410],
+  ];
+  // Edges as [a, b] index pairs. Forms a 6-petaled flower.
+  const EDGES = [
+    // inner hex
+    [0,1],[1,2],[2,3],[3,4],[4,5],[5,0],
+    // outer-to-inner petals (each outer connects to its two flanking inner)
+    [6,0],[6,1], [7,1],[7,2], [8,2],[8,3],
+    [9,3],[9,4], [10,4],[10,5], [11,5],[11,0],
+  ];
+
+  const SNAP_R  = 14;   // win radius (svg units)
+  const NEAR_R  = 26;   // "tight" pulse radius
+  const VB      = 600;  // svg viewBox
+
+  const boardEl  = $('#knot-board');
+  const stageEl  = $('#stage-knot');
+  const solvedEl = $('#solved-knot');
+  const shareBtn = document.querySelector('.tool-btn[data-game="knot"][data-action="share"]');
+  const timer    = createTimer($('#timer-knot'));
+
+  const ns = 'http://www.w3.org/2000/svg';
+  let svg, nodeEls, edgeEls, targetEls;
+  let positions; // [[x,y]...]
+  let solved = false;
+
+  function build() {
+    boardEl.innerHTML = '';
+    boardEl.classList.remove('solved');
+    solved = false;
+    positions = STARTS.map(([x,y]) => [x, y]);
+
+    svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'knot-svg');
+    svg.setAttribute('viewBox', `0 0 ${VB} ${VB}`);
+    boardEl.appendChild(svg);
+
+    // Layer: target halos (faint background indicators of where nodes belong)
+    const gTargets = document.createElementNS(ns, 'g');
+    targetEls = TARGETS.map(([x,y]) => {
+      const c = document.createElementNS(ns, 'circle');
+      c.setAttribute('class', 'knot-target');
+      c.setAttribute('cx', x); c.setAttribute('cy', y);
+      c.setAttribute('r', SNAP_R);
+      gTargets.appendChild(c);
+      return c;
+    });
+    svg.appendChild(gTargets);
+
+    // Layer: edges
+    const gEdges = document.createElementNS(ns, 'g');
+    edgeEls = EDGES.map(([a,b]) => {
+      const ln = document.createElementNS(ns, 'line');
+      ln.setAttribute('class', 'knot-edge');
+      gEdges.appendChild(ln);
+      return ln;
+    });
+    svg.appendChild(gEdges);
+
+    // Layer: nodes
+    const gNodes = document.createElementNS(ns, 'g');
+    nodeEls = positions.map((_, i) => {
+      const c = document.createElementNS(ns, 'circle');
+      c.setAttribute('class', 'knot-node');
+      c.setAttribute('r', 7);
+      c.dataset.i = i;
+      attachDrag(c, i);
+      gNodes.appendChild(c);
+      return c;
+    });
+    svg.appendChild(gNodes);
+
+    redraw();
+  }
+
+  function redraw() {
+    nodeEls.forEach((el, i) => {
+      const [x, y] = positions[i];
+      el.setAttribute('cx', x);
+      el.setAttribute('cy', y);
+      const [tx, ty] = TARGETS[i];
+      const d = Math.hypot(x - tx, y - ty);
+      el.classList.toggle('tight', d <= NEAR_R);
+    });
+    edgeEls.forEach((el, i) => {
+      const [a, b] = EDGES[i];
+      const [ax, ay] = positions[a];
+      const [bx, by] = positions[b];
+      el.setAttribute('x1', ax); el.setAttribute('y1', ay);
+      el.setAttribute('x2', bx); el.setAttribute('y2', by);
+      const aD = Math.hypot(ax - TARGETS[a][0], ay - TARGETS[a][1]);
+      const bD = Math.hypot(bx - TARGETS[b][0], by - TARGETS[b][1]);
+      el.classList.toggle('near', aD < NEAR_R && bD < NEAR_R);
+    });
+  }
+
+  function attachDrag(el, i) {
+    el.addEventListener('pointerdown', e => {
+      if (solved) return;
+      e.preventDefault();
+      timer.start();
+      el.setPointerCapture(e.pointerId);
+      el.classList.add('dragging');
+      const start = clientToSvg(e.clientX, e.clientY);
+      const [px, py] = positions[i];
+      const offsetX = start.x - px;
+      const offsetY = start.y - py;
+
+      const move = ev => {
+        const p = clientToSvg(ev.clientX, ev.clientY);
+        let nx = p.x - offsetX;
+        let ny = p.y - offsetY;
+        nx = Math.max(10, Math.min(VB - 10, nx));
+        ny = Math.max(10, Math.min(VB - 10, ny));
+        const prev = positions[i];
+        const wasTight = Math.hypot(prev[0] - TARGETS[i][0], prev[1] - TARGETS[i][1]) <= NEAR_R;
+        positions[i] = [nx, ny];
+        redraw();
+        const nowTight = Math.hypot(nx - TARGETS[i][0], ny - TARGETS[i][1]) <= NEAR_R;
+        if (nowTight && !wasTight) haptic(10);
+      };
+      const up = () => {
+        el.releasePointerCapture(e.pointerId);
+        el.classList.remove('dragging');
+        el.removeEventListener('pointermove', move);
+        el.removeEventListener('pointerup', up);
+        el.removeEventListener('pointercancel', up);
+        checkSolved();
+      };
+      el.addEventListener('pointermove', move);
+      el.addEventListener('pointerup', up);
+      el.addEventListener('pointercancel', up);
+    });
+  }
+
+  function clientToSvg(cx, cy) {
+    const r = svg.getBoundingClientRect();
+    return {
+      x: ((cx - r.left) / r.width) * VB,
+      y: ((cy - r.top)  / r.height) * VB,
+    };
+  }
+
+  function checkSolved() {
+    for (let i = 0; i < TARGETS.length; i++) {
+      const [x, y] = positions[i];
+      const [tx, ty] = TARGETS[i];
+      if (Math.hypot(x - tx, y - ty) > SNAP_R) return;
+    }
+    // Snap each node onto its target for a clean reveal.
+    positions = TARGETS.map(p => p.slice());
+    redraw();
+    win();
+  }
+
+  function win() {
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = `Resolved · ${timer.formatted()}`;
+    solvedEl.classList.add('show');
+    shareBtn.hidden = false;
+    haptic(25);
+  }
+
+  function reset() {
+    timer.reset();
+    solvedEl.classList.remove('show');
+    shareBtn.hidden = true;
+    build();
+  }
+
+  function share() {
+    const text =
+`Knot · ${timer.formatted()}
+✦ a six-petaled bloom
+internet.house/game`;
+    copyShare(text);
+  }
+
+  build();
+  GAMES.knot = { reset, share };
+})();
+
+// ═════════════════════════════════════════════
+//  GAME 5 — BLOOM
+// ═════════════════════════════════════════════
+(function Bloom() {
+  // 7x7 grid. Walls form an anti-diagonal; seed at (r=1, c=5) blooms into
+  // a clean triangular wedge above the diagonal in 5 generations.
+  const SIZE = 7;
+  const GENERATIONS = 5;
+
+  // Walls form an anti-diagonal plus two pinch-points (0,6) and (2,4),
+  // which makes (1,5) the unique seed that produces today's target.
+  const WALL_LIST = [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[0,6],[2,4]];
+  const WALLS = new Set(WALL_LIST.map(([r,c]) => `${r},${c}`));
+
+  // Target = the bloom pattern produced by the intended seed.
+  // (Derived by running cascade(SEED, GENERATIONS) — see README for how to author.)
+  const TARGET_LIST = [
+    [0,1],[0,2],[0,3],[0,4],[0,5],
+    [1,2],[1,3],[1,4],[1,5],[1,6],
+    [2,3],[2,5],[2,6],
+    [3,4],[3,5],[3,6],
+    [4,5],[4,6],
+    [5,6],
+  ];
+  const TARGET = new Set(TARGET_LIST.map(([r,c]) => `${r},${c}`));
+
+  const boardEl  = $('#bloom-board');
+  const stageEl  = $('#stage-bloom');
+  const solvedEl = $('#solved-bloom');
+  const shareBtn = document.querySelector('.tool-btn[data-game="bloom"][data-action="share"]');
+  const timer    = createTimer($('#timer-bloom'));
+
+  let cellEls;   // cellEls[r][c]
+  let busy = false;
+  let solved = false;
+
+  function build() {
+    boardEl.innerHTML = '';
+    boardEl.classList.remove('solved');
+    solved = false;
+    busy = false;
+    cellEls = [];
+    for (let r = 0; r < SIZE; r++) {
+      cellEls[r] = [];
+      for (let c = 0; c < SIZE; c++) {
+        const k = `${r},${c}`;
+        const el = document.createElement('button');
+        el.className = 'bloom-cell';
+        el.dataset.r = r; el.dataset.c = c;
+        if (WALLS.has(k))  el.classList.add('wall');
+        if (TARGET.has(k)) el.classList.add('target');
+        if (WALLS.has(k)) el.disabled = true;
+        el.setAttribute('aria-label', `cell row ${r+1} column ${c+1}`);
+        el.addEventListener('click', () => onTap(r, c));
+        boardEl.appendChild(el);
+        cellEls[r][c] = el;
+      }
+    }
+  }
+
+  function clearFilled() {
+    for (let r = 0; r < SIZE; r++)
+      for (let c = 0; c < SIZE; c++)
+        cellEls[r][c].classList.remove('filled');
+  }
+
+  function neighbors(r, c) {
+    return [[r-1,c],[r+1,c],[r,c-1],[r,c+1]]
+      .filter(([nr,nc]) => nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && !WALLS.has(`${nr},${nc}`));
+  }
+
+  function computeGenerations(seedR, seedC) {
+    // Returns list of arrays — one per generation (gen 0 is the seed alone).
+    const filled = new Set([`${seedR},${seedC}`]);
+    const gens = [[[seedR, seedC]]];
+    let frontier = [[seedR, seedC]];
+    for (let g = 1; g <= GENERATIONS; g++) {
+      const next = [];
+      const seen = new Set();
+      for (const [r, c] of frontier) {
+        for (const [nr, nc] of neighbors(r, c)) {
+          const k = `${nr},${nc}`;
+          if (filled.has(k) || seen.has(k)) continue;
+          seen.add(k);
+          next.push([nr, nc]);
+          filled.add(k);
+        }
+      }
+      gens.push(next);
+      frontier = next;
+      if (next.length === 0) break;
+    }
+    return { gens, filled };
+  }
+
+  async function onTap(r, c) {
+    if (busy || solved) return;
+    if (WALLS.has(`${r},${c}`)) return;
+    timer.start();
+    busy = true;
+    clearFilled();
+
+    const { gens, filled } = computeGenerations(r, c);
+    for (const gen of gens) {
+      for (const [gr, gc] of gen) {
+        cellEls[gr][gc].classList.add('filled');
+      }
+      haptic(4);
+      await new Promise(res => setTimeout(res, 170));
+    }
+
+    // Compare to target
+    const matches = (filled.size === TARGET.size)
+      && Array.from(TARGET).every(k => filled.has(k));
+    if (matches) {
+      win();
+    } else {
+      // brief reveal, then clear and let the player try again
+      await new Promise(res => setTimeout(res, 480));
+      shake(stageEl);
+      await new Promise(res => setTimeout(res, 240));
+      clearFilled();
+      busy = false;
+    }
+  }
+
+  function win() {
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = `Bloomed · ${timer.formatted()}`;
+    solvedEl.classList.add('show');
+    shareBtn.hidden = false;
+    haptic(30);
+  }
+
+  function reset() {
+    timer.reset();
+    solvedEl.classList.remove('show');
+    shareBtn.hidden = true;
+    build();
+  }
+
+  function share() {
+    // 7x7 emoji grid of the target.
+    const rows = [];
+    for (let r = 0; r < SIZE; r++) {
+      let row = '';
+      for (let c = 0; c < SIZE; c++) {
+        if (WALLS.has(`${r},${c}`))      row += '⬜';
+        else if (TARGET.has(`${r},${c}`)) row += '🟪';
+        else                             row += '⬛';
+      }
+      rows.push(row);
+    }
+    const text =
+`Bloom · ${timer.formatted()}
+${rows.join('\n')}
+internet.house/game`;
+    copyShare(text);
+  }
+
+  build();
+  GAMES.bloom = { reset, share };
+})();
+
+// ═════════════════════════════════════════════
+//  GAME 6 — CLEAVE
+// ═════════════════════════════════════════════
+(function Cleave() {
+  // Letterstring stripped of spaces. Canonical cut positions are the
+  // indices at which a space should appear (i.e., between letters i-1 and i).
+  const PUZZLE = {
+    letters:    'AROLLINGSTONEGATHERSNOMOSS',
+    canonical:  [1, 8, 13, 20, 22],         // A | ROLLING | STONE | GATHERS | NO | MOSS
+    phrase:     'A rolling stone gathers no moss',
+    attribution:'Proverb',
+  };
+
+  const stageEl  = $('#cleave-stage');
+  const attrEl   = $('#cleave-attr');
+  const solvedEl = $('#solved-cleave');
+  const shareBtn = document.querySelector('.tool-btn[data-game="cleave"][data-action="share"]');
+  const timer    = createTimer($('#timer-cleave'));
+
+  const canonical = new Set(PUZZLE.canonical);
+  let cuts;           // Set<number>
+  let gapEls;         // gap elements keyed by position
+  let solved = false;
+
+  function build() {
+    stageEl.innerHTML = '';
+    stageEl.classList.remove('solved');
+    attrEl.textContent = '';
+    cuts = new Set();
+    gapEls = {};
+    solved = false;
+
+    const L = PUZZLE.letters.length;
+    for (let i = 0; i < L; i++) {
+      if (i > 0) {
+        const gap = document.createElement('button');
+        gap.className = 'cleave-gap';
+        gap.dataset.pos = i;
+        gap.setAttribute('aria-label', `cut after letter ${i}`);
+        gap.addEventListener('click', () => onGap(i));
+        stageEl.appendChild(gap);
+        gapEls[i] = gap;
+      }
+      const span = document.createElement('span');
+      span.className = 'cleave-letter';
+      span.textContent = PUZZLE.letters[i];
+      stageEl.appendChild(span);
+    }
+  }
+
+  function onGap(pos) {
+    if (solved) return;
+    timer.start();
+    const gap = gapEls[pos];
+    if (cuts.has(pos)) {
+      cuts.delete(pos);
+      gap.classList.remove('cut');
+    } else {
+      cuts.add(pos);
+      gap.classList.add('cut');
+    }
+    haptic(6);
+    checkSolved();
+  }
+
+  function checkSolved() {
+    if (cuts.size !== canonical.size) return;
+    for (const p of cuts) if (!canonical.has(p)) return;
+    win();
+  }
+
+  function win() {
+    solved = true;
+    timer.stop();
+    stageEl.classList.add('solved');
+    attrEl.textContent = PUZZLE.attribution;
+    solvedEl.querySelector('.solved-text').textContent = `Cleaved · ${timer.formatted()}`;
+    solvedEl.classList.add('show');
+    shareBtn.hidden = false;
+    haptic(30);
+  }
+
+  function reset() {
+    timer.reset();
+    solvedEl.classList.remove('show');
+    shareBtn.hidden = true;
+    build();
+  }
+
+  function share() {
+    const text =
+`Cleave · ${timer.formatted()} · ✂×${PUZZLE.canonical.length}
+${PUZZLE.phrase}
+internet.house/game`;
+    copyShare(text);
+  }
+
+  build();
+  GAMES.cleave = { reset, share };
+})();
+
+// ═════════════════════════════════════════════
+//  GAME 7 — STRAND
+// ═════════════════════════════════════════════
+(function Strand() {
+  // viewBox: 500 x 600. Letters as positioned circles + text on dark field.
+  // Designed so each target word's letter sequence forms a continuous gesture
+  // through the cluster.
+  const VBW = 500, VBH = 600;
+  const HIT_R = 38;   // hit radius in viewBox units (touch-friendly)
+
+  const PUZZLE = {
+    theme: 'Night Sky',
+    words: ['STAR', 'ORBIT', 'COMET', 'BEAM', 'GLINT'],
+    letters: [
+      // [letter, x, y]
+      ['S', 178, 131],
+      ['T', 240, 300],
+      ['A', 254, 221],
+      ['R', 330, 144],
+      ['O',  90, 280],
+      ['M', 240, 380],
+      ['E', 320, 300],
+      ['B', 380, 220],
+      ['I', 380, 380],
+      ['C',  90, 416],
+      ['N', 300, 470],
+      ['L', 170, 470],
+      ['G',  90, 540],
+    ],
+  };
+
+  const boardEl   = $('#strand-board');
+  const themeEl   = $('#strand-theme');
+  const listEl    = $('#strand-themelist');
+  const stageEl   = $('#stage-strand');
+  const solvedEl  = $('#solved-strand');
+  const shareBtn  = document.querySelector('.tool-btn[data-game="strand"][data-action="share"]');
+  const timer     = createTimer($('#timer-strand'));
+
+  const ns = 'http://www.w3.org/2000/svg';
+  let svg, draftPathEl, locksGroup, bgEls = [], textEls = [];
+  let draftPath = [];       // current drag path as indices into PUZZLE.letters
+  let found = new Set();    // set of found words
+  let solved = false;
+  let dragging = false;
+
+  function build() {
+    boardEl.innerHTML = '';
+    boardEl.classList.remove('solved');
+    found = new Set();
+    draftPath = [];
+    solved = false;
+    dragging = false;
+    bgEls = [];
+    textEls = [];
+
+    themeEl.textContent = `Theme · ${PUZZLE.theme}`;
+
+    svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'strand-svg');
+    svg.setAttribute('viewBox', `0 0 ${VBW} ${VBH}`);
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    boardEl.appendChild(svg);
+
+    locksGroup = document.createElementNS(ns, 'g');
+    svg.appendChild(locksGroup);
+
+    draftPathEl = document.createElementNS(ns, 'polyline');
+    draftPathEl.setAttribute('class', 'strand-path-draft');
+    draftPathEl.setAttribute('points', '');
+    svg.appendChild(draftPathEl);
+
+    // Background circles for hit area + visual disk
+    PUZZLE.letters.forEach(([_, x, y], i) => {
+      const bg = document.createElementNS(ns, 'circle');
+      bg.setAttribute('class', 'strand-letter-bg');
+      bg.setAttribute('cx', x); bg.setAttribute('cy', y);
+      bg.setAttribute('r', HIT_R - 6);
+      svg.appendChild(bg);
+      bgEls.push(bg);
+    });
+    PUZZLE.letters.forEach(([l, x, y], i) => {
+      const t = document.createElementNS(ns, 'text');
+      t.setAttribute('class', 'strand-letter');
+      t.setAttribute('x', x); t.setAttribute('y', y);
+      t.textContent = l;
+      svg.appendChild(t);
+      textEls.push(t);
+    });
+
+    // List of theme words below the board (italic, struck through when found).
+    listEl.innerHTML = PUZZLE.words.map(w =>
+      `<span class="strand-theme-word" data-w="${w}">${w.toLowerCase()}</span>`
+    ).join('');
+  }
+
+  function clientToSvg(cx, cy) {
+    const r = svg.getBoundingClientRect();
+    return {
+      x: ((cx - r.left) / r.width)  * VBW,
+      y: ((cy - r.top)  / r.height) * VBH,
+    };
+  }
+
+  function letterAtPoint(x, y) {
+    let best = -1, bestD = HIT_R * HIT_R;
+    for (let i = 0; i < PUZZLE.letters.length; i++) {
+      const [, lx, ly] = PUZZLE.letters[i];
+      const d2 = (x - lx)*(x - lx) + (y - ly)*(y - ly);
+      if (d2 < bestD) { bestD = d2; best = i; }
+    }
+    return best;
+  }
+
+  function onDown(e) {
+    if (solved) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    e.preventDefault();
+    timer.start();
+    const p = clientToSvg(e.clientX, e.clientY);
+    const i = letterAtPoint(p.x, p.y);
+    if (i < 0) return;
+    dragging = true;
+    draftPath = [i];
+    boardEl.setPointerCapture(e.pointerId);
+    markTouched();
+    renderDraft();
+    haptic(6);
+  }
+
+  const onMoveRaf = rafThrottle(onMove);
+  function onMove(e) {
+    if (!dragging || solved) return;
+    const p = clientToSvg(e.clientX, e.clientY);
+    const i = letterAtPoint(p.x, p.y);
+    if (i < 0) return;
+    if (draftPath.length && draftPath[draftPath.length - 1] === i) return;
+    if (draftPath.includes(i)) {
+      // pointer drifted back through an earlier letter — allow backtracking
+      // by one step (UX nicety): if it's the previous letter, pop the last.
+      if (draftPath.length >= 2 && draftPath[draftPath.length - 2] === i) {
+        draftPath.pop();
+        haptic(4);
+        markTouched(); renderDraft();
+      }
+      return;
+    }
+    draftPath.push(i);
+    haptic(6);
+    markTouched();
+    renderDraft();
+  }
+
+  function onUp(e) {
+    if (!dragging) return;
+    dragging = false;
+    try { boardEl.releasePointerCapture(e.pointerId); } catch(_) {}
+    const word = draftPath.map(i => PUZZLE.letters[i][0]).join('');
+    if (PUZZLE.words.includes(word) && !found.has(word)) {
+      found.add(word);
+      lockPath(draftPath);
+      markFoundInList(word);
+      haptic(30);
+      if (found.size === PUZZLE.words.length) win();
+    }
+    draftPath = [];
+    markTouched();
+    renderDraft();
+  }
+
+  function markTouched() {
+    const inDraft = new Set(draftPath);
+    bgEls.forEach((bg, i) => bg.classList.toggle('touched', inDraft.has(i)));
+    textEls.forEach((t, i) => {
+      t.classList.toggle('touched', inDraft.has(i));
+    });
+    // letters in any locked word stay in "locked" style
+    const locked = new Set();
+    for (const w of found) {
+      const path = pathForWord(w);
+      if (path) path.forEach(i => locked.add(i));
+    }
+    textEls.forEach((t, i) => t.classList.toggle('locked', locked.has(i)));
+  }
+
+  function renderDraft() {
+    if (draftPath.length < 2) {
+      draftPathEl.setAttribute('points', '');
+      return;
+    }
+    const pts = draftPath.map(i => {
+      const [, x, y] = PUZZLE.letters[i];
+      return `${x},${y}`;
+    }).join(' ');
+    draftPathEl.setAttribute('points', pts);
+  }
+
+  const lockedPaths = new Map(); // word -> path indices
+  function lockPath(path) {
+    const word = path.map(i => PUZZLE.letters[i][0]).join('');
+    lockedPaths.set(word, path.slice());
+    const pts = path.map(i => {
+      const [, x, y] = PUZZLE.letters[i];
+      return `${x},${y}`;
+    }).join(' ');
+    const pl = document.createElementNS(ns, 'polyline');
+    pl.setAttribute('class', 'strand-path-locked');
+    pl.setAttribute('points', pts);
+    locksGroup.appendChild(pl);
+  }
+  function pathForWord(w) {
+    return lockedPaths.get(w);
+  }
+  function markFoundInList(word) {
+    const el = listEl.querySelector(`[data-w="${word}"]`);
+    if (el) el.classList.add('found');
+  }
+
+  function win() {
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = `Constellation Found · ${timer.formatted()}`;
+    solvedEl.classList.add('show');
+    shareBtn.hidden = false;
+    haptic(60);
+  }
+
+  function reset() {
+    timer.reset();
+    solvedEl.classList.remove('show');
+    shareBtn.hidden = true;
+    lockedPaths.clear();
+    build();
+  }
+
+  function share() {
+    const stars = '✦'.repeat(found.size);
+    const text =
+`Strand · ${timer.formatted()}
+${PUZZLE.theme} · ${stars}
+${PUZZLE.words.join(' · ')}
+internet.house/game`;
+    copyShare(text);
+  }
+
+  // Attach pointer listeners once. boardEl is stable; `build()` recreates the
+  // SVG inside it but the board element itself persists across resets.
+  boardEl.addEventListener('pointerdown',   onDown);
+  boardEl.addEventListener('pointermove',   onMoveRaf);
+  boardEl.addEventListener('pointerup',     onUp);
+  boardEl.addEventListener('pointercancel', onUp);
+
+  build();
+  GAMES.strand = { reset, share, onShow: () => { /* layout-safe re-render */ } };
 })();
 
 </script>
