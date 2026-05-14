@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Glyph · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=Noto+Serif+JP:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .glyph-stage { gap: 22px; }
+  .frame {
+    width: clamp(220px, 70vw, 320px);
+    aspect-ratio: 1 / 1;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    touch-action: none;
+  }
+  .glyph-display {
+    font-family: 'Noto Serif JP', 'Hiragino Mincho ProN', serif;
+    font-size: clamp(8rem, 28vw, 12rem);
+    color: var(--ink);
+    line-height: 1;
+    user-select: none;
+    transition: opacity 1200ms var(--ease);
+  }
+  .frame.fading .glyph-display { opacity: 0; }
+  .frame .canvas-svg { width: 100%; height: 100%; display: none; }
+  .frame.drawing .canvas-svg { display: block; }
+  .frame.drawing .glyph-display { display: none; }
+  .stroke-line {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .meaning {
+    text-align: center;
+  }
+  .meaning .rom {
+    font: 500 0.74rem 'Inter', sans-serif;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .meaning .gloss {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--ink-soft);
+    letter-spacing: -0.005em;
+  }
+  .meaning .system {
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 6px;
+  }
+
+  .phase-label {
+    text-align: center;
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0;
+  }
+  .done-btn {
+    padding: 9px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  }
+  @media (hover: hover) { .done-btn:hover { background: var(--accent); color: var(--paper); } }
+  .done-btn[disabled] { opacity: 0.4; pointer-events: none; }
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    max-width: 520px;
+  }
+  .compare .cell {
+    aspect-ratio: 1 / 1;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .compare .cell svg { width: 100%; height: 100%; }
+  .compare .cell .glyph-display { font-size: clamp(5rem, 20vw, 8rem); }
+  .compare .vs {
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .compare-labels {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 14px;
+    width: 100%; max-width: 520px;
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+
+  .library {
+    width: 100%; max-width: 560px;
+    margin-top: 12px;
+  }
+  .library h3 {
+    text-align: center;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 12px;
+  }
+  .library .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+  }
+  .library .cell {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    background: var(--paper-soft);
+    overflow: hidden;
+    aspect-ratio: 2 / 1;
+  }
+  .library .cell > div {
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 2rem;
+    color: var(--ink-soft);
+  }
+  .library .cell > div + div { border-left: 1px dotted var(--hairline); }
+  .library .cell svg { width: 100%; height: 100%; padding: 6px; }
+</style>
+</head>
+<body data-game="glyph" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="glyph">
+      <div class="game-head">
+        <div class="eyebrow">No. 016 · Glyph</div>
+        <h1 class="title">Glyph</h1>
+        <p class="rule">Study a symbol. Draw it back from memory.</p>
+        <p class="howto"><b>How to play.</b> A glyph appears with its meaning. Look at it. When it fades, redraw it from memory on the blank field. Your version sits beside the original.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="glyph">Begin again</button>
+        <button class="tool-btn" data-action="share" data-game="glyph" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="glyph" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="glyph" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="glyph" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="glyph" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage glyph-stage" id="stage-glyph">
+        <div class="phase-label" id="phase-label">Study</div>
+
+        <div class="frame" id="frame">
+          <span class="glyph-display" id="glyph-display"></span>
+          <svg class="canvas-svg" id="canvas-svg" viewBox="0 0 300 300" preserveAspectRatio="xMidYMid meet">
+            <g id="strokes"></g>
+          </svg>
+        </div>
+
+        <div class="meaning" id="meaning"></div>
+
+        <button class="done-btn" id="done-btn" disabled hidden>Done drawing</button>
+
+        <div class="compare" id="compare" hidden>
+          <div class="cell"><span class="glyph-display" id="orig-glyph"></span></div>
+          <div class="vs">vs</div>
+          <div class="cell">
+            <svg id="result-svg" viewBox="0 0 300 300" preserveAspectRatio="xMidYMid meet">
+              <g id="result-strokes"></g>
+            </svg>
+          </div>
+        </div>
+        <div class="compare-labels" id="compare-labels" hidden>
+          <span>original</span><span></span><span>yours</span>
+        </div>
+
+        <div class="solved" id="solved-glyph"><span class="check">✓</span><span class="solved-text">Drawn</span></div>
+
+        <div class="library" id="library" hidden>
+          <h3>your library</h3>
+          <div class="grid" id="library-grid"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Glyph() {
+    const PUZZLES = [
+      {
+        id: 'glyph-001',
+        glyph: '木',
+        rom: 'ki · boku',
+        gloss: 'tree',
+        system: 'kanji',
+      },
+      {
+        id: 'glyph-002',
+        glyph: '山',
+        rom: 'yama · san',
+        gloss: 'mountain',
+        system: 'kanji',
+      },
+      {
+        id: 'glyph-003',
+        glyph: 'ᚱ',
+        rom: 'raido',
+        gloss: 'journey, ride',
+        system: 'Elder Futhark rune',
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    // Mocked library of past attempts — each cell shows a glyph and an SVG path
+    // approximation of "your" past drawing.
+    const LIBRARY = [
+      { glyph: '川', d: 'M70 60 C 70 120, 80 220, 70 240 M150 50 C 150 100, 160 240, 150 250 M230 70 C 230 130, 220 220, 230 250' },
+      { glyph: '日', d: 'M80 80 L220 80 L220 220 L80 220 Z M80 150 L220 150' },
+      { glyph: '☉', d: 'M150 80 A 70 70 0 1 0 150 220 A 70 70 0 1 0 150 80 Z M148 150 L152 150' },
+      { glyph: 'अ', d: 'M70 100 C 100 80, 200 80, 230 100 M70 100 C 80 200, 130 230, 200 220 M150 60 L150 240' },
+      { glyph: '月', d: 'M90 70 L210 70 L210 230 L100 240 L90 70 Z M90 130 L210 130 M90 190 L210 190' },
+    ];
+
+    const frameEl    = $('#frame');
+    const glyphEl    = $('#glyph-display');
+    const canvasSvg  = $('#canvas-svg');
+    const strokesEl  = $('#strokes');
+    const meaningEl  = $('#meaning');
+    const phaseEl    = $('#phase-label');
+    const doneBtn    = $('#done-btn');
+    const compareEl  = $('#compare');
+    const compareLab = $('#compare-labels');
+    const origEl     = $('#orig-glyph');
+    const resultSvg  = $('#result-svg');
+    const resultStrokes = $('#result-strokes');
+    const solvedEl   = $('#solved-glyph');
+    const stageEl    = $('#stage-glyph');
+    const libraryEl  = $('#library');
+    const libraryGrid= $('#library-grid');
+    const shareBtn   = document.querySelector('.tool-btn[data-game="glyph"][data-action="share"]');
+
+    let phase = 'init';
+    let studyTimer = null;
+    let drawing = false;
+    let strokes = []; // array of "M x y L x y …" path strings
+    let currentPts = [];
+
+    function build() {
+      cleanup();
+      phase = 'study';
+      glyphEl.textContent = PUZZLE.glyph;
+      glyphEl.style.display = '';
+      strokesEl.innerHTML = '';
+      meaningEl.innerHTML =
+        `<div class="rom">${PUZZLE.rom}</div>` +
+        `<div class="gloss">"${PUZZLE.gloss}"</div>` +
+        `<div class="system">${PUZZLE.system}</div>`;
+      phaseEl.textContent = 'Study';
+      frameEl.classList.remove('fading', 'drawing');
+      doneBtn.hidden = true; doneBtn.disabled = true;
+      compareEl.hidden = true;
+      compareLab.hidden = true;
+      solvedEl.classList.remove('show');
+      libraryEl.hidden = true;
+      libraryGrid.innerHTML = '';
+      shareBtn.hidden = true;
+      strokes = []; currentPts = [];
+      // After 10s, fade glyph; after fade transition, switch to draw.
+      studyTimer = setTimeout(() => {
+        frameEl.classList.add('fading');
+        meaningEl.style.opacity = '0.35';
+        meaningEl.style.transition = 'opacity 1000ms var(--ease)';
+        setTimeout(beginDraw, 1200);
+      }, 10000);
+    }
+
+    function cleanup() {
+      if (studyTimer) { clearTimeout(studyTimer); studyTimer = null; }
+      meaningEl.style.opacity = '';
+      meaningEl.style.transition = '';
+    }
+
+    function beginDraw() {
+      phase = 'draw';
+      phaseEl.textContent = 'Draw from memory';
+      frameEl.classList.remove('fading');
+      frameEl.classList.add('drawing');
+      doneBtn.hidden = false;
+      doneBtn.disabled = true;
+      meaningEl.style.opacity = '0.35';
+    }
+
+    function clientToView(cx, cy) {
+      const r = canvasSvg.getBoundingClientRect();
+      return [((cx - r.left) / r.width) * 300, ((cy - r.top) / r.height) * 300];
+    }
+
+    function onDown(e) {
+      if (phase !== 'draw') return;
+      e.preventDefault();
+      drawing = true;
+      currentPts = [clientToView(e.clientX, e.clientY)];
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      p.setAttribute('class', 'stroke-line');
+      p.setAttribute('d', `M${currentPts[0][0]} ${currentPts[0][1]}`);
+      p.dataset.live = '1';
+      strokesEl.appendChild(p);
+      frameEl.setPointerCapture && frameEl.setPointerCapture(e.pointerId);
+    }
+    function onMove(e) {
+      if (!drawing) return;
+      const p = clientToView(e.clientX, e.clientY);
+      const last = currentPts[currentPts.length - 1];
+      if (Math.hypot(p[0]-last[0], p[1]-last[1]) < 1.2) return;
+      currentPts.push(p);
+      const live = strokesEl.querySelector('[data-live="1"]');
+      live.setAttribute('d', 'M' + currentPts.map(pt => `${pt[0].toFixed(1)} ${pt[1].toFixed(1)}`).join(' L'));
+    }
+    function onUp() {
+      if (!drawing) return;
+      drawing = false;
+      const d = 'M' + currentPts.map(pt => `${pt[0].toFixed(1)} ${pt[1].toFixed(1)}`).join(' L');
+      strokes.push(d);
+      const live = strokesEl.querySelector('[data-live="1"]');
+      if (live) live.removeAttribute('data-live');
+      doneBtn.disabled = strokes.length === 0;
+      haptic(6);
+    }
+
+    frameEl.addEventListener('pointerdown', onDown);
+    frameEl.addEventListener('pointermove', onMove);
+    frameEl.addEventListener('pointerup',   onUp);
+    frameEl.addEventListener('pointercancel', onUp);
+    frameEl.addEventListener('pointerleave', onUp);
+
+    doneBtn.addEventListener('click', () => {
+      if (phase !== 'draw' || strokes.length === 0) return;
+      phase = 'compare';
+      phaseEl.textContent = 'Compare';
+      doneBtn.hidden = true;
+      meaningEl.style.opacity = '1';
+      origEl.textContent = PUZZLE.glyph;
+      resultStrokes.innerHTML = strokes.map(d => `<path class="stroke-line" d="${d}"/>`).join('');
+      compareEl.hidden = false;
+      compareLab.hidden = false;
+      frameEl.style.display = 'none';
+      solvedEl.querySelector('.solved-text').textContent = 'Drawn from memory';
+      solvedEl.classList.add('show');
+      shareBtn.hidden = false;
+      // Library
+      libraryGrid.innerHTML = LIBRARY.map(item => `
+        <div class="cell">
+          <div>${item.glyph}</div>
+          <div><svg viewBox="0 0 300 300" preserveAspectRatio="xMidYMid meet"><path d="${item.d}" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.8"/></svg></div>
+        </div>`).join('') + `
+        <div class="cell" style="border-color: var(--accent);">
+          <div>${PUZZLE.glyph}</div>
+          <div><svg viewBox="0 0 300 300" preserveAspectRatio="xMidYMid meet">${strokes.map(d => `<path d="${d}" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}</svg></div>
+        </div>`;
+      libraryEl.hidden = false;
+      flashReveal(stageEl);
+      haptic(18);
+    });
+
+    function reset() {
+      frameEl.style.display = '';
+      build();
+    }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      copyShare(`Glyph · ${PUZZLE.glyph} · "${PUZZLE.gloss}"\ndrawn from memory in ${strokes.length} stroke${strokes.length===1?'':'s'}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.glyph = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

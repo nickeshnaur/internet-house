@@ -154,6 +154,10 @@
   .card[data-game="sculpt"]     { --card-accent: var(--sculpt); }
   .card[data-game="curator"]    { --card-accent: var(--curator); }
   .card[data-game="average"]    { --card-accent: var(--average); }
+  .card[data-game="glance"]     { --card-accent: var(--glance); }
+  .card[data-game="trace"]      { --card-accent: var(--trace); }
+  .card[data-game="echo"]       { --card-accent: var(--echo); }
+  .card[data-game="glyph"]      { --card-accent: var(--glyph); }
 
   @media (max-width: 480px) {
     .grid { grid-template-columns: 1fr; gap: 10px; }
@@ -308,6 +312,52 @@
           </div>
           <h3 class="card-name">Average</h3>
           <p class="card-desc">One word back. See yourself in the crowd's distribution.</p>
+        </a>
+
+      </div>
+    </section>
+
+    <section class="group" aria-labelledby="grp-still">
+      <div class="group-head">
+        <h2 class="group-name" id="grp-still">Still</h2>
+        <span class="group-tagline">One verb. One artifact. Slow.</span>
+      </div>
+      <div class="grid">
+
+        <a class="card" data-game="glance" href="glance/">
+          <span class="card-tag">No. 013</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><rect x="6" y="6" width="72" height="44" rx="2" stroke="currentColor" stroke-width="1.4"/><circle cx="42" cy="28" r="6" fill="currentColor" fill-opacity="0.18"/><circle cx="42" cy="28" r="2.5" fill="currentColor"/></svg>
+          </div>
+          <h3 class="card-name">Glance</h3>
+          <p class="card-desc">See for three seconds. Then answer what you saw.</p>
+        </a>
+
+        <a class="card" data-game="trace" href="trace/">
+          <span class="card-tag">No. 014</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><path d="M8 42 C 18 18, 34 50, 46 30 S 70 14, 76 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          </div>
+          <h3 class="card-name">Trace</h3>
+          <p class="card-desc">A prompt. A blank field. One line in answer.</p>
+        </a>
+
+        <a class="card" data-game="echo" href="echo/">
+          <span class="card-tag">No. 015</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><text x="6" y="22" font-family="Fraunces, serif" font-size="11" fill="currentColor" fill-opacity="0.35" font-style="italic">a question</text><line x1="6" y1="32" x2="74" y2="32" stroke="currentColor" stroke-opacity="0.4"/><text x="6" y="46" font-family="Fraunces, serif" font-size="13" fill="currentColor" font-weight="500">one line</text></svg>
+          </div>
+          <h3 class="card-name">Echo</h3>
+          <p class="card-desc">A small provocation. A single line in reply.</p>
+        </a>
+
+        <a class="card" data-game="glyph" href="glyph/">
+          <span class="card-tag">No. 016</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="60" viewBox="0 0 84 60" fill="none"><text x="14" y="44" font-family="serif" font-size="40" fill="currentColor">木</text><text x="48" y="44" font-family="serif" font-size="34" fill="currentColor" fill-opacity="0.32" font-style="italic">木</text></svg>
+          </div>
+          <h3 class="card-name">Glyph</h3>
+          <p class="card-desc">Study a symbol. Then draw it back from memory.</p>
         </a>
 
       </div>

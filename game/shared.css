@@ -22,6 +22,10 @@
   --sculpt:     #C25E3A;
   --curator:    #4A6FA5;
   --average:    #C77F9A;
+  --glance:     #8A7F71;
+  --trace:      #2A3454;
+  --echo:       #2E4A3B;
+  --glyph:      #9C5B3E;
 
   --accent: var(--ink);
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -78,6 +82,10 @@ body[data-game="concordance"]{ --accent: var(--concordance); }
 body[data-game="sculpt"]     { --accent: var(--sculpt); }
 body[data-game="curator"]    { --accent: var(--curator); }
 body[data-game="average"]    { --accent: var(--average); }
+body[data-game="glance"]     { --accent: var(--glance); }
+body[data-game="trace"]      { --accent: var(--trace); }
+body[data-game="echo"]       { --accent: var(--echo); }
+body[data-game="glyph"]      { --accent: var(--glyph); }
 
 /* ───────── chrome ───────── */
 .masthead {

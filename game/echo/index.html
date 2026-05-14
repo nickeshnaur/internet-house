@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Echo · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .echo-prompt-label {
+    text-align: center;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 6px;
+  }
+  .echo-prompt {
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(1.4rem, 5.4vw, 2rem);
+    color: var(--ink-soft);
+    letter-spacing: -0.005em;
+    margin: 0 0 36px;
+    line-height: 1.3;
+    max-width: 22em;
+  }
+  .echo-input-wrap {
+    width: 100%;
+    max-width: 560px;
+    border-bottom: 1px solid var(--ink-soft);
+    padding: 0 4px 14px;
+    margin-bottom: 12px;
+  }
+  .echo-input {
+    width: 100%;
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: clamp(1.4rem, 4.4vw, 1.9rem);
+    line-height: 1.35;
+    color: var(--ink);
+    text-align: center;
+    letter-spacing: -0.01em;
+    resize: none;
+    overflow: hidden;
+    min-height: 1.4em;
+  }
+  .echo-input::placeholder { color: var(--ink-faint); font-style: italic; }
+  .echo-meta {
+    width: 100%; max-width: 560px;
+    display: flex; justify-content: space-between; align-items: center;
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .echo-meta .count.over { color: #C25E3A; }
+  .echo-meta .send {
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: transparent;
+    letter-spacing: 0.18em;
+    transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  }
+  .echo-meta .send[disabled] { opacity: 0.4; pointer-events: none; }
+  @media (hover: hover) { .echo-meta .send:hover { background: var(--accent); color: var(--paper); } }
+
+  .echo-couplet {
+    margin-top: 24px;
+    width: 100%; max-width: 560px;
+    text-align: center;
+    display: none;
+  }
+  .echo-couplet.show { display: block; animation: fade-in 600ms var(--ease); }
+  .echo-couplet .your {
+    font-family: 'Fraunces', serif;
+    font-size: 1.32rem;
+    color: var(--accent);
+    letter-spacing: -0.005em;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .echo-gallery {
+    margin-top: 36px;
+    width: 100%; max-width: 620px;
+  }
+  .echo-gallery h3 {
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 4px;
+    text-align: center;
+  }
+  .echo-gallery .sub {
+    text-align: center;
+    color: var(--ink-faint);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.86rem;
+    margin: 0 0 22px;
+  }
+  .echo-entry {
+    padding: 18px 6px;
+    border-top: 1px solid var(--hairline);
+    font-family: 'Fraunces', serif;
+    font-size: 1.08rem;
+    color: var(--ink-soft);
+    letter-spacing: -0.005em;
+    line-height: 1.55;
+  }
+  .echo-entry:last-child { border-bottom: 1px solid var(--hairline); }
+  .echo-entry .who {
+    display: block;
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+<body data-game="echo" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="echo">
+      <div class="game-head">
+        <div class="eyebrow">No. 015 · Echo</div>
+        <h1 class="title">Echo</h1>
+        <p class="rule">A small provocation. A single line in reply.</p>
+        <p class="howto"><b>How to play.</b> Read the prompt. Write one line back — up to 140 characters. After you send, see what others wrote today.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="echo">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="echo" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="echo" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="echo" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="echo" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="echo" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-echo">
+        <div>
+          <div class="echo-prompt-label">Today's prompt</div>
+          <div class="echo-prompt" id="echo-prompt"></div>
+        </div>
+
+        <div class="echo-input-wrap" id="echo-input-wrap">
+          <textarea class="echo-input" id="echo-input" maxlength="140" rows="1" placeholder="one line"></textarea>
+        </div>
+        <div class="echo-meta">
+          <span class="count" id="echo-count">0 / 140</span>
+          <button class="send" id="echo-send" disabled>Send</button>
+        </div>
+
+        <div class="solved" id="solved-echo"><span class="check">✓</span><span class="solved-text">Sent</span></div>
+
+        <div class="echo-couplet" id="echo-couplet">
+          <p class="your" id="echo-your"></p>
+        </div>
+
+        <div class="echo-gallery" id="echo-gallery" hidden>
+          <h3>others answered</h3>
+          <p class="sub" id="echo-gallery-sub"></p>
+          <div id="echo-entries"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Echo() {
+    const PUZZLES = [
+      {
+        id: 'echo-001',
+        prompt: 'What did you almost say today?',
+        meta: '184 lines sent today',
+        gallery: [
+          { who: 'a · 9:22 am',  line: "I almost said yes. I said maybe instead." },
+          { who: 'b · 11:14 am', line: "I'm fine." },
+          { who: 'c · 2:08 pm',  line: "I love you. To the barista." },
+          { who: 'd · 4:51 pm',  line: "I quit." },
+          { who: 'e · 8:30 pm',  line: "Are you happy?" },
+          { who: 'f · 11:47 pm', line: "Nothing. I just nodded again." },
+        ],
+      },
+      {
+        id: 'echo-002',
+        prompt: 'Describe today’s weather in one line.',
+        meta: '212 lines sent today',
+        gallery: [
+          { who: 'a · 6:40 am',  line: "Cold enough to remember last winter." },
+          { who: 'b · 8:18 am',  line: "Grey, the kind that makes you go inside." },
+          { who: 'c · 12:01 pm', line: "61°F and indifferent." },
+          { who: 'd · 4:14 pm',  line: "Sunlight falling on the kitchen floor at four." },
+          { who: 'e · 7:33 pm',  line: "It rained briefly and then forgot." },
+          { who: 'f · 10:09 pm', line: "Pleasant. Forgettable." },
+        ],
+      },
+      {
+        id: 'echo-003',
+        prompt: 'Write the first sentence of a novel you’ll never write.',
+        meta: '156 lines sent today',
+        gallery: [
+          { who: 'a · 1:12 am',  line: "The dog knew before anyone else." },
+          { who: 'b · 7:45 am',  line: "My mother once owned a horse named Sorrow." },
+          { who: 'c · 10:30 am', line: "In the third spring of the new century, the canals froze." },
+          { who: 'd · 3:02 pm',  line: "He left in 1994 and the house never quite reset its clock." },
+          { who: 'e · 6:21 pm',  line: "Everyone called him Cousin, though he wasn't anyone's cousin." },
+          { who: 'f · 11:55 pm', line: "It begins where the road forgets the river." },
+        ],
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const promptEl  = $('#echo-prompt');
+    const input     = $('#echo-input');
+    const countEl   = $('#echo-count');
+    const sendBtn   = $('#echo-send');
+    const stageEl   = $('#stage-echo');
+    const solvedEl  = $('#solved-echo');
+    const coupletEl = $('#echo-couplet');
+    const yourEl    = $('#echo-your');
+    const galleryEl = $('#echo-gallery');
+    const subEl     = $('#echo-gallery-sub');
+    const entriesEl = $('#echo-entries');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="echo"][data-action="share"]');
+
+    let sent = false;
+    let yourLine = '';
+
+    function build() {
+      sent = false; yourLine = '';
+      promptEl.textContent = PUZZLE.prompt;
+      input.value = ''; input.disabled = false;
+      countEl.textContent = '0 / 140';
+      countEl.classList.remove('over');
+      sendBtn.disabled = true;
+      solvedEl.classList.remove('show');
+      coupletEl.classList.remove('show');
+      yourEl.textContent = '';
+      galleryEl.hidden = true;
+      entriesEl.innerHTML = '';
+      shareBtn.hidden = true;
+      autoSize();
+    }
+
+    function autoSize() {
+      input.style.height = 'auto';
+      input.style.height = Math.max(input.scrollHeight, 32) + 'px';
+    }
+
+    input.addEventListener('input', () => {
+      const n = input.value.length;
+      countEl.textContent = `${n} / 140`;
+      countEl.classList.toggle('over', n > 140);
+      sendBtn.disabled = n === 0 || n > 140 || sent;
+      autoSize();
+    });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+    });
+
+    function send() {
+      if (sent) return;
+      const raw = input.value.trim();
+      if (!raw || raw.length > 140) return;
+      sent = true;
+      yourLine = raw;
+      input.disabled = true;
+      sendBtn.disabled = true;
+      yourEl.textContent = `"${yourLine}"`;
+      coupletEl.classList.add('show');
+      solvedEl.querySelector('.solved-text').textContent = 'Sent';
+      solvedEl.classList.add('show');
+      subEl.textContent = PUZZLE.meta;
+      entriesEl.innerHTML = PUZZLE.gallery.map(g => `
+        <div class="echo-entry">
+          <span class="who">${g.who}</span>
+          ${g.line}
+        </div>`).join('');
+      galleryEl.hidden = false;
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+      haptic(18);
+    }
+    sendBtn.addEventListener('click', send);
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      copyShare(`Echo\n${PUZZLE.prompt}\n— ${yourLine}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.echo = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

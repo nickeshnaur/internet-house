@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Trace · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .trace-prompt-label {
+    text-align: center;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+  .trace-prompt {
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: clamp(2.2rem, 8vw, 3rem);
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin: 0 0 24px;
+    line-height: 1.05;
+  }
+  .canvas-wrap {
+    width: 100%;
+    max-width: 600px;
+    aspect-ratio: 2 / 1;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+    touch-action: none;
+  }
+  .canvas-wrap svg { width: 100%; height: 100%; display: block; }
+  .stroke-path {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+  .canvas-wrap.locked { background: var(--paper); border-color: var(--accent); }
+  .canvas-empty-note {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-faint);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.96rem;
+    pointer-events: none;
+    transition: opacity var(--t-med) var(--ease);
+  }
+  .canvas-wrap.has-stroke .canvas-empty-note { opacity: 0; }
+
+  .trace-actions {
+    display: flex; gap: 14px; align-items: center; justify-content: center;
+    margin-top: 4px;
+  }
+  .trace-submit {
+    padding: 10px 22px;
+    font: 500 0.74rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+    border-radius: 999px;
+    opacity: 0.4;
+    pointer-events: none;
+    transition: opacity var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  }
+  .trace-submit.ready { opacity: 1; pointer-events: auto; }
+
+  .trace-gallery {
+    margin-top: 32px;
+    width: 100%;
+    max-width: 600px;
+  }
+  .trace-gallery h3 {
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 10px;
+    text-align: center;
+  }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  .gallery-cell {
+    aspect-ratio: 1 / 1;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .gallery-cell svg { width: 100%; height: 100%; display: block; }
+  .gallery-cell .who {
+    position: absolute;
+    bottom: 4px; left: 6px;
+    font: 500 0.56rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+</style>
+</head>
+<body data-game="trace" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="trace">
+      <div class="game-head">
+        <div class="eyebrow">No. 014 · Trace</div>
+        <h1 class="title">Trace</h1>
+        <p class="rule">A prompt. A blank field. One line in answer.</p>
+        <p class="howto"><b>How to play.</b> Read the prompt. Draw a single continuous line in response. Lift your finger and the line locks. Below you'll see how others answered the same prompt.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="trace">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="trace" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="trace" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="trace" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="trace" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="trace" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-trace">
+        <div>
+          <div class="trace-prompt-label">Today's prompt</div>
+          <div class="trace-prompt" id="trace-prompt"></div>
+        </div>
+
+        <div class="canvas-wrap" id="canvas-wrap">
+          <svg id="canvas-svg" viewBox="0 0 600 300" preserveAspectRatio="none">
+            <path id="stroke" class="stroke-path" d=""/>
+          </svg>
+          <div class="canvas-empty-note">draw one line</div>
+        </div>
+
+        <div class="trace-actions">
+          <button class="trace-submit" id="trace-submit">Submit</button>
+        </div>
+
+        <div class="solved" id="solved-trace"><span class="check">✓</span><span class="solved-text">Drawn</span></div>
+
+        <div class="trace-gallery" id="trace-gallery" hidden>
+          <h3>others answered</h3>
+          <div class="gallery-grid" id="gallery-grid"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Trace() {
+    const PUZZLES = [
+      {
+        id: 'trace-001',
+        prompt: 'loneliness',
+        gallery: [
+          { who: 'a · 2:14 am', d: 'M30 150 C 120 150, 220 152, 560 150' },                                   // long horizontal
+          { who: 'b · 7:08 am', d: 'M280 90 L300 200 L320 90' },                                              // tight peak
+          { who: 'c · 12:33 pm', d: 'M40 250 C 80 50, 200 280, 300 60 S 540 240, 580 80' },                  // big wave
+          { who: 'd · 6:45 pm', d: 'M300 150 L300.4 150' },                                                   // single dot
+          { who: 'e · 9:21 pm', d: 'M120 60 C 140 220, 200 240, 220 100 S 280 40, 300 200' },                // tight curl
+          { who: 'f · 11:02 pm', d: 'M60 220 L540 220' },                                                     // horizontal slash
+        ],
+      },
+      {
+        id: 'trace-002',
+        prompt: 'Tuesday morning',
+        gallery: [
+          { who: 'a · 6:30 am', d: 'M60 200 L120 100 L180 200 L240 100 L300 200 L360 100 L420 200 L480 100 L540 200' },
+          { who: 'b · 7:12 am', d: 'M40 150 C 200 150, 400 150, 560 150' },
+          { who: 'c · 7:55 am', d: 'M60 60 C 80 240, 540 60, 560 240' },
+          { who: 'd · 8:30 am', d: 'M120 120 L120 180 L180 180 L180 120 L240 120 L240 180' },
+          { who: 'e · 9:05 am', d: 'M300 40 L300 260' },
+          { who: 'f · 9:48 am', d: 'M60 240 C 80 220, 100 200, 540 100' },
+        ],
+      },
+      {
+        id: 'trace-003',
+        prompt: 'the sound of rain',
+        gallery: [
+          { who: 'a · 5:14 am', d: 'M40 60 L40 100 M80 80 L80 130 M120 50 L120 90 M160 100 L160 150 M200 70 L200 120 M240 90 L240 140 M280 60 L280 110 M320 80 L320 130' },
+          { who: 'b · 6:22 am', d: 'M40 150 C 80 100, 120 200, 160 150 S 240 200, 280 150 S 360 200, 400 150 S 480 200, 520 150' },
+          { who: 'c · 8:01 am', d: 'M300 60 C 280 100, 280 130, 300 150 C 320 130, 320 100, 300 60 Z' },
+          { who: 'd · 11:50 am', d: 'M60 200 L80 60 M120 220 L140 80 M180 200 L200 60 M240 220 L260 80 M300 200 L320 60 M360 220 L380 80 M420 200 L440 60 M480 220 L500 80' },
+          { who: 'e · 3:18 pm', d: 'M40 80 C 540 80, 540 220, 40 220' },
+          { who: 'f · 8:45 pm', d: 'M40 60 L560 240' },
+        ],
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const promptEl  = $('#trace-prompt');
+    const wrapEl    = $('#canvas-wrap');
+    const svgEl     = $('#canvas-svg');
+    const pathEl    = $('#stroke');
+    const submitBtn = $('#trace-submit');
+    const solvedEl  = $('#solved-trace');
+    const stageEl   = $('#stage-trace');
+    const galleryEl = $('#trace-gallery');
+    const gridEl    = $('#gallery-grid');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="trace"][data-action="share"]');
+
+    let drawing = false;
+    let locked = false;
+    let submitted = false;
+    let points = [];   // [[x,y], ...] in viewBox coords
+
+    function build() {
+      promptEl.textContent = PUZZLE.prompt;
+      points = [];
+      pathEl.setAttribute('d', '');
+      drawing = false; locked = false; submitted = false;
+      wrapEl.classList.remove('locked', 'has-stroke');
+      submitBtn.classList.remove('ready');
+      solvedEl.classList.remove('show', 'is-revealed');
+      shareBtn.hidden = true;
+      galleryEl.hidden = true;
+      gridEl.innerHTML = '';
+    }
+
+    function clientToView(cx, cy) {
+      const r = svgEl.getBoundingClientRect();
+      return [
+        ((cx - r.left) / r.width)  * 600,
+        ((cy - r.top)  / r.height) * 300,
+      ];
+    }
+    function pointsToPath(pts) {
+      if (!pts.length) return '';
+      if (pts.length === 1) return `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)} L${pts[0][0].toFixed(1)+0.4} ${pts[0][1].toFixed(1)}`;
+      return 'M' + pts.map(p => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' L');
+    }
+
+    function onDown(e) {
+      if (locked) return;
+      e.preventDefault();
+      drawing = true;
+      points = [clientToView(e.clientX, e.clientY)];
+      pathEl.setAttribute('d', pointsToPath(points));
+      wrapEl.classList.add('has-stroke');
+      wrapEl.setPointerCapture && wrapEl.setPointerCapture(e.pointerId);
+      haptic(4);
+    }
+    function onMove(e) {
+      if (!drawing) return;
+      const p = clientToView(e.clientX, e.clientY);
+      const last = points[points.length - 1];
+      if (Math.hypot(p[0] - last[0], p[1] - last[1]) < 1) return;
+      points.push(p);
+      pathEl.setAttribute('d', pointsToPath(points));
+    }
+    function onUp() {
+      if (!drawing) return;
+      drawing = false;
+      locked = true;
+      wrapEl.classList.add('locked');
+      submitBtn.classList.add('ready');
+      haptic(10);
+    }
+
+    wrapEl.addEventListener('pointerdown', onDown);
+    wrapEl.addEventListener('pointermove', onMove);
+    wrapEl.addEventListener('pointerup',   onUp);
+    wrapEl.addEventListener('pointercancel', onUp);
+    wrapEl.addEventListener('pointerleave', onUp);
+
+    submitBtn.addEventListener('click', () => {
+      if (!locked || submitted) return;
+      submitted = true;
+      submitBtn.classList.remove('ready');
+      solvedEl.querySelector('.solved-text').textContent = 'Drawn';
+      solvedEl.classList.add('show');
+      shareBtn.hidden = false;
+      // Render gallery
+      gridEl.innerHTML = PUZZLE.gallery.map(g => `
+        <div class="gallery-cell">
+          <svg viewBox="0 0 600 300" preserveAspectRatio="none">
+            <path d="${g.d}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.75"/>
+          </svg>
+          <span class="who">${g.who}</span>
+        </div>`).join('');
+      galleryEl.hidden = false;
+      flashReveal(stageEl);
+      haptic(20);
+    });
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      copyShare(`Trace · "${PUZZLE.prompt}"\n${points.length ? points.length + ' points · one line' : '(no line)'}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.trace = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

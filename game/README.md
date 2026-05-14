@@ -1,6 +1,6 @@
 # /game
 
-Twelve daily-puzzle prototypes, one per folder, served straight out of
+Sixteen daily-puzzle prototypes, one per folder, served straight out of
 `game/`. No build step.
 
 ```
@@ -8,18 +8,22 @@ game/
   index.html             ← hub (card grid)
   shared.css             ← chrome, type, toolbar, stage, picker, badge
   shared.js              ← timer, share, haptics, reveal-flash, GAMES wiring
-  tableau/index.html     ← Game 1
-  filament/index.html    ← Game 2
-  beatsheet/index.html   ← Game 3
-  knot/index.html        ← Game 4
-  bloom/index.html       ← Game 5
-  cleave/index.html      ← Game 6
-  strand/index.html      ← Game 7
-  tally/index.html       ← Game 8
-  concordance/index.html ← Game 9
-  sculpt/index.html      ← Game 10
-  curator/index.html     ← Game 11
-  average/index.html     ← Game 12
+  tableau/index.html     ← Game 1     Logic
+  filament/index.html    ← Game 2     Logic
+  beatsheet/index.html   ← Game 3     Logic
+  knot/index.html        ← Game 4     Feeling
+  bloom/index.html       ← Game 5     Feeling
+  cleave/index.html      ← Game 6     Words
+  strand/index.html      ← Game 7     Words
+  tally/index.html       ← Game 8     Words
+  concordance/index.html ← Game 9     Words
+  sculpt/index.html      ← Game 10    Words
+  curator/index.html     ← Game 11    Words
+  average/index.html     ← Game 12    Words
+  glance/index.html      ← Game 13    Still
+  trace/index.html       ← Game 14    Still
+  echo/index.html        ← Game 15    Still
+  glyph/index.html       ← Game 16    Still
 ```
 
 Each game lives in its own folder; visiting `/game/<slug>/` loads only
@@ -38,14 +42,16 @@ with three puzzles selectable from a `1 · 2 · 3` picker in the toolbar.
   `.toolbar`, `.stage`. CSS for game-specific surfaces is inlined in
   that game's file.
 
-## Three groups
+## Four groups
 
-The hub clusters the twelve games:
+The hub clusters the sixteen games:
 
 - **Logic** — Tableau, Filament, Beat Sheet. Editorial paper.
 - **Feeling** — Knot, Bloom. Dark, gestural, atmospheric.
 - **Words** — Cleave, Strand, Tally, Concordance, Sculpt, Curator,
   Average. Editorial typography carries the experience.
+- **Still** — Glance, Trace, Echo, Glyph. One verb each — see, move,
+  write, remember. Contemplative, no urgent timers, no scores.
 
 The hub itself (`game/index.html`) is a card grid — each card has a
 glyph, name, one-line description, and a tinted accent border.
@@ -192,7 +198,114 @@ sum to 100 (the implicit "other" category covers the remainder).
 
 ---
 
-## Adding a thirteenth game
+## The Still group
+
+Four contemplative prototypes added together. Each is built around a
+single verb. Each completes in under sixty seconds. Each produces a
+small keepable artifact. Nothing more.
+
+### Glance · see, then answer · `game/glance/`
+
+An image is shown for exactly three seconds, then fades to black. A
+single question appears about what was just seen. The image returns
+with the relevant detail ringed in the accent color.
+
+```js
+{
+  id: 'glance-NNN',
+  scene: '<svg viewBox="0 0 800 600">…</svg>',   // inline scene
+  question: 'How many people were walking past the door?',
+  choices: ['2', '3', '4', '5'],
+  answer: '3',
+  caption: 'three figures, late afternoon',
+}
+```
+
+The prototype ships three hand-illustrated SVG scenes — a street with
+three figures, a still life with a green vase, a window with a cat.
+Production should swap these for license-free photographs (Wikimedia
+Commons, Library of Congress, FSA collection) with author-verified
+questions. The `.highlight` paths inside the scene render under
+`.frame.revealed` with the accent stroke; add one per focus point.
+
+### Trace · draw one line · `game/trace/`
+
+A daily abstract prompt above a blank canvas. The player draws one
+continuous line. On lift the line locks. After submit, a gallery of
+five to six mocked previous players' lines appears beneath.
+
+```js
+{
+  id: 'trace-NNN',
+  prompt: 'loneliness',
+  gallery: [
+    { who: 'a · 2:14 am', d: 'M30 150 C 120 150, 220 152, 560 150' },
+    // …
+  ],
+}
+```
+
+`d` is an SVG path string for the gallery cell. Hand-author variety:
+a long curl, a single dot, a horizontal slash, a heavy scrawl, an
+upward stroke. The viewBox is `0 0 600 300`; design within that box.
+The player's own stroke is captured as a polyline of pointer samples
+and rendered as `<path>` in the same viewBox.
+
+### Echo · write one line · `game/echo/`
+
+A daily writing prompt — a question, a fragment, a small provocation.
+The player composes one line (max 140 chars). On send, the prompt
+plus the player's line render as a couplet, and a gallery of five to
+six mocked responses scrolls beneath.
+
+```js
+{
+  id: 'echo-NNN',
+  prompt: 'What did you almost say today?',
+  meta: '184 lines sent today',
+  gallery: [
+    { who: 'a · 9:22 am', line: 'I almost said yes. I said maybe instead.' },
+    // …
+  ],
+}
+```
+
+Author the gallery for tonal variety — one funny, one dark, one
+literal, one personal, one strange. The visual treatment is editorial
+throughout; player input is the largest element on screen until they
+send.
+
+### Glyph · look, then redraw · `game/glyph/`
+
+A daily symbol from a world writing system or symbolic vocabulary —
+kanji, hieroglyph, rune, alchemical sigil, Devanagari letter. Shown
+large for about ten seconds with its meaning beneath, then the symbol
+fades. The player redraws on a blank canvas matching the same frame
+size. Their drawing sits beside the original for comparison. A mocked
+library of past attempts renders as a grid below.
+
+```js
+{
+  id: 'glyph-NNN',
+  glyph: '木',
+  rom: 'ki · boku',
+  gloss: 'tree',
+  system: 'kanji',
+}
+```
+
+The character is rendered with Noto Serif JP (loaded from Google
+Fonts) so kanji + Devanagari + runes all display cleanly. The
+ten-second study window is invisible — a `setTimeout` triggers a
+fade transition; the player perceives the glyph dimming naturally.
+The drawing canvas accepts multiple strokes (each pointerdown starts
+a new path); the `Done drawing` button advances to the compare phase.
+The library array (`LIBRARY` in the IIFE) holds hand-authored past
+attempts; in production these would be the player's own history.
+
+---
+
+## Adding a seventeenth game
 
 1. Create `/game/<slug>/index.html` modeled on any existing game.
 2. Add an accent color in `shared.css`:
