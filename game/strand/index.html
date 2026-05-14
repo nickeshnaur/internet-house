@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Strand · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .strand-board {
+    width: min(96vw, 480px);
+    aspect-ratio: 5 / 6;
+    position: relative;
+    border-radius: 18px;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 35%, rgba(167, 139, 250, 0.10), transparent 65%),
+      radial-gradient(ellipse 70% 50% at 70% 80%, rgba(167, 139, 250, 0.05), transparent 70%);
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+  }
+  .strand-svg { width: 100%; height: 100%; display: block; }
+  .strand-letter-bg {
+    fill: rgba(167, 139, 250, 0.0);
+    transition: fill var(--t-fast) var(--ease);
+  }
+  .strand-letter-bg.touched { fill: rgba(167, 139, 250, 0.18); }
+  .strand-letter {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 500;
+    fill: var(--ink-soft);
+    text-anchor: middle;
+    dominant-baseline: central;
+    cursor: pointer;
+    transition: fill var(--t-fast) var(--ease);
+    pointer-events: none;
+  }
+  .strand-letter.touched { fill: var(--ink); }
+  .strand-letter.locked  { fill: var(--accent); }
+  .strand-path-locked {
+    stroke: var(--accent);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-opacity: 0.78;
+    fill: none;
+    filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.55));
+  }
+  .strand-path-draft {
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-opacity: 0.55;
+    stroke-dasharray: 3 5;
+    fill: none;
+  }
+  .strand-themelist {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 6px 14px;
+    margin-top: 4px;
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.06em;
+  }
+  .strand-theme-word {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--ink-faint);
+    transition: color var(--t-med) var(--ease), text-decoration-color var(--t-med) var(--ease);
+    text-decoration: line-through transparent;
+  }
+  .strand-theme-word.found {
+    color: var(--accent);
+    text-decoration: line-through var(--accent);
+  }
+  .strand-eyebrow {
+    text-align: center;
+    margin: -4px 0 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+</style>
+</head>
+<body data-game="strand" data-mood="dark">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+  <section class="game" id="game-strand" data-game="strand" data-mood="dark" >
+    <div class="game-head">
+      <div class="eyebrow">No. 001 · Strand</div>
+      <h1 class="title">Strand</h1>
+      <p class="rule">Trace the night sky. Five words are hiding in the field.</p>
+      <p class="howto"><b>How to play.</b> Press a letter, drag your finger across more letters in order to spell a theme word, then release. Each correct word locks in as a luminous line. Find all five.</p>
+    </div>
+
+    <div class="toolbar">
+      <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-strand">0:00</span></span>
+      <span class="sep"></span>
+      <button class="tool-btn" data-action="reset" data-game="strand">Reset</button>
+      <button class="tool-btn" data-action="reveal" data-game="strand">Reveal</button>
+      <button class="tool-btn" data-action="share" data-game="strand" hidden>Share</button>
+      <span class="sep"></span>
+      <span class="puzzle-picker" data-game="strand" role="group" aria-label="Choose puzzle">
+        <button class="puzzle-pick" data-game="strand" data-idx="0" aria-current="true" aria-label="puzzle 1">1</button>
+        <button class="puzzle-pick" data-game="strand" data-idx="1" aria-label="puzzle 2">2</button>
+        <button class="puzzle-pick" data-game="strand" data-idx="2" aria-label="puzzle 3">3</button>
+      </span>
+    </div>
+
+    <div class="stage" id="stage-strand">
+      <div class="strand-eyebrow" id="strand-theme">Theme · Night Sky</div>
+      <div class="strand-board" id="strand-board"></div>
+      <div class="strand-themelist" id="strand-themelist"></div>
+      <div class="solved" id="solved-strand"><span class="check">✦</span><span class="solved-text">Constellation Found</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>internet.house</span>
+  <span><a href="/">← home</a></span>
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+(function Strand() {
+  // viewBox: 500 x 600. Letters as positioned circles + text on dark field.
+  // Designed so each target word's letter sequence forms a continuous gesture
+  // through the cluster.
+  const VBW = 500, VBH = 600;
+  const HIT_R = 38;   // hit radius in viewBox units (touch-friendly)
+
+  // Each puzzle: a theme, 4–5 target words (no internal letter repeats),
+  // and the letter field laid out so each word can be drawn as one gesture.
+  const PUZZLES = [
+    {
+      id: 'strand-001',
+      theme: 'Night Sky',
+      words: ['STAR', 'ORBIT', 'COMET', 'BEAM', 'GLINT'],
+      letters: [
+        ['S', 178, 131], ['T', 240, 300], ['A', 254, 221], ['R', 330, 144],
+        ['O',  90, 280], ['M', 240, 380], ['E', 320, 300], ['B', 380, 220],
+        ['I', 380, 380], ['C',  90, 416], ['N', 300, 470], ['L', 170, 470],
+        ['G',  90, 540],
+      ],
+    },
+    {
+      id: 'strand-002',
+      theme: 'Feelings',
+      words: ['LOVE', 'FEAR', 'CALM', 'ANGER', 'JOY'],
+      letters: [
+        ['L', 180, 130], ['O', 290, 200], ['V', 150, 280], ['E', 360, 280],
+        ['F', 430, 150], ['A', 310, 350], ['R', 440, 380], ['C',  95, 380],
+        ['M', 210, 440], ['N', 370, 460], ['G', 470, 520], ['J',  95, 510],
+        ['Y', 270, 540],
+      ],
+    },
+    {
+      id: 'strand-003',
+      theme: 'Coast',
+      words: ['TIDE', 'FOAM', 'SHORE', 'SAIL', 'SWAM'],
+      letters: [
+        ['T', 180, 130], ['I', 320, 180], ['D', 430, 240], ['E', 300, 320],
+        ['F', 110, 220], ['O', 200, 360], ['A', 380, 380], ['M', 450, 470],
+        ['W',  90, 340], ['S', 240, 470], ['H',  95, 470], ['R', 420, 170],
+        ['L', 340, 540],
+      ],
+    },
+  ];
+  let pIdx = 0;
+  let PUZZLE = PUZZLES[pIdx];
+
+  const boardEl   = $('#strand-board');
+  const themeEl   = $('#strand-theme');
+  const listEl    = $('#strand-themelist');
+  const stageEl   = $('#stage-strand');
+  const solvedEl  = $('#solved-strand');
+  const shareBtn   = document.querySelector('.tool-btn[data-game="strand"][data-action="share"]');
+  const revealBtn  = document.querySelector('.tool-btn[data-game="strand"][data-action="reveal"]');
+  const timer      = createTimer($('#timer-strand'));
+
+  const ns = 'http://www.w3.org/2000/svg';
+  let svg, draftPathEl, locksGroup, bgEls = [], textEls = [];
+  let draftPath = [];       // current drag path as indices into PUZZLE.letters
+  let found = new Set();    // set of found words
+  let solved = false;
+  let dragging = false;
+
+  function build() {
+    boardEl.innerHTML = '';
+    boardEl.classList.remove('solved');
+    found = new Set();
+    draftPath = [];
+    solved = false;
+    dragging = false;
+    bgEls = [];
+    textEls = [];
+
+    themeEl.textContent = `Theme · ${PUZZLE.theme}`;
+
+    svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'strand-svg');
+    svg.setAttribute('viewBox', `0 0 ${VBW} ${VBH}`);
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    boardEl.appendChild(svg);
+
+    locksGroup = document.createElementNS(ns, 'g');
+    svg.appendChild(locksGroup);
+
+    draftPathEl = document.createElementNS(ns, 'polyline');
+    draftPathEl.setAttribute('class', 'strand-path-draft');
+    draftPathEl.setAttribute('points', '');
+    svg.appendChild(draftPathEl);
+
+    // Background circles for hit area + visual disk
+    PUZZLE.letters.forEach(([_, x, y], i) => {
+      const bg = document.createElementNS(ns, 'circle');
+      bg.setAttribute('class', 'strand-letter-bg');
+      bg.setAttribute('cx', x); bg.setAttribute('cy', y);
+      bg.setAttribute('r', HIT_R - 6);
+      svg.appendChild(bg);
+      bgEls.push(bg);
+    });
+    PUZZLE.letters.forEach(([l, x, y], i) => {
+      const t = document.createElementNS(ns, 'text');
+      t.setAttribute('class', 'strand-letter');
+      t.setAttribute('x', x); t.setAttribute('y', y);
+      t.textContent = l;
+      svg.appendChild(t);
+      textEls.push(t);
+    });
+
+    // List of theme words below the board (italic, struck through when found).
+    listEl.innerHTML = PUZZLE.words.map(w =>
+      `<span class="strand-theme-word" data-w="${w}">${w.toLowerCase()}</span>`
+    ).join('');
+  }
+
+  function clientToSvg(cx, cy) {
+    const r = svg.getBoundingClientRect();
+    return {
+      x: ((cx - r.left) / r.width)  * VBW,
+      y: ((cy - r.top)  / r.height) * VBH,
+    };
+  }
+
+  function letterAtPoint(x, y) {
+    let best = -1, bestD = HIT_R * HIT_R;
+    for (let i = 0; i < PUZZLE.letters.length; i++) {
+      const [, lx, ly] = PUZZLE.letters[i];
+      const d2 = (x - lx)*(x - lx) + (y - ly)*(y - ly);
+      if (d2 < bestD) { bestD = d2; best = i; }
+    }
+    return best;
+  }
+
+  function onDown(e) {
+    if (solved) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    e.preventDefault();
+    timer.start();
+    const p = clientToSvg(e.clientX, e.clientY);
+    const i = letterAtPoint(p.x, p.y);
+    if (i < 0) return;
+    dragging = true;
+    draftPath = [i];
+    boardEl.setPointerCapture(e.pointerId);
+    markTouched();
+    renderDraft();
+    haptic(6);
+  }
+
+  const onMoveRaf = rafThrottle(onMove);
+  function onMove(e) {
+    if (!dragging || solved) return;
+    const p = clientToSvg(e.clientX, e.clientY);
+    const i = letterAtPoint(p.x, p.y);
+    if (i < 0) return;
+    if (draftPath.length && draftPath[draftPath.length - 1] === i) return;
+    if (draftPath.includes(i)) {
+      // pointer drifted back through an earlier letter — allow backtracking
+      // by one step (UX nicety): if it's the previous letter, pop the last.
+      if (draftPath.length >= 2 && draftPath[draftPath.length - 2] === i) {
+        draftPath.pop();
+        haptic(4);
+        markTouched(); renderDraft();
+      }
+      return;
+    }
+    draftPath.push(i);
+    haptic(6);
+    markTouched();
+    renderDraft();
+  }
+
+  function onUp(e) {
+    if (!dragging) return;
+    dragging = false;
+    try { boardEl.releasePointerCapture(e.pointerId); } catch(_) {}
+    const word = draftPath.map(i => PUZZLE.letters[i][0]).join('');
+    if (PUZZLE.words.includes(word) && !found.has(word)) {
+      found.add(word);
+      lockPath(draftPath);
+      markFoundInList(word);
+      haptic(30);
+      if (found.size === PUZZLE.words.length) win();
+    }
+    draftPath = [];
+    markTouched();
+    renderDraft();
+  }
+
+  function markTouched() {
+    const inDraft = new Set(draftPath);
+    bgEls.forEach((bg, i) => bg.classList.toggle('touched', inDraft.has(i)));
+    textEls.forEach((t, i) => {
+      t.classList.toggle('touched', inDraft.has(i));
+    });
+    // letters in any locked word stay in "locked" style
+    const locked = new Set();
+    for (const w of found) {
+      const path = pathForWord(w);
+      if (path) path.forEach(i => locked.add(i));
+    }
+    textEls.forEach((t, i) => t.classList.toggle('locked', locked.has(i)));
+  }
+
+  function renderDraft() {
+    if (draftPath.length < 2) {
+      draftPathEl.setAttribute('points', '');
+      return;
+    }
+    const pts = draftPath.map(i => {
+      const [, x, y] = PUZZLE.letters[i];
+      return `${x},${y}`;
+    }).join(' ');
+    draftPathEl.setAttribute('points', pts);
+  }
+
+  const lockedPaths = new Map(); // word -> path indices
+  function lockPath(path) {
+    const word = path.map(i => PUZZLE.letters[i][0]).join('');
+    lockedPaths.set(word, path.slice());
+    const pts = path.map(i => {
+      const [, x, y] = PUZZLE.letters[i];
+      return `${x},${y}`;
+    }).join(' ');
+    const pl = document.createElementNS(ns, 'polyline');
+    pl.setAttribute('class', 'strand-path-locked');
+    pl.setAttribute('points', pts);
+    locksGroup.appendChild(pl);
+  }
+  function pathForWord(w) {
+    return lockedPaths.get(w);
+  }
+  function markFoundInList(word) {
+    const el = listEl.querySelector(`[data-w="${word}"]`);
+    if (el) el.classList.add('found');
+  }
+
+  function win() {
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = `Constellation Found · ${timer.formatted()}`;
+    solvedEl.classList.add('show');
+    shareBtn.hidden = false;
+    haptic(60);
+  }
+
+  function reset() {
+    timer.reset();
+    solvedEl.classList.remove('show', 'is-revealed');
+    shareBtn.hidden = true;
+    revealBtn.hidden = false;
+    lockedPaths.clear();
+    build();
+  }
+
+  function reveal() {
+    if (solved) return;
+    for (const word of PUZZLE.words) {
+      if (found.has(word)) continue;
+      const path = [];
+      for (const letter of word) {
+        const idx = PUZZLE.letters.findIndex(([l]) => l === letter);
+        if (idx >= 0) path.push(idx);
+      }
+      found.add(word);
+      lockPath(path);
+      markFoundInList(word);
+    }
+    markTouched();
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+    solvedEl.classList.add('show', 'is-revealed');
+    revealBtn.hidden = true;
+    flashReveal(stageEl);
+  }
+
+  function load(i) {
+    pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+    PUZZLE = PUZZLES[pIdx];
+    reset();
+  }
+
+  function share() {
+    const stars = '✦'.repeat(found.size);
+    const text =
+`Strand · ${timer.formatted()}
+${PUZZLE.theme} · ${stars}
+${PUZZLE.words.join(' · ')}
+internet.house/game`;
+    copyShare(text);
+  }
+
+  // Attach pointer listeners once. boardEl is stable; `build()` recreates the
+  // SVG inside it but the board element itself persists across resets.
+  boardEl.addEventListener('pointerdown',   onDown);
+  boardEl.addEventListener('pointermove',   onMoveRaf);
+  boardEl.addEventListener('pointerup',     onUp);
+  boardEl.addEventListener('pointercancel', onUp);
+
+  build();
+  GAMES.strand = { reset, share, reveal, load, onShow: () => { /* layout-safe re-render */ } };
+})();
+  </script>
+</body>
+</html>

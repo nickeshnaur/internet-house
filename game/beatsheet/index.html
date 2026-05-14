@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Beat Sheet · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .beat-board {
+    --size: min(92vw, 400px);
+    width: var(--size);
+    height: var(--size);
+    position: relative;
+  }
+  .beat-svg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  .beat-path {
+    stroke: var(--beatsheet);
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+    stroke-dasharray: 4 6;
+    stroke-dashoffset: 0;
+    opacity: 0.9;
+  }
+  .beat-board.solved .beat-path {
+    stroke-dasharray: none;
+    stroke-width: 2.5;
+    animation: pathdraw 600ms var(--ease);
+  }
+  @keyframes pathdraw {
+    from { stroke-opacity: 0.4; }
+    to   { stroke-opacity: 1; }
+  }
+  .beat-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 32%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 1px solid var(--hairline-strong);
+    background: var(--paper-soft);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.92rem;
+    color: var(--ink-faint);
+    text-align: center;
+    padding: 8px;
+    line-height: 1.2;
+    pointer-events: none;
+  }
+  .beat-token {
+    position: absolute;
+    width: 30%;
+    aspect-ratio: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border: 1px solid var(--hairline-strong);
+    background: var(--paper-soft);
+    border-radius: 50%;
+    transition: border-color var(--t-fast) var(--ease),
+                background var(--t-fast) var(--ease),
+                transform var(--t-fast) var(--ease),
+                color var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    cursor: pointer;
+  }
+  @media (hover: hover) {
+    .beat-token:hover {
+      border-color: var(--beatsheet);
+      transform: scale(1.03);
+    }
+  }
+  .beat-token[data-pos] {
+    border-color: var(--beatsheet);
+    background: #fff;
+  }
+  .beat-token .glyph {
+    font-size: clamp(1.4rem, 5vw, 1.8rem);
+    line-height: 1;
+  }
+  .beat-token .name {
+    font-family: 'Fraunces', serif;
+    font-size: 0.78rem;
+    margin-top: 4px;
+    color: var(--ink-soft);
+    letter-spacing: -0.005em;
+  }
+  .beat-token .order {
+    position: absolute;
+    top: -10px; right: -10px;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--beatsheet);
+    color: #fff;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: none;
+    align-items: center; justify-content: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+  .beat-token[data-pos] .order { display: flex; }
+
+  /* token positions (NW, NE, SE, SW order) */
+  .beat-token.pos-nw { top: 0; left: 0; }
+  .beat-token.pos-ne { top: 0; right: 0; }
+  .beat-token.pos-se { bottom: 0; right: 0; }
+  .beat-token.pos-sw { bottom: 0; left: 0; }
+
+</style>
+</head>
+<body data-game="beatsheet" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+  <section class="game" id="game-beatsheet" data-game="beatsheet" >
+    <div class="game-head">
+      <div class="eyebrow">No. 001 · Beat Sheet</div>
+      <h1 class="title">Beat Sheet</h1>
+      <p class="rule">Tap the witnesses in the order they were questioned.</p>
+      <p class="howto"><b>How to play.</b> Tap each character in sequence — a numbered line draws between them in order. Tap a numbered character to undo that pick and everything after. All four clues must hold.</p>
+    </div>
+
+    <div class="toolbar">
+      <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-beatsheet">0:00</span></span>
+      <span class="sep"></span>
+      <button class="tool-btn" data-action="reset" data-game="beatsheet">Reset</button>
+      <button class="tool-btn" data-action="reveal" data-game="beatsheet">Reveal</button>
+      <button class="tool-btn" data-action="share" data-game="beatsheet" hidden>Share</button>
+      <span class="sep"></span>
+      <span class="puzzle-picker" data-game="beatsheet" role="group" aria-label="Choose puzzle">
+        <button class="puzzle-pick" data-game="beatsheet" data-idx="0" aria-current="true" aria-label="puzzle 1">1</button>
+        <button class="puzzle-pick" data-game="beatsheet" data-idx="1" aria-label="puzzle 2">2</button>
+        <button class="puzzle-pick" data-game="beatsheet" data-idx="2" aria-label="puzzle 3">3</button>
+      </span>
+    </div>
+
+    <div class="stage" id="stage-beatsheet">
+      <div class="beat-board" id="beat-board"></div>
+      <div class="solved" id="solved-beatsheet"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+      <ol class="clues" id="beat-clues"></ol>
+    </div>
+  </section>
+
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+(function BeatSheet() {
+
+  // Each puzzle defines a 4-character cast at 2×2 corners plus the
+  // constraints that pin one valid ordering. `answer` is used by reveal.
+  const PUZZLES = [
+    {
+      id: 'beatsheet-001',
+      headline: 'A locked study. Four witnesses.',
+      CHARS: [
+        { id: 'detective', name: 'Detective', glyph: '🕵️', pos: 'pos-nw' },
+        { id: 'maid',      name: 'Maid',      glyph: '👒', pos: 'pos-ne' },
+        { id: 'butler',    name: 'Butler',    glyph: '🎩', pos: 'pos-se' },
+        { id: 'heir',      name: 'Heir',      glyph: '👑', pos: 'pos-sw' },
+      ],
+      CLUES: [
+        {
+          text: 'The Detective interviewed the Maid before the Butler.',
+          check: order => order.indexOf('maid') < order.indexOf('butler')
+                       && order.includes('detective')
+                       && order.indexOf('detective') < order.indexOf('butler'),
+        },
+        {
+          text: 'The Heir was the last person interviewed.',
+          check: order => order[order.length - 1] === 'heir',
+        },
+        {
+          text: 'The Maid was not the first person interviewed.',
+          check: order => order[0] !== 'maid',
+        },
+      ],
+      answer: ['detective', 'maid', 'butler', 'heir'],
+    },
+    {
+      id: 'beatsheet-002',
+      headline: 'A safe cracked open. Four shadows.',
+      CHARS: [
+        { id: 'lookout',     name: 'Lookout',     glyph: '🕶️', pos: 'pos-nw' },
+        { id: 'safecracker', name: 'Safecracker', glyph: '🧰', pos: 'pos-ne' },
+        { id: 'driver',      name: 'Driver',      glyph: '🚗', pos: 'pos-sw' },
+        { id: 'forger',      name: 'Forger',      glyph: '🖋️', pos: 'pos-se' },
+      ],
+      CLUES: [
+        {
+          text: 'The Lookout entered first to clear the path.',
+          check: order => order[0] === 'lookout',
+        },
+        {
+          text: 'The Forger was the last to leave.',
+          check: order => order[order.length - 1] === 'forger',
+        },
+        {
+          text: 'The Driver arrived immediately before the Forger.',
+          check: order => {
+            const di = order.indexOf('driver'), fi = order.indexOf('forger');
+            return di >= 0 && fi >= 0 && fi - di === 1;
+          },
+        },
+        {
+          text: 'The Safecracker came after the Lookout but before the Driver.',
+          check: order => {
+            const li = order.indexOf('lookout'), si = order.indexOf('safecracker'), di = order.indexOf('driver');
+            return li >= 0 && si >= 0 && di >= 0 && li < si && si < di;
+          },
+        },
+      ],
+      answer: ['lookout', 'safecracker', 'driver', 'forger'],
+    },
+    {
+      id: 'beatsheet-003',
+      headline: 'A quiet dining room. Four meetings.',
+      CHARS: [
+        { id: 'host',   name: 'Host',   glyph: '🛎️', pos: 'pos-nw' },
+        { id: 'critic', name: 'Critic', glyph: '📝', pos: 'pos-ne' },
+        { id: 'waiter', name: 'Waiter', glyph: '🍽️', pos: 'pos-sw' },
+        { id: 'chef',   name: 'Chef',   glyph: '👨‍🍳', pos: 'pos-se' },
+      ],
+      CLUES: [
+        {
+          text: 'The Host greeted the Critic at the door first.',
+          check: order => order[0] === 'host',
+        },
+        {
+          text: 'The Chef was the last to come out from the kitchen.',
+          check: order => order[order.length - 1] === 'chef',
+        },
+        {
+          text: 'The Critic was seated before the Waiter approached.',
+          check: order => {
+            const ci = order.indexOf('critic'), wi = order.indexOf('waiter');
+            return ci >= 0 && wi >= 0 && ci < wi;
+          },
+        },
+        {
+          text: 'The Waiter announced the Chef would come out next.',
+          check: order => {
+            const wi = order.indexOf('waiter'), ci = order.indexOf('chef');
+            return wi >= 0 && ci >= 0 && ci - wi === 1;
+          },
+        },
+      ],
+      answer: ['host', 'critic', 'waiter', 'chef'],
+    },
+  ];
+  let pIdx = 0;
+  let PUZZLE = PUZZLES[pIdx];
+  let CHARS = PUZZLE.CHARS;
+  let CLUES = PUZZLE.CLUES;
+
+  const boardEl  = $('#beat-board');
+  const cluesEl  = $('#beat-clues');
+  const stageEl  = $('#stage-beatsheet');
+  const solvedEl = $('#solved-beatsheet');
+  const shareBtn  = document.querySelector('.tool-btn[data-game="beatsheet"][data-action="share"]');
+  const revealBtn = document.querySelector('.tool-btn[data-game="beatsheet"][data-action="reveal"]');
+  const timer     = createTimer($('#timer-beatsheet'));
+
+  let order = []; // ids in click sequence
+  let solved = false;
+  let tokenEls = {};
+  let svgEl, pathEl;
+
+  function build() {
+    boardEl.innerHTML = '';
+    order = [];
+    solved = false;
+    boardEl.classList.remove('solved');
+
+    // SVG overlay for path
+    const ns = 'http://www.w3.org/2000/svg';
+    svgEl = document.createElementNS(ns, 'svg');
+    svgEl.setAttribute('class', 'beat-svg');
+    svgEl.setAttribute('viewBox', '0 0 100 100');
+    svgEl.setAttribute('preserveAspectRatio', 'none');
+    pathEl = document.createElementNS(ns, 'polyline');
+    pathEl.setAttribute('class', 'beat-path');
+    pathEl.setAttribute('points', '');
+    svgEl.appendChild(pathEl);
+    boardEl.appendChild(svgEl);
+
+    // Center vignette
+    const center = document.createElement('div');
+    center.className = 'beat-center';
+    center.textContent = PUZZLE.headline;
+    boardEl.appendChild(center);
+
+    // Tokens
+    tokenEls = {};
+    CHARS.forEach(ch => {
+      const el = document.createElement('button');
+      el.className = `beat-token ${ch.pos}`;
+      el.dataset.id = ch.id;
+      el.innerHTML = `
+        <span class="glyph" aria-hidden="true">${ch.glyph}</span>
+        <span class="name">${ch.name}</span>
+        <span class="order" aria-hidden="true"></span>
+      `;
+      el.addEventListener('click', () => onToken(ch.id));
+      boardEl.appendChild(el);
+      tokenEls[ch.id] = el;
+    });
+
+    cluesEl.innerHTML = CLUES.map(c => `<li>${c.text}</li>`).join('');
+  }
+
+  function onToken(id) {
+    if (solved) return;
+    timer.start();
+    const i = order.indexOf(id);
+    if (i >= 0) {
+      // un-select this and everything later (so order remains contiguous)
+      order.splice(i);
+    } else {
+      if (order.length >= 4) return;
+      order.push(id);
+    }
+    render();
+    if (order.length === 4) maybeWin();
+  }
+
+  function render() {
+    CHARS.forEach(ch => {
+      const el = tokenEls[ch.id];
+      const idx = order.indexOf(ch.id);
+      if (idx >= 0) {
+        el.dataset.pos = String(idx + 1);
+        el.querySelector('.order').textContent = idx + 1;
+      } else {
+        delete el.dataset.pos;
+      }
+    });
+    drawPath();
+  }
+
+  function tokenCenter(id) {
+    const el = tokenEls[id];
+    const tr = el.getBoundingClientRect();
+    const br = boardEl.getBoundingClientRect();
+    return {
+      x: ((tr.left + tr.width/2) - br.left) / br.width * 100,
+      y: ((tr.top + tr.height/2) - br.top) / br.height * 100,
+    };
+  }
+
+  function drawPath() {
+    if (order.length < 2) {
+      pathEl.setAttribute('points', '');
+      return;
+    }
+    const pts = order.map(id => {
+      const p = tokenCenter(id);
+      return `${p.x.toFixed(2)},${p.y.toFixed(2)}`;
+    }).join(' ');
+    pathEl.setAttribute('points', pts);
+  }
+
+  function maybeWin() {
+    const ok = CLUES.every(c => c.check(order));
+    if (ok) win();
+    else shake(stageEl);
+  }
+
+  function win() {
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = `Solved · ${timer.formatted()}`;
+    solvedEl.classList.add('show');
+    shareBtn.hidden = false;
+  }
+
+  function reset() {
+    timer.reset();
+    solvedEl.classList.remove('show', 'is-revealed');
+    shareBtn.hidden = true;
+    revealBtn.hidden = false;
+    build();
+  }
+
+  function reveal() {
+    if (solved) return;
+    order = PUZZLE.answer.slice();
+    render();
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+    solvedEl.classList.add('show', 'is-revealed');
+    revealBtn.hidden = true;
+    flashReveal(stageEl);
+  }
+
+  function load(i) {
+    pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+    PUZZLE = PUZZLES[pIdx];
+    CHARS = PUZZLE.CHARS;
+    CLUES = PUZZLE.CLUES;
+    reset();
+  }
+
+  function share() {
+    const glyphs = order.map(id => CHARS.find(c => c.id === id).glyph).join(' → ');
+    const text =
+`Beat Sheet · ${timer.formatted()}
+${glyphs}
+internet.house/game`;
+    copyShare(text);
+  }
+
+  // Redraw path lines on resize (positions are percent-based but the polyline
+  // is in viewBox coords derived from getBoundingClientRect — re-measure).
+  window.addEventListener('resize', () => { if (!solved) drawPath(); else drawPath(); });
+
+  build();
+  GAMES.beatsheet = { reset, share, reveal, load };
+})();
+
+// ═════════════════════════════════════════════
+  </script>
+</body>
+</html>

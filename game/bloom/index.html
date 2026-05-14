@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Bloom · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .bloom-board {
+    --cell: clamp(34px, 10.5vw, 50px);
+    display: grid;
+    grid-template-columns: repeat(7, var(--cell));
+    grid-template-rows:    repeat(7, var(--cell));
+    gap: 3px;
+    padding: 10px;
+    border-radius: 14px;
+    background: var(--paper-soft);
+    box-shadow: inset 0 0 0 1px var(--hairline);
+  }
+  .bloom-cell {
+    position: relative;
+    background: var(--paper-deep);
+    border-radius: 6px;
+    transition: background var(--t-med) var(--ease), transform var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    overflow: hidden;
+  }
+  .bloom-cell.wall {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px rgba(232, 160, 200, 0.18);
+  }
+  .bloom-cell.wall::after {
+    content: '';
+    position: absolute;
+    inset: 8%;
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(232, 160, 200, 0.18) 0,
+      rgba(232, 160, 200, 0.18) 1px,
+      transparent 1px,
+      transparent 6px
+    );
+    border-radius: 4px;
+  }
+  .bloom-cell.target::before {
+    content: '';
+    position: absolute;
+    inset: 18%;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.10;
+    transition: opacity var(--t-slow) var(--ease);
+  }
+  .bloom-cell.filled {
+    background: var(--accent);
+    box-shadow: 0 0 12px rgba(232, 160, 200, 0.35),
+                inset 0 0 0 1px rgba(255,255,255,0.06);
+  }
+  .bloom-cell.filled::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 6px;
+    background: var(--accent);
+    animation: bloom-pop 460ms var(--ease);
+    pointer-events: none;
+  }
+  @keyframes bloom-pop {
+    0%   { transform: scale(0.3); opacity: 0.9; }
+    60%  { opacity: 0.4; }
+    100% { transform: scale(1.0); opacity: 0; }
+  }
+  .bloom-board.solved .bloom-cell.target::before { opacity: 0; }
+  .bloom-board.solved .bloom-cell.filled {
+    box-shadow: 0 0 22px rgba(232, 160, 200, 0.6),
+                inset 0 0 0 1px rgba(255,255,255,0.08);
+  }
+  .bloom-legend {
+    display: flex;
+    gap: 18px;
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .bloom-legend .swatch {
+    display: inline-block;
+    width: 10px; height: 10px;
+    vertical-align: -1px;
+    border-radius: 2px;
+    margin-right: 6px;
+  }
+
+</style>
+</head>
+<body data-game="bloom" data-mood="dark">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+  <section class="game" id="game-bloom" data-game="bloom" data-mood="dark" >
+    <div class="game-head">
+      <div class="eyebrow">No. 001 · Bloom</div>
+      <h1 class="title">Bloom</h1>
+      <p class="rule">One seed grows into today's shape. Find which cell.</p>
+      <p class="howto"><b>How to play.</b> Tap any open cell to plant a seed. Each turn it spreads into adjacent empty cells; walls block growth. After five turns, the bloom is checked against the faint target. Find the seed that grows into it exactly.</p>
+    </div>
+
+    <div class="toolbar">
+      <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-bloom">0:00</span></span>
+      <span class="sep"></span>
+      <button class="tool-btn" data-action="reset" data-game="bloom">Reset</button>
+      <button class="tool-btn" data-action="reveal" data-game="bloom">Reveal</button>
+      <button class="tool-btn" data-action="share" data-game="bloom" hidden>Share</button>
+      <span class="sep"></span>
+      <span class="puzzle-picker" data-game="bloom" role="group" aria-label="Choose puzzle">
+        <button class="puzzle-pick" data-game="bloom" data-idx="0" aria-current="true" aria-label="puzzle 1">1</button>
+        <button class="puzzle-pick" data-game="bloom" data-idx="1" aria-label="puzzle 2">2</button>
+        <button class="puzzle-pick" data-game="bloom" data-idx="2" aria-label="puzzle 3">3</button>
+      </span>
+    </div>
+
+    <div class="stage" id="stage-bloom">
+      <div class="bloom-board" id="bloom-board"></div>
+      <div class="bloom-legend" aria-hidden="true">
+        <span><span class="swatch" style="background: var(--accent); opacity: 0.18;"></span>Target</span>
+        <span><span class="swatch" style="background: var(--accent);"></span>Bloom</span>
+      </div>
+      <div class="solved" id="solved-bloom"><span class="check">✦</span><span class="solved-text">Bloomed</span></div>
+    </div>
+  </section>
+
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+(function Bloom() {
+  // 7×7 grid; walls channel a cascading bloom from a single seed.
+  // Each puzzle's TARGET_LIST is the deterministic result of cascading
+  // from ANSWER_SEED through WALL_LIST for GENERATIONS rounds.
+  const SIZE = 7;
+  const GENERATIONS = 5;
+
+  const PUZZLES = [
+    {
+      id: 'bloom-001',
+      WALL_LIST: [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[0,6],[2,4]],
+      ANSWER_SEED: [1, 5],
+      TARGET_LIST: [
+        [0,1],[0,2],[0,3],[0,4],[0,5],
+        [1,2],[1,3],[1,4],[1,5],[1,6],
+        [2,3],[2,5],[2,6],
+        [3,4],[3,5],[3,6],
+        [4,5],[4,6],
+        [5,6],
+      ],
+    },
+    {
+      id: 'bloom-002',
+      // L-shaped walls cradling the top-left corner.
+      WALL_LIST: [[0,5],[1,5],[2,5],[3,5],[5,0],[5,1],[5,2],[5,3]],
+      ANSWER_SEED: [0, 0],
+      TARGET_LIST: [
+        [0,0],[0,1],[0,2],[0,3],[0,4],
+        [1,0],[1,1],[1,2],[1,3],[1,4],
+        [2,0],[2,1],[2,2],[2,3],
+        [3,0],[3,1],[3,2],
+        [4,0],[4,1],
+      ],
+    },
+    {
+      id: 'bloom-003',
+      // Two horizontal walls form a "C" channel; seed enters from the left.
+      WALL_LIST: [[1,1],[1,2],[1,3],[1,4],[5,1],[5,2],[5,3],[5,4]],
+      ANSWER_SEED: [3, 0],
+      TARGET_LIST: [
+        [0,0],[0,1],[0,2],
+        [1,0],
+        [2,0],[2,1],[2,2],[2,3],[2,4],
+        [3,0],[3,1],[3,2],[3,3],[3,4],[3,5],
+        [4,0],[4,1],[4,2],[4,3],[4,4],
+        [5,0],
+        [6,0],[6,1],[6,2],
+      ],
+    },
+  ];
+  let pIdx = 0;
+  let PUZZLE = PUZZLES[pIdx];
+  let WALLS  = new Set(PUZZLE.WALL_LIST.map(([r,c]) => `${r},${c}`));
+  let TARGET = new Set(PUZZLE.TARGET_LIST.map(([r,c]) => `${r},${c}`));
+  let ANSWER_SEED = PUZZLE.ANSWER_SEED;
+
+  const boardEl  = $('#bloom-board');
+  const stageEl  = $('#stage-bloom');
+  const solvedEl = $('#solved-bloom');
+  const shareBtn  = document.querySelector('.tool-btn[data-game="bloom"][data-action="share"]');
+  const revealBtn = document.querySelector('.tool-btn[data-game="bloom"][data-action="reveal"]');
+  const timer     = createTimer($('#timer-bloom'));
+
+  let cellEls;   // cellEls[r][c]
+  let busy = false;
+  let solved = false;
+
+  function build() {
+    boardEl.innerHTML = '';
+    boardEl.classList.remove('solved');
+    solved = false;
+    busy = false;
+    cellEls = [];
+    for (let r = 0; r < SIZE; r++) {
+      cellEls[r] = [];
+      for (let c = 0; c < SIZE; c++) {
+        const k = `${r},${c}`;
+        const el = document.createElement('button');
+        el.className = 'bloom-cell';
+        el.dataset.r = r; el.dataset.c = c;
+        if (WALLS.has(k))  el.classList.add('wall');
+        if (TARGET.has(k)) el.classList.add('target');
+        if (WALLS.has(k)) el.disabled = true;
+        el.setAttribute('aria-label', `cell row ${r+1} column ${c+1}`);
+        el.addEventListener('click', () => onTap(r, c));
+        boardEl.appendChild(el);
+        cellEls[r][c] = el;
+      }
+    }
+  }
+
+  function clearFilled() {
+    for (let r = 0; r < SIZE; r++)
+      for (let c = 0; c < SIZE; c++)
+        cellEls[r][c].classList.remove('filled');
+  }
+
+  function neighbors(r, c) {
+    return [[r-1,c],[r+1,c],[r,c-1],[r,c+1]]
+      .filter(([nr,nc]) => nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && !WALLS.has(`${nr},${nc}`));
+  }
+
+  function computeGenerations(seedR, seedC) {
+    // Returns list of arrays — one per generation (gen 0 is the seed alone).
+    const filled = new Set([`${seedR},${seedC}`]);
+    const gens = [[[seedR, seedC]]];
+    let frontier = [[seedR, seedC]];
+    for (let g = 1; g <= GENERATIONS; g++) {
+      const next = [];
+      const seen = new Set();
+      for (const [r, c] of frontier) {
+        for (const [nr, nc] of neighbors(r, c)) {
+          const k = `${nr},${nc}`;
+          if (filled.has(k) || seen.has(k)) continue;
+          seen.add(k);
+          next.push([nr, nc]);
+          filled.add(k);
+        }
+      }
+      gens.push(next);
+      frontier = next;
+      if (next.length === 0) break;
+    }
+    return { gens, filled };
+  }
+
+  async function onTap(r, c) {
+    if (busy || solved) return;
+    if (WALLS.has(`${r},${c}`)) return;
+    timer.start();
+    busy = true;
+    clearFilled();
+
+    const { gens, filled } = computeGenerations(r, c);
+    for (const gen of gens) {
+      for (const [gr, gc] of gen) {
+        cellEls[gr][gc].classList.add('filled');
+      }
+      haptic(4);
+      await new Promise(res => setTimeout(res, 170));
+    }
+
+    // Compare to target
+    const matches = (filled.size === TARGET.size)
+      && Array.from(TARGET).every(k => filled.has(k));
+    if (matches) {
+      win();
+    } else {
+      // brief reveal, then clear and let the player try again
+      await new Promise(res => setTimeout(res, 480));
+      shake(stageEl);
+      await new Promise(res => setTimeout(res, 240));
+      clearFilled();
+      busy = false;
+    }
+  }
+
+  function win() {
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = `Bloomed · ${timer.formatted()}`;
+    solvedEl.classList.add('show');
+    shareBtn.hidden = false;
+    haptic(30);
+  }
+
+  function reset() {
+    timer.reset();
+    solvedEl.classList.remove('show', 'is-revealed');
+    shareBtn.hidden = true;
+    revealBtn.hidden = false;
+    build();
+  }
+
+  async function reveal() {
+    if (busy || solved) return;
+    busy = true;
+    clearFilled();
+    flashReveal(stageEl);
+    const { gens } = computeGenerations(ANSWER_SEED[0], ANSWER_SEED[1]);
+    for (const gen of gens) {
+      for (const [gr, gc] of gen) cellEls[gr][gc].classList.add('filled');
+      await new Promise(res => setTimeout(res, 170));
+    }
+    solved = true;
+    busy = false;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+    solvedEl.classList.add('show', 'is-revealed');
+    revealBtn.hidden = true;
+  }
+
+  function load(i) {
+    pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+    PUZZLE = PUZZLES[pIdx];
+    WALLS  = new Set(PUZZLE.WALL_LIST.map(([r,c]) => `${r},${c}`));
+    TARGET = new Set(PUZZLE.TARGET_LIST.map(([r,c]) => `${r},${c}`));
+    ANSWER_SEED = PUZZLE.ANSWER_SEED;
+    reset();
+  }
+
+  function share() {
+    // 7x7 emoji grid of the target.
+    const rows = [];
+    for (let r = 0; r < SIZE; r++) {
+      let row = '';
+      for (let c = 0; c < SIZE; c++) {
+        if (WALLS.has(`${r},${c}`))      row += '⬜';
+        else if (TARGET.has(`${r},${c}`)) row += '🟪';
+        else                             row += '⬛';
+      }
+      rows.push(row);
+    }
+    const text =
+`Bloom · ${timer.formatted()}
+${rows.join('\n')}
+internet.house/game`;
+    copyShare(text);
+  }
+
+  build();
+  GAMES.bloom = { reset, share, reveal, load };
+})();
+
+// ═════════════════════════════════════════════
+  </script>
+</body>
+</html>

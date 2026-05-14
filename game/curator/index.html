@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Curator · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .curator-prompt {
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--ink-soft);
+    margin: 4px auto 18px;
+    max-width: 22em;
+  }
+  .curator-list {
+    width: 100%;
+    max-width: 480px;
+    position: relative;
+    list-style: none;
+    padding: 0; margin: 0;
+    user-select: none;
+  }
+  .curator-item {
+    position: relative;
+    padding: 18px 56px 18px 50px;
+    margin-bottom: 10px;
+    border: 1px solid var(--hairline);
+    border-radius: 10px;
+    background: var(--paper-soft);
+    transition: transform 240ms var(--ease), box-shadow var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+    touch-action: pan-y;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .curator-item .rank {
+    position: absolute; top: 50%; left: 14px; transform: translateY(-50%);
+    font-family: 'Fraunces', serif;
+    font-size: 1.55rem;
+    font-weight: 500;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    width: 1.4em; text-align: center;
+  }
+  .curator-item .line {
+    font-family: 'Fraunces', serif;
+    font-size: 1.04rem;
+    line-height: 1.4;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .curator-item .attr {
+    display: none;
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 6px;
+  }
+  body.revealed .curator-item .attr { display: block; }
+  .curator-item .handle {
+    position: absolute; top: 0; right: 0; bottom: 0;
+    width: 44px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: var(--ink-faint);
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+  }
+  .curator-item .handle::before {
+    content: '';
+    width: 18px; height: 2px; background: currentColor;
+    box-shadow: 0 6px 0 currentColor, 0 -6px 0 currentColor;
+    border-radius: 2px;
+    opacity: 0.4;
+  }
+  .curator-item.dragging {
+    z-index: 5;
+    box-shadow: 0 12px 28px -8px rgba(0,0,0,0.18);
+    border-color: var(--accent);
+    background: var(--paper);
+    cursor: grabbing;
+  }
+  .curator-item.dragging .handle { cursor: grabbing; }
+
+  .curator-submit {
+    margin: 18px auto 0;
+    padding: 10px 22px;
+    font: 500 0.74rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+    border-radius: 999px;
+    transition: opacity var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  }
+  .curator-submit[hidden] { display: none; }
+  @media (hover: hover) { .curator-submit:hover { transform: translateY(-1px); } }
+
+  .curator-result {
+    margin-top: 18px;
+    width: 100%;
+    max-width: 520px;
+  }
+  .curator-result h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    text-align: center;
+    font-size: 1.1rem;
+    margin: 0 0 4px;
+  }
+  .curator-result .meta {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 0.86rem;
+    margin-bottom: 16px;
+  }
+  .curator-result table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Fraunces', serif;
+  }
+  .curator-result th {
+    text-align: left;
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .curator-result td {
+    padding: 12px 6px;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 0.96rem;
+    color: var(--ink);
+    vertical-align: top;
+  }
+  .curator-result .rank-cell {
+    font-family: 'Fraunces', serif;
+    font-size: 1.2rem;
+    color: var(--accent);
+    width: 2em;
+    text-align: center;
+  }
+  .curator-result .delta {
+    font: 500 0.7rem 'Inter', sans-serif;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+  }
+  .curator-result .delta.big { color: var(--accent); }
+  .curator-result .deviation {
+    font: 500 0.7rem 'Inter', sans-serif;
+    text-align: center;
+    color: var(--ink-soft);
+    margin-top: 14px;
+  }
+</style>
+</head>
+<body data-game="curator" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="curator">
+      <div class="game-head">
+        <div class="eyebrow">No. 011 · Curator</div>
+        <h1 class="title">Curator</h1>
+        <p class="rule">Rank five lines. Compare your taste to the world's.</p>
+        <p class="howto"><b>How to play.</b> Drag the cards into your preferred order — most at top, least at bottom — then submit. You'll see how today's other players ranked the same five.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="curator">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="curator" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="curator" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="curator" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="curator" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="curator" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-curator">
+        <p class="curator-prompt" id="curator-prompt"></p>
+        <ol class="curator-list" id="curator-list"></ol>
+        <button class="curator-submit" id="curator-submit">Submit ranking</button>
+        <div class="solved" id="solved-curator"><span class="check">✓</span><span class="solved-text">Ranked</span></div>
+        <div class="curator-result" id="curator-result" hidden>
+          <h3 id="curator-result-h">Your taste vs. today's crowd</h3>
+          <p class="meta" id="curator-result-meta"></p>
+          <table>
+            <thead>
+              <tr><th style="width:2em">You</th><th>Line</th><th style="width:2em">Crowd</th><th style="width:4em">Δ</th></tr>
+            </thead>
+            <tbody id="curator-result-body"></tbody>
+          </table>
+          <p class="deviation" id="curator-deviation"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Curator() {
+    const PUZZLES = [
+      {
+        id: 'curator-001',
+        prompt: 'Rank these opening lines from most to least compelling.',
+        items: [
+          { id: 'm', line: 'Call me Ishmael.', attr: 'Herman Melville · Moby-Dick' },
+          { id: 't', line: 'It was the best of times, it was the worst of times.', attr: 'Charles Dickens · A Tale of Two Cities' },
+          { id: 'a', line: 'All happy families are alike; each unhappy family is unhappy in its own way.', attr: 'Leo Tolstoy · Anna Karenina' },
+          { id: 'h', line: 'In a hole in the ground there lived a hobbit.', attr: 'J.R.R. Tolkien · The Hobbit' },
+          { id: 'g', line: 'The man in black fled across the desert, and the gunslinger followed.', attr: 'Stephen King · The Gunslinger' },
+        ],
+        // Mock global ranking — order from most to least compelling.
+        globalOrder: ['a', 't', 'g', 'm', 'h'],
+        meta: '3,142 rankings submitted today',
+      },
+      {
+        id: 'curator-002',
+        prompt: 'Rank these last lines from most to least haunting.',
+        items: [
+          { id: '1', line: 'After all, tomorrow is another day.',                   attr: 'Margaret Mitchell · Gone with the Wind' },
+          { id: '2', line: 'Yes, I said, yes I will Yes.',                          attr: 'James Joyce · Ulysses' },
+          { id: '3', line: 'So we beat on, boats against the current, borne back ceaselessly into the past.', attr: 'F. Scott Fitzgerald · The Great Gatsby' },
+          { id: '4', line: 'He loved Big Brother.',                                 attr: 'George Orwell · 1984' },
+          { id: '5', line: 'A way a lone a last a loved a long the',                attr: 'James Joyce · Finnegans Wake' },
+        ],
+        globalOrder: ['3', '4', '2', '5', '1'],
+        meta: '2,008 rankings submitted today',
+      },
+      {
+        id: 'curator-003',
+        prompt: 'Rank these city slogans from most to least true.',
+        items: [
+          { id: 'a', line: 'Keep Austin Weird.',                attr: 'Austin, TX' },
+          { id: 'b', line: 'I ♥ NY.',                            attr: 'New York, NY' },
+          { id: 'c', line: 'City of Angels.',                    attr: 'Los Angeles, CA' },
+          { id: 'd', line: 'The City That Never Sleeps.',        attr: 'New York, NY' },
+          { id: 'e', line: 'The Athens of the West.',            attr: 'Berkeley, CA' },
+        ],
+        globalOrder: ['b', 'd', 'a', 'c', 'e'],
+        meta: '1,476 rankings submitted today',
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const promptEl = $('#curator-prompt');
+    const listEl   = $('#curator-list');
+    const submitBtn= $('#curator-submit');
+    const stageEl  = $('#stage-curator');
+    const solvedEl = $('#solved-curator');
+    const resultEl = $('#curator-result');
+    const resultMetaEl = $('#curator-result-meta');
+    const resultBodyEl = $('#curator-result-body');
+    const deviationEl = $('#curator-deviation');
+    const shareBtn = document.querySelector('.tool-btn[data-game="curator"][data-action="share"]');
+
+    let order = [];   // current array of ids in display order
+    let submitted = false;
+
+    function build() {
+      submitted = false;
+      document.body.classList.remove('revealed');
+      order = PUZZLE.items.map(it => it.id);
+      // Shuffle deterministically (date-based) so first puzzle has a known order
+      shuffle(order);
+      promptEl.textContent = PUZZLE.prompt;
+      submitBtn.hidden = false;
+      submitBtn.disabled = false;
+      resultEl.hidden = true;
+      solvedEl.classList.remove('show');
+      shareBtn.hidden = true;
+      render();
+    }
+
+    function shuffle(arr) {
+      // tiny deterministic shuffle by index
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = (i * 7 + 3) % (i + 1);
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    function render() {
+      listEl.innerHTML = '';
+      order.forEach((id, idx) => {
+        const it = PUZZLE.items.find(x => x.id === id);
+        const li = document.createElement('li');
+        li.className = 'curator-item';
+        li.dataset.id = id;
+        li.innerHTML = `
+          <span class="rank">${idx + 1}</span>
+          <div class="line">${it.line}</div>
+          <div class="attr">${it.attr}</div>
+          <span class="handle" aria-label="drag to reorder"></span>`;
+        attachDrag(li);
+        listEl.appendChild(li);
+      });
+    }
+
+    function attachDrag(li) {
+      let dragging = false;
+      let pid = -1;
+      let startY = 0, currentY = 0;
+      let originalIdx = 0;
+      let liHeight = 0;
+      const handle = li.querySelector('.handle');
+
+      function onDown(e) {
+        if (submitted) return;
+        e.preventDefault();
+        const t = (e.touches && e.touches[0]) || e;
+        pid = e.pointerId || 1;
+        startY = t.clientY;
+        currentY = t.clientY;
+        originalIdx = [...listEl.children].indexOf(li);
+        liHeight = li.getBoundingClientRect().height + 10;
+        dragging = true;
+        li.classList.add('dragging');
+        if (handle.setPointerCapture && e.pointerId !== undefined) {
+          try { handle.setPointerCapture(e.pointerId); } catch(_) {}
+        }
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup',   onUp);
+        document.addEventListener('pointercancel', onUp);
+        haptic(8);
+      }
+      function onMove(e) {
+        if (!dragging) return;
+        currentY = e.clientY;
+        const dy = currentY - startY;
+        li.style.transform = `translateY(${dy}px)`;
+        // Compute new index based on midpoints of other cards
+        const others = [...listEl.children].filter(c => c !== li);
+        let newIdx = 0;
+        const liRect = li.getBoundingClientRect();
+        const midY = (liRect.top + liRect.bottom) / 2;
+        for (const o of others) {
+          const r = o.getBoundingClientRect();
+          if (midY > (r.top + r.bottom) / 2) newIdx++;
+        }
+        // Reflow visuals: offset others
+        others.forEach((o, i) => {
+          const targetIdx = i < newIdx ? i : i + 1;
+          const sourceIdx = [...listEl.children].indexOf(o);
+          const delta = (targetIdx - sourceIdx) * liHeight;
+          o.style.transform = `translateY(${delta}px)`;
+        });
+      }
+      function onUp(e) {
+        if (!dragging) return;
+        dragging = false;
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup',   onUp);
+        document.removeEventListener('pointercancel', onUp);
+        // Compute final index
+        const liRect = li.getBoundingClientRect();
+        const midY = (liRect.top + liRect.bottom) / 2;
+        let newIdx = 0;
+        [...listEl.children].forEach(c => {
+          if (c === li) return;
+          const r = c.getBoundingClientRect();
+          if (midY > (r.top + r.bottom) / 2) newIdx++;
+        });
+        // Reorder in-memory
+        const id = li.dataset.id;
+        order.splice(order.indexOf(id), 1);
+        order.splice(newIdx, 0, id);
+        // Clear inline transforms
+        [...listEl.children].forEach(c => { c.style.transform = ''; });
+        li.classList.remove('dragging');
+        render();
+        haptic(12);
+      }
+      handle.addEventListener('pointerdown', onDown);
+      // Also allow drag from the whole card (longer press friendly)
+      li.addEventListener('pointerdown', e => {
+        if (e.target.closest('.handle')) return;
+        // Only drag if pointer started on card and held briefly — for now treat any drag as a drag.
+        onDown(e);
+      });
+    }
+
+    submitBtn.addEventListener('click', () => {
+      if (submitted) return;
+      submitted = true;
+      document.body.classList.add('revealed');
+      submitBtn.hidden = true;
+      solvedEl.querySelector('.solved-text').textContent = 'Ranked';
+      solvedEl.classList.add('show');
+      // Build result table
+      resultMetaEl.textContent = PUZZLE.meta;
+      let totalDev = 0;
+      let topDev = { id: null, delta: 0 };
+      const rows = order.map((id, yourIdx) => {
+        const it = PUZZLE.items.find(x => x.id === id);
+        const crowdIdx = PUZZLE.globalOrder.indexOf(id);
+        const delta = (crowdIdx - yourIdx);
+        totalDev += Math.abs(delta);
+        if (Math.abs(delta) > Math.abs(topDev.delta)) topDev = { id, delta, line: it.line };
+        const arrow = delta === 0 ? '−' : (delta > 0 ? `↑${delta}` : `↓${-delta}`);
+        const big = Math.abs(delta) >= 2 ? 'big' : '';
+        return `<tr>
+          <td class="rank-cell">${yourIdx + 1}</td>
+          <td>${it.line}<br><span class="delta">${it.attr}</span></td>
+          <td class="rank-cell">${crowdIdx + 1}</td>
+          <td><span class="delta ${big}">${arrow}</span></td>
+        </tr>`;
+      });
+      resultBodyEl.innerHTML = rows.join('');
+      deviationEl.textContent = totalDev === 0
+        ? "You and the crowd agreed on every line."
+        : `Total deviation: ${totalDev} · biggest gap: "${topDev.line.slice(0,50)}${topDev.line.length>50?'…':''}" (${topDev.delta>0?'+':''}${topDev.delta})`;
+      resultEl.hidden = false;
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    });
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      const portrait = order.map((id, i) => {
+        const crowdI = PUZZLE.globalOrder.indexOf(id);
+        const d = crowdI - i;
+        return d === 0 ? '═' : (d > 0 ? '▲' : '▼');
+      }).join('');
+      copyShare(`Curator · taste portrait\n${portrait}\n${PUZZLE.prompt}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.curator = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

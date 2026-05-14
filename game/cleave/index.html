@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Cleave · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .cleave-stage {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    padding: 22px 4px 16px;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(1.8rem, 9.5vw, 3.6rem);
+    letter-spacing: -0.008em;
+    line-height: 1.1;
+    color: var(--ink);
+    user-select: none;
+  }
+  .cleave-letter {
+    display: inline-block;
+    transition: margin var(--t-med) var(--ease),
+                color var(--t-med) var(--ease),
+                text-shadow var(--t-med) var(--ease);
+  }
+  .cleave-gap {
+    display: inline-block;
+    position: relative;
+    width: 0.22em;
+    height: 1em;
+    vertical-align: -0.05em;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    flex: 0 0 auto;
+  }
+  .cleave-gap::before {
+    /* enlarge hit area — generous on both axes for thumbs */
+    content: '';
+    position: absolute;
+    inset: -0.45em -0.32em;
+  }
+  .cleave-gap::after {
+    content: '';
+    position: absolute;
+    top: 0.12em; bottom: 0.12em;
+    left: 50%;
+    width: 1.2px;
+    background: var(--accent);
+    transform: translateX(-50%) scaleY(0);
+    transform-origin: center;
+    transition: transform var(--t-med) var(--ease), background var(--t-med) var(--ease);
+    border-radius: 1px;
+    box-shadow: 0 0 6px rgba(232, 177, 76, 0.0);
+  }
+  .cleave-gap.cut::after {
+    transform: translateX(-50%) scaleY(1);
+    box-shadow: 0 0 6px rgba(232, 177, 76, 0.5);
+  }
+  @media (hover: hover) {
+    .cleave-gap:hover::after {
+      transform: translateX(-50%) scaleY(0.4);
+      background: var(--ink-faint);
+    }
+    .cleave-gap.cut:hover::after {
+      background: var(--accent);
+      transform: translateX(-50%) scaleY(1);
+    }
+  }
+  .cleave-stage.solved .cleave-gap.cut::after {
+    transform: translateX(-50%) scaleY(0);
+    opacity: 0;
+  }
+  .cleave-stage.solved .cleave-gap.cut {
+    width: 0.42em;
+  }
+  .cleave-stage.solved .cleave-letter {
+    animation: cleave-shimmer 1100ms var(--ease);
+  }
+  @keyframes cleave-shimmer {
+    0%   { text-shadow: 0 0 0 rgba(232, 177, 76, 0); }
+    40%  { text-shadow: 0 0 14px rgba(232, 177, 76, 0.55); }
+    100% { text-shadow: 0 0 0 rgba(232, 177, 76, 0); }
+  }
+  .cleave-attribution {
+    margin-top: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.66rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+    opacity: 0;
+    transition: opacity var(--t-slow) var(--ease);
+  }
+  .cleave-stage.solved + .cleave-attribution { opacity: 1; }
+
+</style>
+</head>
+<body data-game="cleave" data-mood="dark">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+  <section class="game" id="game-cleave" data-game="cleave" data-mood="dark" >
+    <div class="game-head">
+      <div class="eyebrow">No. 001 · Cleave</div>
+      <h1 class="title">Cleave</h1>
+      <p class="rule">Find the spaces in the sentence. A familiar phrase is hiding.</p>
+      <p class="howto"><b>How to play.</b> Tap the space between any two letters to insert a cut. Tap a cut again to remove it. Place every cut in the right spot to reveal a familiar phrase.</p>
+    </div>
+
+    <div class="toolbar">
+      <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-cleave">0:00</span></span>
+      <span class="sep"></span>
+      <button class="tool-btn" data-action="reset" data-game="cleave">Reset</button>
+      <button class="tool-btn" data-action="reveal" data-game="cleave">Reveal</button>
+      <button class="tool-btn" data-action="share" data-game="cleave" hidden>Share</button>
+      <span class="sep"></span>
+      <span class="puzzle-picker" data-game="cleave" role="group" aria-label="Choose puzzle">
+        <button class="puzzle-pick" data-game="cleave" data-idx="0" aria-current="true" aria-label="puzzle 1">1</button>
+        <button class="puzzle-pick" data-game="cleave" data-idx="1" aria-label="puzzle 2">2</button>
+        <button class="puzzle-pick" data-game="cleave" data-idx="2" aria-label="puzzle 3">3</button>
+      </span>
+    </div>
+
+    <div class="stage" id="stage-cleave">
+      <div class="cleave-stage" id="cleave-stage" aria-label="letter string"></div>
+      <div class="cleave-attribution" id="cleave-attr"></div>
+      <div class="solved" id="solved-cleave"><span class="check">✦</span><span class="solved-text">Cleaved</span></div>
+    </div>
+  </section>
+
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+(function Cleave() {
+  // Each puzzle is a letterstring with the canonical cut positions —
+  // the indices at which a space should appear (between letters i-1 and i).
+  const PUZZLES = [
+    {
+      id: 'cleave-001',
+      letters:    'AROLLINGSTONEGATHERSNOMOSS',
+      canonical:  [1, 8, 13, 20, 22],         // A | ROLLING | STONE | GATHERS | NO | MOSS
+      phrase:     'A rolling stone gathers no moss',
+      attribution:'Proverb',
+    },
+    {
+      id: 'cleave-002',
+      letters:    'STRIKEWHILETHEIRONISHOT',
+      canonical:  [6, 11, 14, 18, 20],        // STRIKE | WHILE | THE | IRON | IS | HOT
+      phrase:     'Strike while the iron is hot',
+      attribution:'Proverb',
+    },
+    {
+      id: 'cleave-003',
+      letters:    'THEEARLYBIRDCATCHESTHEWORM',
+      canonical:  [3, 8, 12, 19, 22],         // THE | EARLY | BIRD | CATCHES | THE | WORM
+      phrase:     'The early bird catches the worm',
+      attribution:'Proverb',
+    },
+  ];
+  let pIdx = 0;
+  let PUZZLE = PUZZLES[pIdx];
+
+  const stageEl  = $('#cleave-stage');
+  const attrEl   = $('#cleave-attr');
+  const solvedEl = $('#solved-cleave');
+  const shareBtn  = document.querySelector('.tool-btn[data-game="cleave"][data-action="share"]');
+  const revealBtn = document.querySelector('.tool-btn[data-game="cleave"][data-action="reveal"]');
+  const timer     = createTimer($('#timer-cleave'));
+
+  let canonical = new Set(PUZZLE.canonical);
+  let cuts;           // Set<number>
+  let gapEls;         // gap elements keyed by position
+  let solved = false;
+
+  function build() {
+    stageEl.innerHTML = '';
+    stageEl.classList.remove('solved');
+    attrEl.textContent = '';
+    cuts = new Set();
+    gapEls = {};
+    solved = false;
+
+    const L = PUZZLE.letters.length;
+    for (let i = 0; i < L; i++) {
+      if (i > 0) {
+        const gap = document.createElement('button');
+        gap.className = 'cleave-gap';
+        gap.dataset.pos = i;
+        gap.setAttribute('aria-label', `cut after letter ${i}`);
+        gap.addEventListener('click', () => onGap(i));
+        stageEl.appendChild(gap);
+        gapEls[i] = gap;
+      }
+      const span = document.createElement('span');
+      span.className = 'cleave-letter';
+      span.textContent = PUZZLE.letters[i];
+      stageEl.appendChild(span);
+    }
+  }
+
+  function onGap(pos) {
+    if (solved) return;
+    timer.start();
+    const gap = gapEls[pos];
+    if (cuts.has(pos)) {
+      cuts.delete(pos);
+      gap.classList.remove('cut');
+    } else {
+      cuts.add(pos);
+      gap.classList.add('cut');
+    }
+    haptic(6);
+    checkSolved();
+  }
+
+  function checkSolved() {
+    if (cuts.size !== canonical.size) return;
+    for (const p of cuts) if (!canonical.has(p)) return;
+    win();
+  }
+
+  function win() {
+    solved = true;
+    timer.stop();
+    stageEl.classList.add('solved');
+    attrEl.textContent = PUZZLE.attribution;
+    solvedEl.querySelector('.solved-text').textContent = `Cleaved · ${timer.formatted()}`;
+    solvedEl.classList.add('show');
+    shareBtn.hidden = false;
+    haptic(30);
+  }
+
+  function reset() {
+    timer.reset();
+    solvedEl.classList.remove('show', 'is-revealed');
+    shareBtn.hidden = true;
+    revealBtn.hidden = false;
+    build();
+  }
+
+  function reveal() {
+    if (solved) return;
+    // Clear existing cuts, then apply canonical
+    for (const p of cuts) gapEls[p] && gapEls[p].classList.remove('cut');
+    cuts.clear();
+    for (const p of canonical) {
+      cuts.add(p);
+      if (gapEls[p]) gapEls[p].classList.add('cut');
+    }
+    solved = true;
+    timer.stop();
+    stageEl.classList.add('solved');
+    attrEl.textContent = PUZZLE.attribution;
+    solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+    solvedEl.classList.add('show', 'is-revealed');
+    revealBtn.hidden = true;
+    flashReveal(stageEl);
+  }
+
+  function load(i) {
+    pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+    PUZZLE = PUZZLES[pIdx];
+    canonical = new Set(PUZZLE.canonical);
+    reset();
+  }
+
+  function share() {
+    const text =
+`Cleave · ${timer.formatted()} · ✂×${PUZZLE.canonical.length}
+${PUZZLE.phrase}
+internet.house/game`;
+    copyShare(text);
+  }
+
+  build();
+  GAMES.cleave = { reset, share, reveal, load };
+})();
+
+// ═════════════════════════════════════════════
+  </script>
+</body>
+</html>

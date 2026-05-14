@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tableau · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .tableau-grid {
+    --cell: clamp(46px, 14vw, 64px);
+    display: grid;
+    grid-template-columns: repeat(5, var(--cell));
+    grid-template-rows: repeat(5, var(--cell));
+    gap: 0;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+  }
+  .tableau-cell {
+    background: var(--paper-soft);
+    border: 0.5px solid var(--hairline-strong);
+    position: relative;
+    transition: background var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  @media (hover: hover) { .tableau-cell:hover { background: var(--paper-deep); } }
+  .tableau-cell .fill {
+    position: absolute; inset: 0;
+    background: var(--ink);
+    transform: scale(0);
+    transition: transform var(--t-fast) var(--ease);
+  }
+  .tableau-cell[data-state="1"] .fill { transform: scale(1); }
+  .tableau-cell .x {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-faint);
+    font-size: calc(var(--cell) * 0.42);
+    font-family: 'Fraunces', serif;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+    user-select: none;
+    pointer-events: none;
+  }
+  .tableau-cell[data-state="2"] .x { opacity: 1; transform: scale(1); }
+  .tableau-grid.solved .tableau-cell[data-state="1"] .fill {
+    animation: pulse-fill 760ms var(--ease);
+  }
+  @keyframes pulse-fill {
+    0%   { box-shadow: inset 0 0 0 0 rgba(179,58,58,0); }
+    35%  { box-shadow: inset 0 0 0 6px rgba(179,58,58,0.35); }
+    100% { box-shadow: inset 0 0 0 0 rgba(179,58,58,0); }
+  }
+</style>
+</head>
+<body data-game="tableau" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="tableau">
+      <div class="game-head">
+        <div class="eyebrow">No. 001 · Tableau</div>
+        <h1 class="title">Tableau</h1>
+        <p class="rule">Five clues. Twenty-five cells. Deduce which are filled.</p>
+        <p class="howto"><b>How to play.</b> Tap a cell to fill it (■). Tap again to mark it empty (×). Tap a third time to clear. Use the clues to find which cells are filled.</p>
+      </div>
+
+      <div class="toolbar">
+        <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-tableau">0:00</span></span>
+        <span class="sep"></span>
+        <button class="tool-btn" data-action="reset"  data-game="tableau">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="tableau">Reveal</button>
+        <button class="tool-btn" data-action="share"  data-game="tableau" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="tableau" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="tableau" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="tableau" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="tableau" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-tableau">
+        <div class="tableau-grid" id="tableau-grid" role="grid" aria-label="5 by 5 puzzle grid"></div>
+        <div class="solved" id="solved-tableau"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+        <ol class="clues" id="tableau-clues"></ol>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Tableau() {
+    const PUZZLES = [
+      { id: 'tableau-001',
+        target: [[0,0,1,0,0],[0,0,1,0,0],[1,1,1,1,1],[0,0,1,0,0],[0,0,1,0,0]],
+        clues: [
+          'The grid is symmetric both horizontally and vertically.',
+          'Row 3 is entirely filled.',
+          'Column 3 is entirely filled.',
+          'No filled cell is diagonally adjacent to another filled cell.',
+          'Exactly 9 cells are filled in total.',
+        ] },
+      { id: 'tableau-002',
+        target: [[1,0,1,0,1],[0,0,0,0,0],[1,0,1,0,1],[0,0,0,0,0],[1,0,1,0,1]],
+        clues: [
+          'All four corners are filled.',
+          'The center cell is filled.',
+          'No two filled cells share an edge.',
+          'The pattern is symmetric across both diagonals.',
+          'Exactly 9 cells are filled in total.',
+        ] },
+      { id: 'tableau-003',
+        target: [[0,0,1,0,0],[0,1,1,1,0],[1,1,1,1,1],[0,1,1,1,0],[0,0,1,0,0]],
+        clues: [
+          'Symmetric across all four axes (horizontal, vertical, and both diagonals).',
+          'Row 3 and column 3 are both entirely filled.',
+          'The four corners are empty.',
+          'Every cell diagonally adjacent to the center is filled.',
+          'Exactly 13 cells are filled in total.',
+        ] },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    const gridEl   = $('#tableau-grid');
+    const cluesEl  = $('#tableau-clues');
+    const stageEl  = $('#stage-tableau');
+    const solvedEl = $('#solved-tableau');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="tableau"][data-action="share"]');
+    const revealBtn = document.querySelector('.tool-btn[data-game="tableau"][data-action="reveal"]');
+    const timer     = createTimer($('#timer-tableau'));
+    let state, solved = false;
+
+    function build() {
+      gridEl.innerHTML = '';
+      state = Array.from({length:5}, () => Array(5).fill(0));
+      for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
+        const cell = document.createElement('button');
+        cell.className = 'tableau-cell';
+        cell.dataset.r = r; cell.dataset.c = c; cell.dataset.state = '0';
+        cell.setAttribute('aria-label', `cell row ${r+1} column ${c+1}`);
+        cell.innerHTML = `<span class="fill"></span><span class="x">×</span>`;
+        cell.addEventListener('click', onClick);
+        gridEl.appendChild(cell);
+      }
+      cluesEl.innerHTML = PUZZLE.clues.map(c => `<li>${c}</li>`).join('');
+    }
+    function onClick(e) {
+      if (solved) return;
+      timer.start();
+      const cell = e.currentTarget;
+      const r = +cell.dataset.r, c = +cell.dataset.c;
+      state[r][c] = (state[r][c] + 1) % 3;
+      cell.dataset.state = String(state[r][c]);
+      if (state[r][c] === 1) checkSolved();
+    }
+    function checkSolved() {
+      let allFilledMatch = true, anyFalseFill = false;
+      for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
+        const want = PUZZLE.target[r][c] === 1;
+        const have = state[r][c] === 1;
+        if (want && !have) allFilledMatch = false;
+        if (!want && have) { anyFalseFill = true; allFilledMatch = false; }
+      }
+      const filled = state.flat().filter(v => v === 1).length;
+      const targetFilled = PUZZLE.target.flat().filter(v => v === 1).length;
+      if (anyFalseFill && filled === targetFilled) { shake(stageEl); return; }
+      if (allFilledMatch) win();
+    }
+    function win() {
+      solved = true; timer.stop();
+      gridEl.classList.add('solved');
+      solvedEl.querySelector('.solved-text').textContent = `Solved · ${timer.formatted()}`;
+      solvedEl.classList.add('show');
+      shareBtn.hidden = false;
+    }
+    function reset() {
+      solved = false; timer.reset();
+      gridEl.classList.remove('solved');
+      solvedEl.classList.remove('show', 'is-revealed');
+      shareBtn.hidden = true; revealBtn.hidden = false;
+      build();
+    }
+    function reveal() {
+      if (solved) return;
+      for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
+        state[r][c] = PUZZLE.target[r][c];
+        gridEl.children[r * 5 + c].dataset.state = String(state[r][c]);
+      }
+      solved = true; timer.stop();
+      gridEl.classList.add('solved');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      solvedEl.classList.add('show', 'is-revealed');
+      revealBtn.hidden = true;
+      flashReveal(stageEl);
+    }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      const rows = PUZZLE.target.map(row => row.map(v => v ? '⬛' : '⬜').join(''));
+      copyShare(`Tableau · ${timer.formatted()}\n${rows.join('\n')}\ninternet.house/game`);
+    }
+    build();
+    GAMES.tableau = { reset, share, reveal, load };
+  })();
+  </script>
+</body>
+</html>

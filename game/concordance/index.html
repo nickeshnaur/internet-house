@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Concordance · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .conc-progress {
+    text-align: center;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 6px;
+  }
+  .conc-progress .num {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .conc-poem {
+    width: 100%;
+    max-width: 440px;
+    margin: 12px auto 0;
+    padding: 8px 0;
+  }
+  .conc-row {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    align-items: baseline;
+    gap: 14px;
+    padding: 12px 6px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .conc-row:first-child { border-top: 1px solid var(--hairline); }
+  .conc-day {
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: right;
+  }
+  .conc-line .constraint {
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .conc-line .word {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.6rem;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+  .conc-row.today {
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
+    margin: 0 -6px;
+    padding-left: 12px; padding-right: 12px;
+    border-radius: 6px;
+    border-bottom-color: transparent;
+  }
+  .conc-row.today + .conc-row { border-top: 1px solid var(--hairline); }
+  .conc-row.today .constraint { color: var(--accent); }
+  .conc-input-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .conc-input {
+    flex: 1;
+    font-family: 'Fraunces', serif;
+    font-size: 1.6rem;
+    color: var(--ink);
+    border-bottom: 1px solid var(--accent);
+    padding: 4px 2px;
+    transition: border-color var(--t-fast) var(--ease);
+  }
+  .conc-input::placeholder { color: var(--ink-faint); font-style: italic; }
+  .conc-submit {
+    padding: 8px 14px;
+    font: 500 0.7rem 'Inter', sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: transparent;
+    transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  }
+  @media (hover: hover) { .conc-submit:hover { background: var(--accent); color: var(--paper); } }
+  .conc-input.invalid { animation: shake 320ms var(--ease); border-color: #C25E3A; }
+  .conc-row.today.committed .word { animation: word-in 700ms var(--ease); }
+  @keyframes word-in {
+    from { opacity: 0; transform: translateY(8px); letter-spacing: 0.04em; }
+    to   { opacity: 1; transform: translateY(0); letter-spacing: -0.01em; }
+  }
+  .conc-prose {
+    text-align: center;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+    font-size: 0.9rem;
+    margin-top: 18px;
+    line-height: 1.55;
+  }
+</style>
+</head>
+<body data-game="concordance" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="concordance">
+      <div class="game-head">
+        <div class="eyebrow">No. 009 · Concordance</div>
+        <h1 class="title">Concordance</h1>
+        <p class="rule">One word a day. A poem grows under your name.</p>
+        <p class="howto"><b>How to play.</b> Each day brings a different constraint. Type one word that fits and commit it to the composition. Over 30 days the poem becomes yours.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="concordance">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="concordance">Share</button>
+      </div>
+
+      <div class="stage" id="stage-concordance">
+        <div class="conc-progress">Day <span class="num" id="conc-day-num">12</span> of 30 · "<span id="conc-title">Compositions</span>"</div>
+        <div class="solved" id="solved-concordance"><span class="check">✓</span><span class="solved-text">Committed</span></div>
+        <div class="conc-poem" id="conc-poem" aria-label="growing poem"></div>
+        <p class="conc-prose" id="conc-prose">Your poem so far. Add today's word to continue.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Concordance() {
+    const PUZZLE = {
+      id: 'concordance-001',
+      title: 'Compositions',
+      days: [
+        { day: 1,  constraint: 'A noun evoking weather, one syllable', word: 'mist' },
+        { day: 2,  constraint: 'A color in two syllables',             word: 'ember' },
+        { day: 3,  constraint: 'A verb of small movement',             word: 'ripple' },
+        { day: 4,  constraint: 'An object found on a desk',            word: 'letter' },
+        { day: 5,  constraint: 'An adjective ending in "-less"',       word: 'soundless' },
+        { day: 6,  constraint: 'A word for a kind of light',           word: 'glimmer' },
+        { day: 7,  constraint: 'An animal that is small and quiet',    word: 'moth' },
+        { day: 8,  constraint: 'A word borrowed from Latin',           word: 'vellum' },
+        { day: 9,  constraint: 'A musical instrument, plucked',        word: 'harp' },
+        { day: 10, constraint: 'An action one does alone',             word: 'unfold' },
+        { day: 11, constraint: 'A word that rhymes with "stone"',      word: 'alone' },
+        { day: 12, constraint: 'A verb evoking dusk',                  word: null   },
+      ],
+      total: 30,
+    };
+
+    const dayNumEl = $('#conc-day-num');
+    const titleEl  = $('#conc-title');
+    const poemEl   = $('#conc-poem');
+    const solvedEl = $('#solved-concordance');
+    const stageEl  = $('#stage-concordance');
+    const shareBtn = document.querySelector('.tool-btn[data-game="concordance"][data-action="share"]');
+
+    let todayWord = null;
+
+    function build() {
+      dayNumEl.textContent = String(PUZZLE.days.find(d => d.word === null || d === currentToday()).day);
+      titleEl.textContent = PUZZLE.title;
+      poemEl.innerHTML = '';
+      todayWord = null;
+      solvedEl.classList.remove('show');
+      for (const d of PUZZLE.days) {
+        const row = document.createElement('div');
+        const isToday = d.word === null;
+        row.className = 'conc-row' + (isToday ? ' today' : '');
+        row.innerHTML = `
+          <span class="conc-day">${String(d.day).padStart(2,'0')}</span>
+          <div class="conc-line">
+            <span class="constraint">${d.constraint}</span>
+            ${isToday
+              ? `<div class="conc-input-row">
+                  <input class="conc-input" type="text" autocomplete="off" autocapitalize="none" maxlength="20" placeholder="today's word" aria-label="today's word">
+                  <button class="conc-submit" type="button">Commit</button>
+                </div>`
+              : `<span class="word">${d.word}</span>`}
+          </div>`;
+        poemEl.appendChild(row);
+      }
+      const input = poemEl.querySelector('.conc-input');
+      const btn   = poemEl.querySelector('.conc-submit');
+      if (input) {
+        input.focus();
+        input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } });
+        btn.addEventListener('click', commit);
+      }
+    }
+    function currentToday() { return PUZZLE.days[PUZZLE.days.length - 1]; }
+    function isValidWord(w) { return /^[a-zA-Z'-]{2,20}$/.test(w); }
+
+    function commit() {
+      const todayRow = poemEl.querySelector('.conc-row.today');
+      const input = todayRow.querySelector('.conc-input');
+      const raw = (input.value || '').trim();
+      if (!isValidWord(raw)) {
+        input.classList.add('invalid');
+        setTimeout(() => input.classList.remove('invalid'), 380);
+        haptic(8);
+        return;
+      }
+      todayWord = raw.toLowerCase();
+      const inputRow = todayRow.querySelector('.conc-input-row');
+      inputRow.innerHTML = `<span class="word">${todayWord}</span>`;
+      todayRow.classList.add('committed');
+      solvedEl.querySelector('.solved-text').textContent = `Day 12 · committed "${todayWord}"`;
+      solvedEl.classList.add('show');
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+      haptic(20);
+    }
+
+    function reset() { build(); }
+    function share() {
+      const lines = PUZZLE.days.map(d => {
+        if (d.word) return d.word;
+        return todayWord ? todayWord : '_____';
+      });
+      copyShare(`Concordance · Day 12 of 30 · "${PUZZLE.title}"\n${lines.join('\n')}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.concordance = { reset, share };
+  })();
+  </script>
+</body>
+</html>

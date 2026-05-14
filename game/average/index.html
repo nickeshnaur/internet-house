@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Average · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .avg-prompt-label {
+    text-align: center;
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 12px 0 4px;
+  }
+  .avg-prompt {
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(3rem, 14vw, 5.6rem);
+    letter-spacing: -0.025em;
+    line-height: 1.0;
+    color: var(--ink);
+    margin: 4px 0 24px;
+  }
+  .avg-input-wrap {
+    display: flex; align-items: baseline; gap: 12px;
+    width: 100%; max-width: 380px;
+    margin: 0 auto;
+  }
+  .avg-input {
+    flex: 1;
+    font-family: 'Fraunces', serif;
+    font-size: 1.7rem;
+    color: var(--ink);
+    border-bottom: 1px solid var(--accent);
+    padding: 6px 2px;
+    text-align: center;
+  }
+  .avg-input::placeholder { color: var(--ink-faint); font-style: italic; }
+  .avg-input.invalid { animation: shake 320ms var(--ease); border-color: #C25E3A; }
+  .avg-submit {
+    padding: 8px 16px;
+    font: 500 0.7rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  }
+  @media (hover: hover) { .avg-submit:hover { background: var(--accent); color: var(--paper); } }
+
+  .avg-dist {
+    margin-top: 24px;
+    width: 100%;
+    max-width: 460px;
+  }
+  .avg-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 56px;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .avg-row .word {
+    font-family: 'Fraunces', serif;
+    font-size: 1.06rem;
+    color: var(--ink-soft);
+    text-align: right;
+  }
+  .avg-row.player .word { color: var(--accent); font-weight: 500; }
+  .avg-bar-track {
+    height: 16px;
+    position: relative;
+  }
+  .avg-bar {
+    height: 100%;
+    background: var(--ink-faint);
+    border-radius: 2px;
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform 720ms var(--ease);
+  }
+  .avg-row.player .avg-bar { background: var(--accent); box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 60%, transparent); }
+  .avg-pct {
+    font-family: 'Fraunces', serif;
+    font-size: 0.96rem;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .avg-row.player .avg-pct { color: var(--accent); font-weight: 500; }
+
+  .avg-summary {
+    margin-top: 20px;
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.06rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    max-width: 28em;
+  }
+  .avg-summary em { font-style: normal; color: var(--accent); }
+</style>
+</head>
+<body data-game="average" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="average">
+      <div class="game-head">
+        <div class="eyebrow">No. 012 · Average</div>
+        <h1 class="title">Average</h1>
+        <p class="rule">One prompt. One word back. See where you land.</p>
+        <p class="howto"><b>How to play.</b> Type the first word that comes to mind in response to the prompt. After you submit, the day's most common answers fan out as a horizontal distribution — yours lit among them.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="average">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="average" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="average" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="average" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="average" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="average" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-average">
+        <div>
+          <div class="avg-prompt-label">Today's prompt</div>
+          <div class="avg-prompt" id="avg-prompt"></div>
+        </div>
+        <div class="avg-input-wrap" id="avg-input-wrap">
+          <input class="avg-input" id="avg-input" type="text" autocomplete="off" autocapitalize="none" maxlength="24" placeholder="one word" aria-label="your one-word response">
+          <button class="avg-submit" id="avg-submit">Send</button>
+        </div>
+        <div class="solved" id="solved-average"><span class="check">✓</span><span class="solved-text">Recorded</span></div>
+        <div class="avg-dist" id="avg-dist" hidden></div>
+        <p class="avg-summary" id="avg-summary"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Average() {
+    const PUZZLES = [
+      {
+        id: 'average-001',
+        prompt: 'AUTUMN',
+        // Mock distribution — sums to ~80%, remainder is "other".
+        dist: [
+          { word: 'leaves',  pct: 23 },
+          { word: 'cold',    pct: 14 },
+          { word: 'pumpkin', pct: 11 },
+          { word: 'orange',  pct:  9 },
+          { word: 'harvest', pct:  7 },
+          { word: 'school',  pct:  5 },
+          { word: 'sweater', pct:  4 },
+          { word: 'fall',    pct:  4 },
+          { word: 'apple',   pct:  3 },
+        ],
+      },
+      {
+        id: 'average-002',
+        prompt: 'CELLAR',
+        dist: [
+          { word: 'wine',     pct: 18 },
+          { word: 'dark',     pct: 16 },
+          { word: 'damp',     pct: 11 },
+          { word: 'door',     pct:  8 },
+          { word: 'spider',   pct:  7 },
+          { word: 'cold',     pct:  6 },
+          { word: 'basement', pct:  6 },
+          { word: 'stairs',   pct:  5 },
+          { word: 'secret',   pct:  4 },
+        ],
+      },
+      {
+        id: 'average-003',
+        prompt: 'NORTH',
+        dist: [
+          { word: 'star',    pct: 19 },
+          { word: 'pole',    pct: 14 },
+          { word: 'cold',    pct: 12 },
+          { word: 'south',   pct:  9 },
+          { word: 'compass', pct:  7 },
+          { word: 'arrow',   pct:  6 },
+          { word: 'snow',    pct:  5 },
+          { word: 'face',    pct:  4 },
+          { word: 'true',    pct:  3 },
+        ],
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const promptEl  = $('#avg-prompt');
+    const inputWrap = $('#avg-input-wrap');
+    const input     = $('#avg-input');
+    const submitBtn = $('#avg-submit');
+    const distEl    = $('#avg-dist');
+    const summaryEl = $('#avg-summary');
+    const solvedEl  = $('#solved-average');
+    const stageEl   = $('#stage-average');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="average"][data-action="share"]');
+
+    let answered = false;
+    let playerWord = '';
+    let playerPct = 0;
+
+    function build() {
+      promptEl.textContent = PUZZLE.prompt;
+      input.value = '';
+      input.disabled = false;
+      submitBtn.disabled = false;
+      inputWrap.style.opacity = '1';
+      distEl.hidden = true;
+      distEl.innerHTML = '';
+      summaryEl.innerHTML = '';
+      solvedEl.classList.remove('show');
+      shareBtn.hidden = true;
+      answered = false;
+      playerWord = '';
+    }
+
+    function submit() {
+      if (answered) return;
+      const raw = (input.value || '').trim().toLowerCase();
+      if (!/^[a-z'-]{2,24}$/.test(raw)) {
+        input.classList.add('invalid');
+        setTimeout(() => input.classList.remove('invalid'), 380);
+        haptic(8);
+        return;
+      }
+      playerWord = raw;
+      answered = true;
+      input.disabled = true;
+      submitBtn.disabled = true;
+      inputWrap.style.opacity = '0.5';
+
+      // Build display list — player's word first if not in dist, else just highlight.
+      const inDist = PUZZLE.dist.find(d => d.word === playerWord);
+      const rows = PUZZLE.dist.map(d => ({ word: d.word, pct: d.pct, player: d.word === playerWord }));
+      let summary;
+      if (inDist) {
+        playerPct = inDist.pct;
+        const rank = rows.findIndex(r => r.player) + 1;
+        summary = `<em>${playerPct}%</em> of players said the same thing as you · #${rank} most common`;
+      } else {
+        playerPct = 1;
+        rows.push({ word: playerWord, pct: 1, player: true, other: true });
+        summary = `Only <em>~1%</em> of players said <em>"${playerWord}"</em> · in the long tail`;
+      }
+      const maxPct = Math.max(...rows.map(r => r.pct));
+      distEl.innerHTML = rows.map(r => `
+        <div class="avg-row ${r.player ? 'player' : ''}">
+          <div class="word">${r.word}</div>
+          <div class="avg-bar-track"><div class="avg-bar" data-w="${(r.pct / maxPct * 100).toFixed(1)}"></div></div>
+          <div class="avg-pct">${r.pct}%</div>
+        </div>`).join('');
+      distEl.hidden = false;
+      summaryEl.innerHTML = summary;
+      solvedEl.querySelector('.solved-text').textContent = `You said "${playerWord}"`;
+      solvedEl.classList.add('show');
+      shareBtn.hidden = false;
+      // Animate bars in
+      requestAnimationFrame(() => {
+        distEl.querySelectorAll('.avg-bar').forEach(b => {
+          const w = +b.dataset.w;
+          b.style.transform = `scaleX(${w / 100})`;
+        });
+      });
+      flashReveal(stageEl);
+      haptic(16);
+    }
+
+    submitBtn.addEventListener('click', submit);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); submit(); }
+    });
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      copyShare(`Average · "${PUZZLE.prompt}" → "${playerWord}" (${playerPct}%)\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.average = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Filament · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .filament-board {
+    --size: min(92vw, 420px);
+    width: var(--size);
+    height: var(--size);
+    position: relative;
+  }
+  .filament-board svg {
+    width: 100%; height: 100%;
+    display: block;
+    overflow: visible;
+    touch-action: manipulation;
+  }
+  .fila-cell-num {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 500;
+    fill: var(--ink-soft);
+    text-anchor: middle;
+    dominant-baseline: central;
+    user-select: none;
+    transition: opacity var(--t-slow) var(--ease), fill var(--t-fast) var(--ease);
+  }
+  .fila-cell-num.bad { fill: var(--filament); }
+  .fila-dot {
+    fill: var(--ink-faint);
+    stroke: var(--paper);
+    stroke-width: 0;
+    cursor: pointer;
+    transition: fill var(--t-fast) var(--ease), r var(--t-fast) var(--ease), opacity var(--t-slow) var(--ease);
+  }
+  @media (hover: hover) {
+    .fila-dot:hover { fill: var(--ink); }
+  }
+  .fila-dot.selected {
+    fill: var(--filament);
+  }
+  .fila-seg-hit {
+    stroke: transparent;
+    stroke-width: 16;
+    cursor: pointer;
+    fill: none;
+    pointer-events: stroke;
+  }
+  .fila-seg {
+    stroke: var(--filament);
+    stroke-width: 3;
+    stroke-linecap: round;
+    fill: none;
+    pointer-events: none;
+    transition: stroke-width var(--t-fast) var(--ease);
+  }
+  .filament-board.solved .fila-dot { opacity: 0; pointer-events: none; }
+  .filament-board.solved .fila-cell-num { opacity: 0; }
+  .filament-board.solved .fila-seg { stroke-width: 4; }
+</style>
+</head>
+<body data-game="filament" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+  <section class="game" id="game-filament" data-game="filament" >
+    <div class="game-head">
+      <div class="eyebrow">No. 001 · Filament</div>
+      <h1 class="title">Filament</h1>
+      <p class="rule">Draw one closed loop. Numbers count the edges they touch.</p>
+      <p class="howto"><b>How to play.</b> Tap a dot, then tap an adjacent dot to draw a segment between them. Tap an existing segment to remove it. Form one closed loop where every numbered cell has that many of its four edges used.</p>
+    </div>
+
+    <div class="toolbar">
+      <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-filament">0:00</span></span>
+      <span class="sep"></span>
+      <button class="tool-btn" data-action="reset" data-game="filament">Reset</button>
+      <button class="tool-btn" data-action="reveal" data-game="filament">Reveal</button>
+      <button class="tool-btn" data-action="share" data-game="filament" hidden>Share</button>
+      <span class="sep"></span>
+      <span class="puzzle-picker" data-game="filament" role="group" aria-label="Choose puzzle">
+        <button class="puzzle-pick" data-game="filament" data-idx="0" aria-current="true" aria-label="puzzle 1">1</button>
+        <button class="puzzle-pick" data-game="filament" data-idx="1" aria-label="puzzle 2">2</button>
+        <button class="puzzle-pick" data-game="filament" data-idx="2" aria-label="puzzle 3">3</button>
+      </span>
+    </div>
+
+    <div class="stage" id="stage-filament">
+      <div class="filament-board" id="filament-board"></div>
+      <div class="solved" id="solved-filament"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+      <ol class="clues" id="filament-clues"></ol>
+    </div>
+  </section>
+
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+(function Filament() {
+  // Lattice: 6x6 dots, indices [0..5][0..5]. Cells at [0..4][0..4].
+  // Segments stored as undirected edges keyed "c1,r1-c2,r2" (lexicographic).
+  const N = 5;              // cells per side
+  const DOTS = N + 1;       // dots per side
+
+  // Each puzzle defines a closed reference loop, the clue cells that
+  // pin its edge counts, and a short share glyph for the social text.
+  // (We don't compare user segments to ANSWER_PATH — any valid loop
+  //  satisfying the clue counts is accepted. See README.)
+  const PUZZLES = [
+    {
+      id: 'filament-001',
+      shape: '◇ a stepped diamond',
+      ANSWER_PATH: [
+        [2,0],[3,0],[3,1],[4,1],[4,2],[5,2],[5,3],[4,3],[4,4],[3,4],
+        [3,5],[2,5],[2,4],[1,4],[1,3],[0,3],[0,2],[1,2],[1,1],[2,1],[2,0],
+      ],
+      CLUES_CELLS: [
+        {c:1,r:0,n:2},{c:2,r:0,n:3},{c:3,r:0,n:2},
+        {c:2,r:1,n:0},
+        {c:0,r:2,n:3},{c:2,r:2,n:0},{c:4,r:2,n:3},
+        {c:2,r:3,n:0},
+        {c:1,r:4,n:2},{c:2,r:4,n:3},{c:3,r:4,n:2},
+      ],
+    },
+    {
+      id: 'filament-002',
+      shape: '▢ a clean square',
+      // Loop around the inner 3×3 block (cells [1..3][1..3]).
+      ANSWER_PATH: [
+        [1,1],[2,1],[3,1],[4,1],[4,2],[4,3],[4,4],
+        [3,4],[2,4],[1,4],[1,3],[1,2],[1,1],
+      ],
+      CLUES_CELLS: [
+        {c:1,r:1,n:2},{c:2,r:1,n:1},{c:3,r:1,n:2},
+        {c:1,r:2,n:1},{c:2,r:2,n:0},{c:3,r:2,n:1},
+        {c:1,r:3,n:2},{c:2,r:3,n:1},{c:3,r:3,n:2},
+      ],
+    },
+    {
+      id: 'filament-003',
+      shape: '⌐ a notched bracket',
+      // L-shaped loop: full 5×5 with a 2×2 notch missing top-right.
+      ANSWER_PATH: [
+        [0,0],[1,0],[2,0],[3,0],[3,1],[3,2],[4,2],[5,2],
+        [5,3],[5,4],[5,5],[4,5],[3,5],[2,5],[1,5],[0,5],
+        [0,4],[0,3],[0,2],[0,1],[0,0],
+      ],
+      CLUES_CELLS: [
+        {c:0,r:0,n:2},{c:1,r:0,n:1},{c:2,r:0,n:2},
+        {c:3,r:1,n:2},{c:4,r:1,n:1},
+        {c:0,r:2,n:1},{c:4,r:2,n:2},
+        {c:2,r:3,n:0},{c:0,r:4,n:2},{c:4,r:4,n:2},
+      ],
+    },
+  ];
+  let pIdx = 0;
+  let PUZZLE = PUZZLES[pIdx];
+  let ANSWER_PATH = PUZZLE.ANSWER_PATH;
+  let CLUES_CELLS = PUZZLE.CLUES_CELLS;
+
+  const CLUE_TEXT = [
+    'Draw segments between adjacent dots to form one closed loop.',
+    'A number is the count of that cell\'s four edges used by the loop.',
+    'Tap a segment again to erase it.',
+  ];
+
+  const boardEl  = $('#filament-board');
+  const cluesEl  = $('#filament-clues');
+  const stageEl  = $('#stage-filament');
+  const solvedEl = $('#solved-filament');
+  const shareBtn  = document.querySelector('.tool-btn[data-game="filament"][data-action="share"]');
+  const revealBtn = document.querySelector('.tool-btn[data-game="filament"][data-action="reveal"]');
+  const timer     = createTimer($('#timer-filament'));
+
+  // SVG geometry
+  const VB = 100;                        // viewBox is 0..VB on both axes
+  const margin = 6;
+  const step = (VB - 2 * margin) / N;
+  const dotX = c => margin + c * step;
+  const dotY = r => margin + r * step;
+
+  let svg, edges, solved = false;
+  // edges: Map<key, {a:[c,r], b:[c,r]}>
+
+  function key(a, b) {
+    // canonicalize: smaller (c,r) first
+    const [ac,ar] = a, [bc,br] = b;
+    const aFirst = (ac < bc) || (ac === bc && ar < br);
+    const [p,q] = aFirst ? [a,b] : [b,a];
+    return `${p[0]},${p[1]}-${q[0]},${q[1]}`;
+  }
+
+  function isAdjacent(a, b) {
+    const d = Math.abs(a[0]-b[0]) + Math.abs(a[1]-b[1]);
+    return d === 1;
+  }
+
+  function build() {
+    edges = new Map();
+    boardEl.innerHTML = '';
+    solved = false;
+    boardEl.classList.remove('solved');
+
+    const ns = 'http://www.w3.org/2000/svg';
+    svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', `0 0 ${VB} ${VB}`);
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    boardEl.appendChild(svg);
+
+    // 1. background hairlines (cell grid)
+    const gGrid = document.createElementNS(ns, 'g');
+    for (let i = 0; i <= N; i++) {
+      const ln1 = document.createElementNS(ns, 'line');
+      ln1.setAttribute('x1', margin); ln1.setAttribute('x2', VB - margin);
+      ln1.setAttribute('y1', margin + i*step); ln1.setAttribute('y2', margin + i*step);
+      ln1.setAttribute('stroke', 'rgba(26,26,26,0.07)');
+      ln1.setAttribute('stroke-width', '0.4');
+      gGrid.appendChild(ln1);
+      const ln2 = document.createElementNS(ns, 'line');
+      ln2.setAttribute('y1', margin); ln2.setAttribute('y2', VB - margin);
+      ln2.setAttribute('x1', margin + i*step); ln2.setAttribute('x2', margin + i*step);
+      ln2.setAttribute('stroke', 'rgba(26,26,26,0.07)');
+      ln2.setAttribute('stroke-width', '0.4');
+      gGrid.appendChild(ln2);
+    }
+    svg.appendChild(gGrid);
+
+    // 2. cell clue numbers
+    const gNums = document.createElementNS(ns, 'g');
+    gNums.classList.add('fila-nums');
+    CLUES_CELLS.forEach(({c,r,n}) => {
+      const t = document.createElementNS(ns, 'text');
+      t.setAttribute('class', 'fila-cell-num');
+      t.setAttribute('x', margin + (c + 0.5) * step);
+      t.setAttribute('y', margin + (r + 0.5) * step);
+      t.setAttribute('font-size', step * 0.45);
+      t.textContent = String(n);
+      gNums.appendChild(t);
+    });
+    svg.appendChild(gNums);
+
+    // 3. segments layer (drawn lines)
+    const gSegs = document.createElementNS(ns, 'g');
+    gSegs.setAttribute('id', 'fila-segs');
+    svg.appendChild(gSegs);
+
+    // 4. dots layer
+    const gDots = document.createElementNS(ns, 'g');
+    for (let r = 0; r < DOTS; r++) {
+      for (let c = 0; c < DOTS; c++) {
+        const dot = document.createElementNS(ns, 'circle');
+        dot.setAttribute('class', 'fila-dot');
+        dot.setAttribute('cx', dotX(c));
+        dot.setAttribute('cy', dotY(r));
+        dot.setAttribute('r', 1.6);
+        dot.dataset.c = c; dot.dataset.r = r;
+        dot.addEventListener('click', () => onDotClick(c, r, dot));
+        gDots.appendChild(dot);
+      }
+    }
+    svg.appendChild(gDots);
+
+    cluesEl.innerHTML = CLUE_TEXT.map(t => `<li>${t}</li>`).join('');
+  }
+
+  let pending = null; // {c,r,el}
+
+  function onDotClick(c, r, el) {
+    if (solved) return;
+    timer.start();
+    if (!pending) {
+      pending = { c, r, el };
+      el.classList.add('selected');
+      return;
+    }
+    // second click
+    if (pending.c === c && pending.r === r) {
+      // deselect
+      pending.el.classList.remove('selected');
+      pending = null;
+      return;
+    }
+    if (!isAdjacent([pending.c, pending.r], [c, r])) {
+      // invalid — replace selection
+      pending.el.classList.remove('selected');
+      pending = { c, r, el };
+      el.classList.add('selected');
+      return;
+    }
+    // draw or toggle segment
+    const k = key([pending.c, pending.r], [c, r]);
+    if (edges.has(k)) {
+      removeSegment(k);
+    } else {
+      addSegment(k, [pending.c, pending.r], [c, r]);
+    }
+    pending.el.classList.remove('selected');
+    pending = null;
+    checkSolved();
+  }
+
+  function addSegment(k, a, b) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const g = $('#fila-segs', svg);
+
+    const hit = document.createElementNS(ns, 'line');
+    hit.setAttribute('class', 'fila-seg-hit');
+    hit.setAttribute('x1', dotX(a[0])); hit.setAttribute('y1', dotY(a[1]));
+    hit.setAttribute('x2', dotX(b[0])); hit.setAttribute('y2', dotY(b[1]));
+    hit.dataset.k = k;
+    hit.addEventListener('click', () => {
+      if (solved) return;
+      removeSegment(k);
+      checkSolved();
+    });
+    g.appendChild(hit);
+
+    const ln = document.createElementNS(ns, 'line');
+    ln.setAttribute('class', 'fila-seg');
+    ln.setAttribute('x1', dotX(a[0])); ln.setAttribute('y1', dotY(a[1]));
+    ln.setAttribute('x2', dotX(b[0])); ln.setAttribute('y2', dotY(b[1]));
+    ln.dataset.k = k;
+    g.appendChild(ln);
+
+    edges.set(k, { a, b, hit, ln });
+  }
+
+  function removeSegment(k) {
+    const e = edges.get(k);
+    if (!e) return;
+    e.hit.remove();
+    e.ln.remove();
+    edges.delete(k);
+  }
+
+  function cellEdgeCount(c, r) {
+    // edges of cell (c,r) are between dots:
+    // top:    (c,r)-(c+1,r)
+    // right:  (c+1,r)-(c+1,r+1)
+    // bottom: (c,r+1)-(c+1,r+1)
+    // left:   (c,r)-(c,r+1)
+    const keys = [
+      key([c,r],[c+1,r]),
+      key([c+1,r],[c+1,r+1]),
+      key([c,r+1],[c+1,r+1]),
+      key([c,r],[c,r+1]),
+    ];
+    return keys.reduce((acc, k) => acc + (edges.has(k) ? 1 : 0), 0);
+  }
+
+  function isSingleLoop() {
+    if (edges.size === 0) return false;
+    // Build adjacency by dot
+    const adj = new Map(); // "c,r" -> [["c,r",segKey], ...]
+    function ad(dot, other, k) {
+      const dk = `${dot[0]},${dot[1]}`;
+      const ok = `${other[0]},${other[1]}`;
+      if (!adj.has(dk)) adj.set(dk, []);
+      adj.get(dk).push({ to: ok, dot: other, k });
+    }
+    for (const { a, b, } of edges.values()) {
+      const kk = key(a,b);
+      ad(a, b, kk);
+      ad(b, a, kk);
+    }
+    // Every dot used must have degree 2
+    for (const [_, arr] of adj) {
+      if (arr.length !== 2) return false;
+    }
+    // Walk from any starting dot
+    const start = adj.keys().next().value;
+    let prevKey = null;
+    let curKey = start;
+    const visited = new Set([curKey]);
+    let safety = edges.size + 4;
+    while (safety-- > 0) {
+      const next = adj.get(curKey).find(x => x.to !== prevKey);
+      // For a clean 2-regular graph this picks the unvisited neighbor unless we're at start
+      if (!next) return false;
+      prevKey = curKey;
+      curKey = next.to;
+      if (curKey === start) break;
+      if (visited.has(curKey)) return false; // revisited mid-walk → not a single simple loop
+      visited.add(curKey);
+    }
+    if (safety <= 0) return false;
+    if (visited.size !== adj.size) return false; // some component disconnected
+    return true;
+  }
+
+  function checkSolved() {
+    // First: are all numbered cells correct so far? Highlight any wrong.
+    let allCluesOk = true;
+    $$('.fila-cell-num', svg).forEach((t, i) => {
+      const {c,r,n} = CLUES_CELLS[i];
+      const actual = cellEdgeCount(c, r);
+      if (actual === n) t.classList.remove('bad');
+      else { allCluesOk = false; }
+    });
+    if (!allCluesOk) return;
+    if (!isSingleLoop()) return;
+    win();
+  }
+
+  function win() {
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = `Solved · ${timer.formatted()}`;
+    solvedEl.classList.add('show');
+    shareBtn.hidden = false;
+  }
+
+  function reset() {
+    solved = false;
+    pending = null;
+    timer.reset();
+    boardEl.classList.remove('solved');
+    solvedEl.classList.remove('show', 'is-revealed');
+    shareBtn.hidden = true;
+    revealBtn.hidden = false;
+    build();
+  }
+
+  function reveal() {
+    if (solved) return;
+    // Clear any user-drawn segments
+    Array.from(edges.keys()).forEach(k => removeSegment(k));
+    if (pending) { pending.el.classList.remove('selected'); pending = null; }
+    // Draw the reference loop
+    for (let i = 0; i < ANSWER_PATH.length - 1; i++) {
+      const a = ANSWER_PATH[i], b = ANSWER_PATH[i+1];
+      addSegment(key(a, b), a, b);
+    }
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+    solvedEl.classList.add('show', 'is-revealed');
+    revealBtn.hidden = true;
+    flashReveal(stageEl);
+  }
+
+  function load(i) {
+    pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+    PUZZLE = PUZZLES[pIdx];
+    ANSWER_PATH = PUZZLE.ANSWER_PATH;
+    CLUES_CELLS = PUZZLE.CLUES_CELLS;
+    reset();
+  }
+
+  function share() {
+    const text =
+`Filament · ${timer.formatted()}
+${PUZZLE.shape}
+internet.house/game`;
+    copyShare(text);
+  }
+
+  build();
+  GAMES.filament = { reset, share, reveal, load };
+})();
+
+// ═════════════════════════════════════════════
+  </script>
+</body>
+</html>

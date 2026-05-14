@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Knot · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .knot-board {
+    width: min(94vw, 460px);
+    aspect-ratio: 1;
+    position: relative;
+    touch-action: none;
+  }
+  .knot-svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .knot-target {
+    fill: rgba(94, 227, 214, 0.06);
+    stroke: rgba(94, 227, 214, 0.18);
+    stroke-width: 0.6;
+    pointer-events: none;
+    transition: opacity var(--t-slow) var(--ease);
+  }
+  .knot-board.solved .knot-target { opacity: 0; }
+  .knot-edge {
+    stroke: var(--accent);
+    stroke-opacity: 0.5;
+    stroke-width: 1.4;
+    fill: none;
+    pointer-events: none;
+    transition: stroke-opacity var(--t-med) var(--ease), stroke-width var(--t-med) var(--ease);
+    filter: drop-shadow(0 0 6px rgba(94,227,214,0.0));
+  }
+  .knot-edge.near { stroke-opacity: 0.85; }
+  .knot-board.solved .knot-edge {
+    stroke-opacity: 1;
+    stroke-width: 3;
+    filter: drop-shadow(0 0 10px rgba(94,227,214,0.55));
+  }
+  .knot-node {
+    fill: var(--accent);
+    cursor: grab;
+    transition: r var(--t-fast) var(--ease), filter var(--t-fast) var(--ease);
+    filter: drop-shadow(0 0 6px var(--accent));
+  }
+  .knot-node:active, .knot-node.dragging { cursor: grabbing; }
+  .knot-node.tight {
+    animation: knot-pulse 900ms var(--ease) infinite;
+  }
+  .knot-board.solved .knot-node {
+    opacity: 0.75;
+    pointer-events: none;
+    transition: opacity 700ms var(--ease);
+    r: 5;
+  }
+  @keyframes knot-pulse {
+    0%, 100% { filter: drop-shadow(0 0 6px var(--accent)); }
+    50%      { filter: drop-shadow(0 0 14px var(--accent)); }
+  }
+
+</style>
+</head>
+<body data-game="knot" data-mood="dark">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+  <section class="game" id="game-knot" data-game="knot" data-mood="dark" >
+    <div class="game-head">
+      <div class="eyebrow">No. 001 · Knot</div>
+      <h1 class="title">Knot</h1>
+      <p class="rule">Drag the lights home. The shape will know when you are close.</p>
+      <p class="howto"><b>How to play.</b> Press and drag each glowing node onto one of the faint target circles. A node pulses when it's close to home. When every node is on its target, the picture appears.</p>
+    </div>
+
+    <div class="toolbar">
+      <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-knot">0:00</span></span>
+      <span class="sep"></span>
+      <button class="tool-btn" data-action="reset" data-game="knot">Reset</button>
+      <button class="tool-btn" data-action="reveal" data-game="knot">Reveal</button>
+      <button class="tool-btn" data-action="share" data-game="knot" hidden>Share</button>
+      <span class="sep"></span>
+      <span class="puzzle-picker" data-game="knot" role="group" aria-label="Choose puzzle">
+        <button class="puzzle-pick" data-game="knot" data-idx="0" aria-current="true" aria-label="puzzle 1">1</button>
+        <button class="puzzle-pick" data-game="knot" data-idx="1" aria-label="puzzle 2">2</button>
+        <button class="puzzle-pick" data-game="knot" data-idx="2" aria-label="puzzle 3">3</button>
+      </span>
+    </div>
+
+    <div class="stage" id="stage-knot">
+      <div class="knot-board" id="knot-board"></div>
+      <div class="solved" id="solved-knot"><span class="check">✦</span><span class="solved-text">Resolved</span></div>
+    </div>
+  </section>
+
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+(function Knot() {
+  // Each puzzle: 12 nodes (TARGETS), scrambled STARTS, and EDGES that
+  // form the final line drawing. viewBox is 0..600 on both axes.
+  const PUZZLES = [
+    {
+      id: 'knot-001',
+      shape: '✦ a six-petaled bloom',
+      TARGETS: [
+        [300, 210], [378, 255], [378, 345], [300, 390], [222, 345], [222, 255],
+        [390, 144], [480, 300], [390, 456], [210, 456], [120, 300], [210, 144],
+      ],
+      STARTS: [
+        [140, 480], [520, 130], [ 90, 200], [450, 530],
+        [560, 410], [160, 110], [300, 540], [440, 200],
+        [110, 320], [500, 360], [260,  70], [370, 410],
+      ],
+      EDGES: [
+        [0,1],[1,2],[2,3],[3,4],[4,5],[5,0],
+        [6,0],[6,1], [7,1],[7,2], [8,2],[8,3],
+        [9,3],[9,4], [10,4],[10,5], [11,5],[11,0],
+      ],
+    },
+    {
+      id: 'knot-002',
+      shape: '◈ a compass medallion',
+      // Octagon perimeter + inner diamond.
+      TARGETS: [
+        [300, 100], [500, 300], [300, 500], [100, 300],
+        [400, 200], [400, 400], [200, 400], [200, 200],
+        [300, 220], [380, 300], [300, 380], [220, 300],
+      ],
+      STARTS: [
+        [ 80, 480], [520, 100], [ 80, 130], [560, 540],
+        [560, 320], [120, 420], [320,  60], [560, 200],
+        [ 80, 280], [500,  80], [200, 540], [340, 540],
+      ],
+      EDGES: [
+        [0,4],[4,1],[1,5],[5,2],[2,6],[6,3],[3,7],[7,0],
+        [8,9],[9,10],[10,11],[11,8],
+      ],
+    },
+    {
+      id: 'knot-003',
+      shape: '❄ a six-spoke snowflake',
+      // Inner hexagon with a spoke out to each of six tips.
+      TARGETS: [
+        [300, 100], [473, 200], [473, 400], [300, 500], [127, 400], [127, 200],
+        [300, 200], [387, 250], [387, 350], [300, 400], [213, 350], [213, 250],
+      ],
+      STARTS: [
+        [ 80, 540], [540,  80], [560, 540], [ 80, 100],
+        [340,  60], [180, 540], [ 80, 380], [520, 160],
+        [240,  80], [540, 360], [120, 130], [400, 540],
+      ],
+      EDGES: [
+        [6,7],[7,8],[8,9],[9,10],[10,11],[11,6],
+        [0,6],[1,7],[2,8],[3,9],[4,10],[5,11],
+      ],
+    },
+  ];
+  let pIdx = 0;
+  let PUZZLE = PUZZLES[pIdx];
+  let TARGETS = PUZZLE.TARGETS;
+  let STARTS  = PUZZLE.STARTS;
+  let EDGES   = PUZZLE.EDGES;
+
+  const SNAP_R  = 14;   // win radius (svg units)
+  const NEAR_R  = 26;   // "tight" pulse radius
+  const VB      = 600;  // svg viewBox
+
+  const boardEl  = $('#knot-board');
+  const stageEl  = $('#stage-knot');
+  const solvedEl = $('#solved-knot');
+  const shareBtn  = document.querySelector('.tool-btn[data-game="knot"][data-action="share"]');
+  const revealBtn = document.querySelector('.tool-btn[data-game="knot"][data-action="reveal"]');
+  const timer     = createTimer($('#timer-knot'));
+
+  const ns = 'http://www.w3.org/2000/svg';
+  let svg, nodeEls, edgeEls, targetEls;
+  let positions; // [[x,y]...]
+  let solved = false;
+
+  function build() {
+    boardEl.innerHTML = '';
+    boardEl.classList.remove('solved');
+    solved = false;
+    positions = STARTS.map(([x,y]) => [x, y]);
+
+    svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'knot-svg');
+    svg.setAttribute('viewBox', `0 0 ${VB} ${VB}`);
+    boardEl.appendChild(svg);
+
+    // Layer: target halos (faint background indicators of where nodes belong)
+    const gTargets = document.createElementNS(ns, 'g');
+    targetEls = TARGETS.map(([x,y]) => {
+      const c = document.createElementNS(ns, 'circle');
+      c.setAttribute('class', 'knot-target');
+      c.setAttribute('cx', x); c.setAttribute('cy', y);
+      c.setAttribute('r', SNAP_R);
+      gTargets.appendChild(c);
+      return c;
+    });
+    svg.appendChild(gTargets);
+
+    // Layer: edges
+    const gEdges = document.createElementNS(ns, 'g');
+    edgeEls = EDGES.map(([a,b]) => {
+      const ln = document.createElementNS(ns, 'line');
+      ln.setAttribute('class', 'knot-edge');
+      gEdges.appendChild(ln);
+      return ln;
+    });
+    svg.appendChild(gEdges);
+
+    // Layer: nodes
+    const gNodes = document.createElementNS(ns, 'g');
+    nodeEls = positions.map((_, i) => {
+      const c = document.createElementNS(ns, 'circle');
+      c.setAttribute('class', 'knot-node');
+      c.setAttribute('r', 7);
+      c.dataset.i = i;
+      attachDrag(c, i);
+      gNodes.appendChild(c);
+      return c;
+    });
+    svg.appendChild(gNodes);
+
+    redraw();
+  }
+
+  function redraw() {
+    nodeEls.forEach((el, i) => {
+      const [x, y] = positions[i];
+      el.setAttribute('cx', x);
+      el.setAttribute('cy', y);
+      const [tx, ty] = TARGETS[i];
+      const d = Math.hypot(x - tx, y - ty);
+      el.classList.toggle('tight', d <= NEAR_R);
+    });
+    edgeEls.forEach((el, i) => {
+      const [a, b] = EDGES[i];
+      const [ax, ay] = positions[a];
+      const [bx, by] = positions[b];
+      el.setAttribute('x1', ax); el.setAttribute('y1', ay);
+      el.setAttribute('x2', bx); el.setAttribute('y2', by);
+      const aD = Math.hypot(ax - TARGETS[a][0], ay - TARGETS[a][1]);
+      const bD = Math.hypot(bx - TARGETS[b][0], by - TARGETS[b][1]);
+      el.classList.toggle('near', aD < NEAR_R && bD < NEAR_R);
+    });
+  }
+
+  function attachDrag(el, i) {
+    el.addEventListener('pointerdown', e => {
+      if (solved) return;
+      e.preventDefault();
+      timer.start();
+      el.setPointerCapture(e.pointerId);
+      el.classList.add('dragging');
+      const start = clientToSvg(e.clientX, e.clientY);
+      const [px, py] = positions[i];
+      const offsetX = start.x - px;
+      const offsetY = start.y - py;
+
+      const move = ev => {
+        const p = clientToSvg(ev.clientX, ev.clientY);
+        let nx = p.x - offsetX;
+        let ny = p.y - offsetY;
+        nx = Math.max(10, Math.min(VB - 10, nx));
+        ny = Math.max(10, Math.min(VB - 10, ny));
+        const prev = positions[i];
+        const wasTight = Math.hypot(prev[0] - TARGETS[i][0], prev[1] - TARGETS[i][1]) <= NEAR_R;
+        positions[i] = [nx, ny];
+        redraw();
+        const nowTight = Math.hypot(nx - TARGETS[i][0], ny - TARGETS[i][1]) <= NEAR_R;
+        if (nowTight && !wasTight) haptic(10);
+      };
+      const up = () => {
+        el.releasePointerCapture(e.pointerId);
+        el.classList.remove('dragging');
+        el.removeEventListener('pointermove', move);
+        el.removeEventListener('pointerup', up);
+        el.removeEventListener('pointercancel', up);
+        checkSolved();
+      };
+      el.addEventListener('pointermove', move);
+      el.addEventListener('pointerup', up);
+      el.addEventListener('pointercancel', up);
+    });
+  }
+
+  function clientToSvg(cx, cy) {
+    const r = svg.getBoundingClientRect();
+    return {
+      x: ((cx - r.left) / r.width) * VB,
+      y: ((cy - r.top)  / r.height) * VB,
+    };
+  }
+
+  function checkSolved() {
+    for (let i = 0; i < TARGETS.length; i++) {
+      const [x, y] = positions[i];
+      const [tx, ty] = TARGETS[i];
+      if (Math.hypot(x - tx, y - ty) > SNAP_R) return;
+    }
+    // Snap each node onto its target for a clean reveal.
+    positions = TARGETS.map(p => p.slice());
+    redraw();
+    win();
+  }
+
+  function win() {
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = `Resolved · ${timer.formatted()}`;
+    solvedEl.classList.add('show');
+    shareBtn.hidden = false;
+    haptic(25);
+  }
+
+  function reset() {
+    timer.reset();
+    solvedEl.classList.remove('show', 'is-revealed');
+    shareBtn.hidden = true;
+    revealBtn.hidden = false;
+    build();
+  }
+
+  function reveal() {
+    if (solved) return;
+    solved = true;
+    timer.stop();
+    revealBtn.hidden = true;
+    flashReveal(stageEl);
+    // Animate each node from its current position to its target so the
+    // shape forms visibly rather than appearing in a single frame.
+    const start = positions.map(p => p.slice());
+    const dur = 620;
+    const t0 = performance.now();
+    function step(now) {
+      const t = Math.min(1, (now - t0) / dur);
+      const e = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      for (let i = 0; i < positions.length; i++) {
+        const [sx, sy] = start[i], [tx, ty] = TARGETS[i];
+        positions[i] = [sx + (tx - sx) * e, sy + (ty - sy) * e];
+      }
+      redraw();
+      if (t < 1) requestAnimationFrame(step);
+      else {
+        boardEl.classList.add('solved');
+        solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+        solvedEl.classList.add('show', 'is-revealed');
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function load(i) {
+    pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+    PUZZLE = PUZZLES[pIdx];
+    TARGETS = PUZZLE.TARGETS;
+    STARTS  = PUZZLE.STARTS;
+    EDGES   = PUZZLE.EDGES;
+    reset();
+  }
+
+  function share() {
+    const text =
+`Knot · ${timer.formatted()}
+${PUZZLE.shape}
+internet.house/game`;
+    copyShare(text);
+  }
+
+  build();
+  GAMES.knot = { reset, share, reveal, load };
+})();
+
+// ═════════════════════════════════════════════
+  </script>
+</body>
+</html>

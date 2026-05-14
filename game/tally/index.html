@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tally · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .tally-category {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(2.2rem, 8vw, 3rem);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: var(--ink);
+    text-align: center;
+    max-width: 14ch;
+    margin: 12px auto 6px;
+  }
+  .tally-meta {
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 0.74rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .tally-bigtimer {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(3rem, 12vw, 4.6rem);
+    text-align: center;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    transition: color var(--t-med) var(--ease);
+  }
+  .tally-bigtimer.low { color: var(--accent); }
+  .tally-bigtimer .unit {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.36em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .tally-input {
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-size: 1.45rem;
+    color: var(--ink);
+    border-bottom: 1px solid var(--hairline-strong);
+    padding: 10px 4px;
+    transition: border-color var(--t-fast) var(--ease);
+  }
+  .tally-input:focus { border-color: var(--accent); }
+  .tally-input::placeholder { color: var(--ink-faint); }
+  .tally-input.shake { animation: shake 320ms var(--ease); }
+
+  .tally-count {
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .tally-count .num {
+    font-family: 'Fraunces', serif;
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    margin-right: 6px;
+  }
+
+  .tally-list {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
+  .tally-list li {
+    font-family: 'Fraunces', serif;
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    padding: 6px 0;
+    border-bottom: 1px dotted var(--hairline);
+    animation: tally-in 320ms var(--ease);
+  }
+  @keyframes tally-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .tally-reveal {
+    width: 100%;
+    max-width: 480px;
+    margin-top: 16px;
+  }
+  .tally-reveal h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.2rem;
+    text-align: center;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+  .tally-reveal .sum {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 0.86rem;
+    margin-bottom: 18px;
+  }
+  .tally-missed {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 2px 18px;
+    list-style: none;
+    padding: 0;
+  }
+  .tally-missed li {
+    font-size: 0.92rem;
+    color: var(--ink-faint);
+    font-family: 'Fraunces', serif;
+    padding: 4px 0;
+    border-bottom: 1px dotted var(--hairline);
+  }
+  .tally-missed li.got { color: var(--accent); }
+</style>
+</head>
+<body data-game="tally" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="tally">
+      <div class="game-head">
+        <div class="eyebrow">No. 008 · Tally</div>
+        <h1 class="title">Tally</h1>
+        <p class="rule">A category. A minute. Type what you know.</p>
+        <p class="howto"><b>How to play.</b> Type an answer and press return. Valid answers lock in. The clock counts down from 60 seconds. When time runs out, see how many possible answers existed and which ones you missed.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="tally">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="tally" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="tally" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="tally" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="tally" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="tally" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-tally">
+        <div class="tally-meta" id="tally-meta">Category</div>
+        <div class="tally-category" id="tally-category"></div>
+        <div class="tally-bigtimer" id="tally-bigtimer">1:00<span class="unit">left</span></div>
+        <input class="tally-input" id="tally-input" type="text" autocomplete="off" autocapitalize="none" placeholder="type an answer" aria-label="answer">
+        <div class="tally-count"><span class="num" id="tally-count">0</span>answers locked</div>
+        <ol class="tally-list" id="tally-list"></ol>
+        <div class="solved" id="solved-tally"><span class="check">✓</span><span class="solved-text">Time</span></div>
+        <div class="tally-reveal" id="tally-reveal" hidden>
+          <h2 id="tally-reveal-h"></h2>
+          <p class="sum" id="tally-reveal-sum"></p>
+          <ul class="tally-missed" id="tally-missed"></ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Tally() {
+    const PUZZLES = [
+      {
+        id: 'tally-001',
+        category: 'Pixar feature films',
+        answers: [
+          "Toy Story","A Bug's Life","Toy Story 2","Monsters Inc","Finding Nemo",
+          "The Incredibles","Cars","Ratatouille","WALL-E","Up","Toy Story 3",
+          "Cars 2","Brave","Monsters University","Inside Out","The Good Dinosaur",
+          "Finding Dory","Cars 3","Coco","Incredibles 2","Toy Story 4","Onward",
+          "Soul","Luca","Turning Red","Lightyear","Elemental","Inside Out 2","Elio",
+        ],
+      },
+      {
+        id: 'tally-002',
+        category: 'US states bordering the Pacific Ocean',
+        answers: ['Alaska','California','Hawaii','Oregon','Washington'],
+      },
+      {
+        id: 'tally-003',
+        category: 'Studio Ghibli feature films',
+        answers: [
+          'Nausicaa of the Valley of the Wind','Castle in the Sky','Grave of the Fireflies',
+          'My Neighbor Totoro',"Kiki's Delivery Service",'Only Yesterday','Porco Rosso',
+          'Pom Poko','Whisper of the Heart','Princess Mononoke','My Neighbors the Yamadas',
+          'Spirited Away','The Cat Returns',"Howl's Moving Castle",'Tales from Earthsea',
+          'Ponyo','Arrietty','From Up on Poppy Hill','The Wind Rises',
+          'The Tale of the Princess Kaguya','When Marnie Was There','The Red Turtle',
+          'Earwig and the Witch','The Boy and the Heron',
+        ],
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const catEl   = $('#tally-category');
+    const metaEl  = $('#tally-meta');
+    const bigTime = $('#tally-bigtimer');
+    const input   = $('#tally-input');
+    const listEl  = $('#tally-list');
+    const countEl = $('#tally-count');
+    const stageEl = $('#stage-tally');
+    const solvedEl= $('#solved-tally');
+    const revealW = $('#tally-reveal');
+    const revealH = $('#tally-reveal-h');
+    const revealS = $('#tally-reveal-sum');
+    const missedL = $('#tally-missed');
+    const shareBtn = document.querySelector('.tool-btn[data-game="tally"][data-action="share"]');
+
+    let timer = null;
+    let endsAt = 0;        // performance.now() timestamp when timer hits 0
+    let raf = null;
+    let started = false, finished = false;
+    let found = new Set(); // canonical keys of accepted answers
+    const DURATION = 60;
+
+    // Normalize for matching: lowercase, strip "the ", remove non-alphanum.
+    function canon(s) {
+      return s.toLowerCase()
+              .replace(/^the\s+/i, '')
+              .replace(/[^a-z0-9]/g, '');
+    }
+
+    function build() {
+      catEl.textContent = PUZZLE.category;
+      metaEl.textContent = `${PUZZLE.answers.length} possible · 60 seconds`;
+      bigTime.innerHTML = `1:00<span class="unit">left</span>`;
+      bigTime.classList.remove('low');
+      input.value = '';
+      input.disabled = false;
+      listEl.innerHTML = '';
+      countEl.textContent = '0';
+      found.clear();
+      finished = false; started = false;
+      solvedEl.classList.remove('show');
+      revealW.hidden = true;
+      shareBtn.hidden = true;
+      cancelAnimationFrame(raf);
+    }
+
+    function tick() {
+      const remMs = endsAt - performance.now();
+      const rem = Math.max(0, Math.ceil(remMs / 1000));
+      const m = Math.floor(rem / 60), s = rem % 60;
+      bigTime.innerHTML = `${m}:${String(s).padStart(2,'0')}<span class="unit">left</span>`;
+      if (rem <= 10) bigTime.classList.add('low');
+      else bigTime.classList.remove('low');
+      if (remMs <= 0) { finish(); return; }
+      raf = requestAnimationFrame(tick);
+    }
+
+    function startTimer() {
+      if (started) return;
+      started = true;
+      endsAt = performance.now() + DURATION * 1000;
+      tick();
+    }
+
+    function tryAnswer() {
+      const raw = input.value.trim();
+      if (!raw) return;
+      if (finished) return;
+      startTimer();
+      const key = canon(raw);
+      if (!key) { input.value = ''; return; }
+      const match = PUZZLE.answers.find(a => canon(a) === key);
+      if (!match) {
+        input.classList.add('shake');
+        setTimeout(() => input.classList.remove('shake'), 360);
+        haptic(8);
+        return;
+      }
+      if (found.has(match)) {
+        input.classList.add('shake');
+        setTimeout(() => input.classList.remove('shake'), 360);
+        return;
+      }
+      found.add(match);
+      const li = document.createElement('li');
+      li.textContent = match;
+      listEl.prepend(li);
+      countEl.textContent = found.size;
+      input.value = '';
+      haptic(14);
+      if (found.size === PUZZLE.answers.length) finish();
+    }
+
+    function finish() {
+      if (finished) return;
+      finished = true;
+      cancelAnimationFrame(raf);
+      input.disabled = true;
+      bigTime.innerHTML = `0:00<span class="unit">done</span>`;
+      const total = PUZZLE.answers.length;
+      const got = found.size;
+      solvedEl.querySelector('.solved-text').textContent = `${got} of ${total}`;
+      solvedEl.classList.add('show');
+      revealH.textContent = `You found ${got} of ${total}.`;
+      revealS.textContent = got === total
+        ? "Clean sweep. Nothing missed."
+        : `Missing ${total - got} answer${total - got === 1 ? '' : 's'}:`;
+      missedL.innerHTML = PUZZLE.answers.map(a => {
+        const cls = found.has(a) ? 'got' : '';
+        return `<li class="${cls}">${a}</li>`;
+      }).join('');
+      revealW.hidden = false;
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); tryAnswer(); }
+    });
+    // submit on input-blur for mobile users who can't reach return key.
+    input.addEventListener('change', tryAnswer);
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      const total = PUZZLE.answers.length;
+      const portrait = PUZZLE.answers.map(a => found.has(a) ? '■' : '·').join('');
+      copyShare(`Tally · ${found.size}/${total}\n${PUZZLE.category}\n${portrait}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.tally = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>
