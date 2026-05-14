@@ -143,7 +143,9 @@
     white-space: nowrap;
     scroll-snap-align: center;
   }
-  .tab:hover { color: var(--ink-soft); }
+  @media (hover: hover) {
+    .tab:hover { color: var(--ink-soft); }
+  }
   .tab[aria-selected="true"] { color: var(--ink); }
   .tab-group-label {
     flex: 0 0 auto;
@@ -221,6 +223,19 @@
     max-width: 28em;
     margin: 0 auto;
   }
+  .howto {
+    margin: 10px auto 0;
+    max-width: 30em;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+    color: var(--ink-faint);
+  }
+  .howto b {
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
 
   /* ───────── toolbar ───────── */
   .toolbar {
@@ -246,7 +261,9 @@
     border-radius: 4px;
     transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
   }
-  .tool-btn:hover { color: var(--ink); background: var(--paper-deep); }
+  @media (hover: hover) {
+    .tool-btn:hover { color: var(--ink); background: var(--paper-deep); }
+  }
   .tool-btn[hidden] { display: none; }
   .sep {
     width: 1px; height: 12px; background: var(--hairline-strong);
@@ -311,6 +328,8 @@
     transition: color var(--t-med) var(--ease);
   }
   .solved.show { display: block; animation: solved-in 480ms var(--ease); }
+  .solved.is-revealed { color: var(--ink-faint); }
+  .solved.is-revealed .check { color: var(--ink-faint); }
   .solved .check {
     display: inline-block;
     margin-right: 6px;
@@ -339,8 +358,11 @@
     position: relative;
     transition: background var(--t-fast) var(--ease);
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
-  .tableau-cell:hover { background: var(--paper-deep); }
+  @media (hover: hover) {
+    .tableau-cell:hover { background: var(--paper-deep); }
+  }
   .tableau-cell .fill {
     position: absolute; inset: 0;
     background: var(--ink);
@@ -402,7 +424,9 @@
     cursor: pointer;
     transition: fill var(--t-fast) var(--ease), r var(--t-fast) var(--ease), opacity var(--t-slow) var(--ease);
   }
-  .fila-dot:hover { fill: var(--ink); }
+  @media (hover: hover) {
+    .fila-dot:hover { fill: var(--ink); }
+  }
   .fila-dot.selected {
     fill: var(--filament);
   }
@@ -487,11 +511,14 @@
                 transform var(--t-fast) var(--ease),
                 color var(--t-fast) var(--ease);
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
     cursor: pointer;
   }
-  .beat-token:hover {
-    border-color: var(--beatsheet);
-    transform: scale(1.03);
+  @media (hover: hover) {
+    .beat-token:hover {
+      border-color: var(--beatsheet);
+      transform: scale(1.03);
+    }
   }
   .beat-token[data-pos] {
     border-color: var(--beatsheet);
@@ -645,6 +672,7 @@
     border-radius: 6px;
     transition: background var(--t-med) var(--ease), transform var(--t-fast) var(--ease);
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
     overflow: hidden;
   }
   .bloom-cell.wall {
@@ -743,13 +771,14 @@
     vertical-align: -0.05em;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
     flex: 0 0 auto;
   }
   .cleave-gap::before {
-    /* enlarge hit area */
+    /* enlarge hit area — generous on both axes for thumbs */
     content: '';
     position: absolute;
-    inset: -0.3em -0.1em;
+    inset: -0.45em -0.32em;
   }
   .cleave-gap::after {
     content: '';
@@ -768,13 +797,15 @@
     transform: translateX(-50%) scaleY(1);
     box-shadow: 0 0 6px rgba(232, 177, 76, 0.5);
   }
-  .cleave-gap:hover::after {
-    transform: translateX(-50%) scaleY(0.4);
-    background: var(--ink-faint);
-  }
-  .cleave-gap.cut:hover::after {
-    background: var(--accent);
-    transform: translateX(-50%) scaleY(1);
+  @media (hover: hover) {
+    .cleave-gap:hover::after {
+      transform: translateX(-50%) scaleY(0.4);
+      background: var(--ink-faint);
+    }
+    .cleave-gap.cut:hover::after {
+      background: var(--accent);
+      transform: translateX(-50%) scaleY(1);
+    }
   }
   .cleave-stage.solved .cleave-gap.cut::after {
     transform: translateX(-50%) scaleY(0);
@@ -932,12 +963,14 @@
       <div class="eyebrow">No. 001 · Tableau</div>
       <h1 class="title">Tableau</h1>
       <p class="rule">Five clues. Twenty‑five cells. Deduce which are filled.</p>
+      <p class="howto"><b>How to play.</b> Tap a cell to fill it (■). Tap again to mark it empty (×). Tap a third time to clear. Use the clues to find which nine cells are filled.</p>
     </div>
 
     <div class="toolbar">
       <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-tableau">0:00</span></span>
       <span class="sep"></span>
       <button class="tool-btn" data-action="reset" data-game="tableau">Reset</button>
+      <button class="tool-btn" data-action="reveal" data-game="tableau">Reveal</button>
       <button class="tool-btn" data-action="share" data-game="tableau" hidden>Share</button>
     </div>
 
@@ -954,12 +987,14 @@
       <div class="eyebrow">No. 001 · Filament</div>
       <h1 class="title">Filament</h1>
       <p class="rule">Draw one closed loop. Numbers count the edges they touch.</p>
+      <p class="howto"><b>How to play.</b> Tap a dot, then tap an adjacent dot to draw a segment between them. Tap an existing segment to remove it. Form one closed loop where every numbered cell has that many of its four edges used.</p>
     </div>
 
     <div class="toolbar">
       <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-filament">0:00</span></span>
       <span class="sep"></span>
       <button class="tool-btn" data-action="reset" data-game="filament">Reset</button>
+      <button class="tool-btn" data-action="reveal" data-game="filament">Reveal</button>
       <button class="tool-btn" data-action="share" data-game="filament" hidden>Share</button>
     </div>
 
@@ -976,12 +1011,14 @@
       <div class="eyebrow">No. 001 · Beat Sheet</div>
       <h1 class="title">Beat Sheet</h1>
       <p class="rule">Tap the witnesses in the order they were questioned.</p>
+      <p class="howto"><b>How to play.</b> Tap each character in sequence — a numbered line draws between them in order. Tap a numbered character to undo that pick and everything after. All four clues must hold.</p>
     </div>
 
     <div class="toolbar">
       <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-beatsheet">0:00</span></span>
       <span class="sep"></span>
       <button class="tool-btn" data-action="reset" data-game="beatsheet">Reset</button>
+      <button class="tool-btn" data-action="reveal" data-game="beatsheet">Reveal</button>
       <button class="tool-btn" data-action="share" data-game="beatsheet" hidden>Share</button>
     </div>
 
@@ -998,12 +1035,14 @@
       <div class="eyebrow">No. 001 · Knot</div>
       <h1 class="title">Knot</h1>
       <p class="rule">Drag the lights home. The shape will know when you are close.</p>
+      <p class="howto"><b>How to play.</b> Press and drag each glowing node onto one of the faint target circles. A node pulses when it's close to home. When every node is on its target, the picture appears.</p>
     </div>
 
     <div class="toolbar">
       <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-knot">0:00</span></span>
       <span class="sep"></span>
       <button class="tool-btn" data-action="reset" data-game="knot">Reset</button>
+      <button class="tool-btn" data-action="reveal" data-game="knot">Reveal</button>
       <button class="tool-btn" data-action="share" data-game="knot" hidden>Share</button>
     </div>
 
@@ -1019,12 +1058,14 @@
       <div class="eyebrow">No. 001 · Bloom</div>
       <h1 class="title">Bloom</h1>
       <p class="rule">One seed grows into today's shape. Find which cell.</p>
+      <p class="howto"><b>How to play.</b> Tap any open cell to plant a seed. Each turn it spreads into adjacent empty cells; walls block growth. After five turns, the bloom is checked against the faint target. Find the seed that grows into it exactly.</p>
     </div>
 
     <div class="toolbar">
       <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-bloom">0:00</span></span>
       <span class="sep"></span>
       <button class="tool-btn" data-action="reset" data-game="bloom">Reset</button>
+      <button class="tool-btn" data-action="reveal" data-game="bloom">Reveal</button>
       <button class="tool-btn" data-action="share" data-game="bloom" hidden>Share</button>
     </div>
 
@@ -1044,12 +1085,14 @@
       <div class="eyebrow">No. 001 · Cleave</div>
       <h1 class="title">Cleave</h1>
       <p class="rule">Find the spaces in the sentence. A familiar phrase is hiding.</p>
+      <p class="howto"><b>How to play.</b> Tap the space between any two letters to insert a cut. Tap a cut again to remove it. Place every cut in the right spot to reveal a familiar phrase.</p>
     </div>
 
     <div class="toolbar">
       <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-cleave">0:00</span></span>
       <span class="sep"></span>
       <button class="tool-btn" data-action="reset" data-game="cleave">Reset</button>
+      <button class="tool-btn" data-action="reveal" data-game="cleave">Reveal</button>
       <button class="tool-btn" data-action="share" data-game="cleave" hidden>Share</button>
     </div>
 
@@ -1066,12 +1109,14 @@
       <div class="eyebrow">No. 001 · Strand</div>
       <h1 class="title">Strand</h1>
       <p class="rule">Trace the night sky. Five words are hiding in the field.</p>
+      <p class="howto"><b>How to play.</b> Press a letter, drag your finger across more letters in order to spell a theme word, then release. Each correct word locks in as a luminous line. Find all five.</p>
     </div>
 
     <div class="toolbar">
       <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-strand">0:00</span></span>
       <span class="sep"></span>
       <button class="tool-btn" data-action="reset" data-game="strand">Reset</button>
+      <button class="tool-btn" data-action="reveal" data-game="strand">Reveal</button>
       <button class="tool-btn" data-action="share" data-game="strand" hidden>Share</button>
     </div>
 
@@ -1249,11 +1294,16 @@ tabsScrollEl.addEventListener('scroll', positionUnderline, { passive: true });
 window.addEventListener('resize', positionUnderline);
 window.addEventListener('load', positionUnderline);
 setTimeout(positionUnderline, 60);
+// Re-measure once the webfont actually loads — without this the underline
+// sizes itself against fallback-font metrics and ends up wrong on first paint.
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(positionUnderline);
+}
 
 // Default mood for first paint
 document.body.dataset.mood = 'light';
 
-// Toolbar wiring (reset / share)
+// Toolbar wiring (reset / reveal / share)
 document.addEventListener('click', e => {
   const btn = e.target.closest('.tool-btn');
   if (!btn) return;
@@ -1261,8 +1311,9 @@ document.addEventListener('click', e => {
   const action = btn.dataset.action;
   const mod = GAMES[game];
   if (!mod) return;
-  if (action === 'reset') mod.reset();
-  if (action === 'share') mod.share();
+  if (action === 'reset')  mod.reset();
+  if (action === 'share')  mod.share  && mod.share();
+  if (action === 'reveal') mod.reveal && mod.reveal();
 });
 
 // ─────────────────────────────────────────────
@@ -1297,8 +1348,9 @@ const GAMES = {};
   const cluesEl  = $('#tableau-clues');
   const stageEl  = $('#stage-tableau');
   const solvedEl = $('#solved-tableau');
-  const shareBtn = document.querySelector('.tool-btn[data-game="tableau"][data-action="share"]');
-  const timer    = createTimer($('#timer-tableau'));
+  const shareBtn  = document.querySelector('.tool-btn[data-game="tableau"][data-action="share"]');
+  const revealBtn = document.querySelector('.tool-btn[data-game="tableau"][data-action="reveal"]');
+  const timer     = createTimer($('#timer-tableau'));
 
   let state;   // 5x5 of 0|1|2
   let solved = false;
@@ -1365,9 +1417,26 @@ const GAMES = {};
     solved = false;
     timer.reset();
     gridEl.classList.remove('solved');
-    solvedEl.classList.remove('show');
+    solvedEl.classList.remove('show', 'is-revealed');
     shareBtn.hidden = true;
+    revealBtn.hidden = false;
     build();
+  }
+
+  function reveal() {
+    if (solved) return;
+    for (let r = 0; r < 5; r++) {
+      for (let c = 0; c < 5; c++) {
+        state[r][c] = PUZZLE.target[r][c];
+        gridEl.children[r * 5 + c].dataset.state = String(state[r][c]);
+      }
+    }
+    solved = true;
+    timer.stop();
+    gridEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+    solvedEl.classList.add('show', 'is-revealed');
+    revealBtn.hidden = true;
   }
 
   function share() {
@@ -1382,7 +1451,7 @@ internet.house/game`;
   }
 
   build();
-  GAMES.tableau = { reset, share };
+  GAMES.tableau = { reset, share, reveal };
 })();
 
 // ═════════════════════════════════════════════
@@ -1421,8 +1490,9 @@ internet.house/game`;
   const cluesEl  = $('#filament-clues');
   const stageEl  = $('#stage-filament');
   const solvedEl = $('#solved-filament');
-  const shareBtn = document.querySelector('.tool-btn[data-game="filament"][data-action="share"]');
-  const timer    = createTimer($('#timer-filament'));
+  const shareBtn  = document.querySelector('.tool-btn[data-game="filament"][data-action="share"]');
+  const revealBtn = document.querySelector('.tool-btn[data-game="filament"][data-action="reveal"]');
+  const timer     = createTimer($('#timer-filament'));
 
   // SVG geometry
   const VB = 100;                        // viewBox is 0..VB on both axes
@@ -1668,9 +1738,28 @@ internet.house/game`;
     pending = null;
     timer.reset();
     boardEl.classList.remove('solved');
-    solvedEl.classList.remove('show');
+    solvedEl.classList.remove('show', 'is-revealed');
     shareBtn.hidden = true;
+    revealBtn.hidden = false;
     build();
+  }
+
+  function reveal() {
+    if (solved) return;
+    // Clear any user-drawn segments
+    Array.from(edges.keys()).forEach(k => removeSegment(k));
+    if (pending) { pending.el.classList.remove('selected'); pending = null; }
+    // Draw the reference loop
+    for (let i = 0; i < ANSWER_PATH.length - 1; i++) {
+      const a = ANSWER_PATH[i], b = ANSWER_PATH[i+1];
+      addSegment(key(a, b), a, b);
+    }
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+    solvedEl.classList.add('show', 'is-revealed');
+    revealBtn.hidden = true;
   }
 
   function share() {
@@ -1682,7 +1771,7 @@ internet.house/game`;
   }
 
   build();
-  GAMES.filament = { reset, share };
+  GAMES.filament = { reset, share, reveal };
 })();
 
 // ═════════════════════════════════════════════
@@ -1720,8 +1809,9 @@ internet.house/game`;
   const cluesEl  = $('#beat-clues');
   const stageEl  = $('#stage-beatsheet');
   const solvedEl = $('#solved-beatsheet');
-  const shareBtn = document.querySelector('.tool-btn[data-game="beatsheet"][data-action="share"]');
-  const timer    = createTimer($('#timer-beatsheet'));
+  const shareBtn  = document.querySelector('.tool-btn[data-game="beatsheet"][data-action="share"]');
+  const revealBtn = document.querySelector('.tool-btn[data-game="beatsheet"][data-action="reveal"]');
+  const timer     = createTimer($('#timer-beatsheet'));
 
   let order = []; // ids in click sequence
   let solved = false;
@@ -1839,9 +1929,22 @@ internet.house/game`;
 
   function reset() {
     timer.reset();
-    solvedEl.classList.remove('show');
+    solvedEl.classList.remove('show', 'is-revealed');
     shareBtn.hidden = true;
+    revealBtn.hidden = false;
     build();
+  }
+
+  function reveal() {
+    if (solved) return;
+    order = ['detective', 'maid', 'butler', 'heir'];
+    render();
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+    solvedEl.classList.add('show', 'is-revealed');
+    revealBtn.hidden = true;
   }
 
   function share() {
@@ -1858,7 +1961,7 @@ internet.house/game`;
   window.addEventListener('resize', () => { if (!solved) drawPath(); else drawPath(); });
 
   build();
-  GAMES.beatsheet = { reset, share };
+  GAMES.beatsheet = { reset, share, reveal };
 })();
 
 // ═════════════════════════════════════════════
@@ -1895,8 +1998,9 @@ internet.house/game`;
   const boardEl  = $('#knot-board');
   const stageEl  = $('#stage-knot');
   const solvedEl = $('#solved-knot');
-  const shareBtn = document.querySelector('.tool-btn[data-game="knot"][data-action="share"]');
-  const timer    = createTimer($('#timer-knot'));
+  const shareBtn  = document.querySelector('.tool-btn[data-game="knot"][data-action="share"]');
+  const revealBtn = document.querySelector('.tool-btn[data-game="knot"][data-action="reveal"]');
+  const timer     = createTimer($('#timer-knot'));
 
   const ns = 'http://www.w3.org/2000/svg';
   let svg, nodeEls, edgeEls, targetEls;
@@ -2044,9 +2148,22 @@ internet.house/game`;
 
   function reset() {
     timer.reset();
-    solvedEl.classList.remove('show');
+    solvedEl.classList.remove('show', 'is-revealed');
     shareBtn.hidden = true;
+    revealBtn.hidden = false;
     build();
+  }
+
+  function reveal() {
+    if (solved) return;
+    positions = TARGETS.map(p => p.slice());
+    redraw();
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+    solvedEl.classList.add('show', 'is-revealed');
+    revealBtn.hidden = true;
   }
 
   function share() {
@@ -2058,7 +2175,7 @@ internet.house/game`;
   }
 
   build();
-  GAMES.knot = { reset, share };
+  GAMES.knot = { reset, share, reveal };
 })();
 
 // ═════════════════════════════════════════════
@@ -2090,8 +2207,12 @@ internet.house/game`;
   const boardEl  = $('#bloom-board');
   const stageEl  = $('#stage-bloom');
   const solvedEl = $('#solved-bloom');
-  const shareBtn = document.querySelector('.tool-btn[data-game="bloom"][data-action="share"]');
-  const timer    = createTimer($('#timer-bloom'));
+  const shareBtn  = document.querySelector('.tool-btn[data-game="bloom"][data-action="share"]');
+  const revealBtn = document.querySelector('.tool-btn[data-game="bloom"][data-action="reveal"]');
+  const timer     = createTimer($('#timer-bloom'));
+
+  // The seed cell that produces the target — used by reveal().
+  const ANSWER_SEED = [1, 5];
 
   let cellEls;   // cellEls[r][c]
   let busy = false;
@@ -2199,9 +2320,27 @@ internet.house/game`;
 
   function reset() {
     timer.reset();
-    solvedEl.classList.remove('show');
+    solvedEl.classList.remove('show', 'is-revealed');
     shareBtn.hidden = true;
+    revealBtn.hidden = false;
     build();
+  }
+
+  async function reveal() {
+    if (busy || solved) return;
+    busy = true;
+    clearFilled();
+    const { gens } = computeGenerations(ANSWER_SEED[0], ANSWER_SEED[1]);
+    for (const gen of gens) {
+      for (const [gr, gc] of gen) cellEls[gr][gc].classList.add('filled');
+      await new Promise(res => setTimeout(res, 170));
+    }
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+    solvedEl.classList.add('show', 'is-revealed');
+    revealBtn.hidden = true;
   }
 
   function share() {
@@ -2224,7 +2363,7 @@ internet.house/game`;
   }
 
   build();
-  GAMES.bloom = { reset, share };
+  GAMES.bloom = { reset, share, reveal };
 })();
 
 // ═════════════════════════════════════════════
@@ -2243,8 +2382,9 @@ internet.house/game`;
   const stageEl  = $('#cleave-stage');
   const attrEl   = $('#cleave-attr');
   const solvedEl = $('#solved-cleave');
-  const shareBtn = document.querySelector('.tool-btn[data-game="cleave"][data-action="share"]');
-  const timer    = createTimer($('#timer-cleave'));
+  const shareBtn  = document.querySelector('.tool-btn[data-game="cleave"][data-action="share"]');
+  const revealBtn = document.querySelector('.tool-btn[data-game="cleave"][data-action="reveal"]');
+  const timer     = createTimer($('#timer-cleave'));
 
   const canonical = new Set(PUZZLE.canonical);
   let cuts;           // Set<number>
@@ -2311,9 +2451,28 @@ internet.house/game`;
 
   function reset() {
     timer.reset();
-    solvedEl.classList.remove('show');
+    solvedEl.classList.remove('show', 'is-revealed');
     shareBtn.hidden = true;
+    revealBtn.hidden = false;
     build();
+  }
+
+  function reveal() {
+    if (solved) return;
+    // Clear existing cuts, then apply canonical
+    for (const p of cuts) gapEls[p] && gapEls[p].classList.remove('cut');
+    cuts.clear();
+    for (const p of canonical) {
+      cuts.add(p);
+      if (gapEls[p]) gapEls[p].classList.add('cut');
+    }
+    solved = true;
+    timer.stop();
+    stageEl.classList.add('solved');
+    attrEl.textContent = PUZZLE.attribution;
+    solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+    solvedEl.classList.add('show', 'is-revealed');
+    revealBtn.hidden = true;
   }
 
   function share() {
@@ -2325,7 +2484,7 @@ internet.house/game`;
   }
 
   build();
-  GAMES.cleave = { reset, share };
+  GAMES.cleave = { reset, share, reveal };
 })();
 
 // ═════════════════════════════════════════════
@@ -2364,8 +2523,9 @@ internet.house/game`;
   const listEl    = $('#strand-themelist');
   const stageEl   = $('#stage-strand');
   const solvedEl  = $('#solved-strand');
-  const shareBtn  = document.querySelector('.tool-btn[data-game="strand"][data-action="share"]');
-  const timer     = createTimer($('#timer-strand'));
+  const shareBtn   = document.querySelector('.tool-btn[data-game="strand"][data-action="share"]');
+  const revealBtn  = document.querySelector('.tool-btn[data-game="strand"][data-action="reveal"]');
+  const timer      = createTimer($('#timer-strand'));
 
   const ns = 'http://www.w3.org/2000/svg';
   let svg, draftPathEl, locksGroup, bgEls = [], textEls = [];
@@ -2558,10 +2718,33 @@ internet.house/game`;
 
   function reset() {
     timer.reset();
-    solvedEl.classList.remove('show');
+    solvedEl.classList.remove('show', 'is-revealed');
     shareBtn.hidden = true;
+    revealBtn.hidden = false;
     lockedPaths.clear();
     build();
+  }
+
+  function reveal() {
+    if (solved) return;
+    for (const word of PUZZLE.words) {
+      if (found.has(word)) continue;
+      const path = [];
+      for (const letter of word) {
+        const idx = PUZZLE.letters.findIndex(([l]) => l === letter);
+        if (idx >= 0) path.push(idx);
+      }
+      found.add(word);
+      lockPath(path);
+      markFoundInList(word);
+    }
+    markTouched();
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+    solvedEl.classList.add('show', 'is-revealed');
+    revealBtn.hidden = true;
   }
 
   function share() {
@@ -2582,7 +2765,7 @@ internet.house/game`;
   boardEl.addEventListener('pointercancel', onUp);
 
   build();
-  GAMES.strand = { reset, share, onShow: () => { /* layout-safe re-render */ } };
+  GAMES.strand = { reset, share, reveal, onShow: () => { /* layout-safe re-render */ } };
 })();
 
 </script>
