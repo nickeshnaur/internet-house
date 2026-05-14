@@ -1,7 +1,7 @@
 # /game
 
-Twenty daily-puzzle prototypes, one per folder, served straight out of
-`game/`. No build step.
+Twenty-four daily-puzzle prototypes, one per folder, served straight
+out of `game/`. No build step.
 
 ```
 game/
@@ -28,6 +28,10 @@ game/
   order/index.html       ← Game 18    Sharp
   trio/index.html        ← Game 19    Sharp
   bridge/index.html      ← Game 20    Sharp
+  beam/index.html        ← Game 21    Field
+  tide/index.html        ← Game 22    Field
+  weft/index.html        ← Game 23    Field
+  splice/index.html      ← Game 24    Field
 ```
 
 Each game lives in its own folder; visiting `/game/<slug>/` loads only
@@ -46,9 +50,9 @@ with three puzzles selectable from a `1 · 2 · 3` picker in the toolbar.
   `.toolbar`, `.stage`. CSS for game-specific surfaces is inlined in
   that game's file.
 
-## Five groups
+## Six groups
 
-The hub clusters the twenty games:
+The hub clusters the twenty-four games:
 
 - **Logic** — Tableau, Filament, Beat Sheet. Editorial paper.
 - **Feeling** — Knot, Bloom. Dark, gestural, atmospheric.
@@ -59,6 +63,9 @@ The hub clusters the twenty games:
 - **Sharp** — Rule, Order, Trio, Bridge. Closed-answer Wordle-DNA:
   hidden answer, info-rich feedback per guess, daily cadence,
   emoji-grid share artifact.
+- **Field** — Beam, Tide, Weft, Splice. Place pieces, run the
+  simulation, see what happened. Mix of spatial reasoning (Beam,
+  Tide) and lexical pairing (Weft, Splice).
 
 The hub itself (`game/index.html`) is a card grid — each card has a
 glyph, name, one-line description, and a tinted accent border.
@@ -414,7 +421,108 @@ a compound-word corpus lookup.
 
 ---
 
-## Adding a twenty-first game
+## The Field group
+
+Place pieces, run a simulation, see what happened. Two spatial games
+and two lexical games sharing the same submit-and-observe grammar.
+
+### Beam · route the light · `game/beam/`
+
+5×5 grid with a beam source on one edge, walls, and a target cell.
+Drag mirrors (╱ and ╲) from inventory onto cells; tap a placed
+mirror to rotate it. Submit fires the beam — it reflects on
+diagonals, blocks at walls, exits the grid, or hits the target.
+Five attempts.
+
+```js
+{
+  id: 'beam-NNN',
+  source: { r: 0, c: 4, dir: 'down' },     // entering from above col 4
+  target: { r: 4, c: 4 },
+  walls:  [[2,4]],
+  inv:    { '/': 2, '\\': 1 },             // mirror counts available
+}
+```
+
+Reflection table:
+- `╱` (forward): up→right, down→left, left→down, right→up
+- `╲` (back):    up→left,  down→right, left→up,  right→down
+
+Hand-author each puzzle by designing the wall/source/target layout,
+then place mirrors to confirm a solution exists within the inventory.
+The `verify-beam.js` script in /tmp/jsdomtest does this check.
+
+### Tide · direct the flow · `game/tide/`
+
+5×5 grid where each cell has a height (0–3). Cells of height 3 act
+as ridges — water can't enter or pass. Place 1–3 sources; water
+spreads via BFS to neighbors of equal-or-lower height. The result
+is compared against TARGETS (must end wet) and DRYS (must stay dry).
+Five attempts.
+
+```js
+{
+  id: 'tide-NNN',
+  heights: [
+    [1,1,3,1,1],
+    [1,0,3,0,1],
+    // …
+  ],
+  targets: [],   // optional explicit list; defaults to all non-3 cells
+  drys:    [],   // optional; height-3 cells are auto-dry
+  maxSources: 2,
+}
+```
+
+Author by designing topography that channels water into specific
+basins, then verifying the source count needed by mental simulation.
+
+### Weft · pair to bind · `game/weft/`
+
+Two columns of four word cards. Drag from a left card to a right
+card to pair them. Each left word must pair with exactly one right
+word that forms a valid compound. Submit returns count-correct.
+Four attempts.
+
+```js
+{
+  id: 'weft-NNN',
+  left:  ['FIRE','SNOW','MOON','RAIN'],
+  right: ['BOW','FLAKE','PLACE','LIGHT'],
+  pairs: { FIRE: 'PLACE', SNOW: 'FLAKE', MOON: 'LIGHT', RAIN: 'BOW' },
+  compound: { FIRE: 'FIREPLACE', SNOW: 'SNOWFLAKE', MOON: 'MOONLIGHT', RAIN: 'RAINBOW' },
+}
+```
+
+Right column is shuffled deterministically per puzzle so it's not in
+pair order. On submit, an SVG overlay renders the player's pairing
+lines; on solve, all four lines glow and the compounds reveal below.
+
+### Splice · find the anagram pair · `game/splice/`
+
+A given phrase displayed at top. The hidden answer is a different
+phrase with the same letters. Letter tiles drag (tap-tap) into
+slot-rows that match the hidden phrase's word lengths. Per-slot
+green-check feedback. Correct tiles lock; incorrect tiles return to
+the tray. Five attempts.
+
+```js
+{
+  id: 'splice-NNN',
+  given:  'ELEVEN PLUS TWO',
+  answer: 'TWELVE PLUS ONE',
+  hint:   'Restatement',
+}
+```
+
+Both phrases must use exactly the same multiset of letters (verify
+before shipping). The hint is one of "Restatement" / "Twist" /
+similar — a clue to the semantic relationship without giving away
+the answer.
+
+---
+
+## Adding a twenty-fifth game
 
 1. Create `/game/<slug>/index.html` modeled on any existing game.
 2. Add an accent color in `shared.css`:

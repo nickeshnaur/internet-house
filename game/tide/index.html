@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tide · internet.house</title>
+<meta name="theme-color" content="#0E1218">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .tide-board {
+    width: clamp(280px, 88vw, 460px);
+    aspect-ratio: 1 / 1;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 6px;
+    padding: 8px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 3px;
+    touch-action: manipulation;
+  }
+  .tide-cell {
+    position: relative;
+    border-radius: 3px;
+    background: var(--paper-soft);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: outline-color var(--t-fast) var(--ease);
+    outline: 1px solid transparent;
+  }
+  .tide-cell[data-h="0"] { background: #2a3340; }
+  .tide-cell[data-h="1"] { background: #525d6e; }
+  .tide-cell[data-h="2"] { background: #7d8696; }
+  .tide-cell[data-h="3"] { background: #b1b8c4; }
+  .tide-cell.target::after {
+    content: '';
+    position: absolute; inset: 4px;
+    border: 1px dashed var(--accent);
+    border-radius: 2px;
+    opacity: 0.8;
+  }
+  .tide-cell.dry::after {
+    content: '×';
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.4);
+    font-family: 'Fraunces', serif;
+    font-size: 1.4rem;
+    pointer-events: none;
+  }
+  .tide-cell.wet {
+    box-shadow: inset 0 0 0 100px color-mix(in srgb, var(--accent) 60%, transparent);
+    transition: box-shadow 360ms var(--ease);
+  }
+  .tide-cell.wet.flooded { box-shadow: inset 0 0 0 100px #C25E3A; }
+  .tide-cell .source {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 40%; height: 40%;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--accent);
+    pointer-events: none;
+  }
+  .tide-cell.hover { outline-color: var(--accent); }
+
+  .tide-meta {
+    width: 100%; max-width: 460px;
+    display: flex; justify-content: space-between;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .tide-meta .num { color: var(--ink); font-family: 'Fraunces', serif; font-size: 0.86rem; }
+
+  .tide-actions {
+    display: flex; align-items: center; gap: 14px; justify-content: center;
+  }
+  .tide-submit {
+    padding: 10px 22px;
+    font: 500 0.74rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+    border-radius: 999px;
+  }
+  .tide-submit[disabled] { opacity: 0.4; pointer-events: none; }
+  .tide-clear {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 8px 12px;
+  }
+  .tide-clear:hover { color: var(--ink); }
+
+  .tide-history {
+    display: flex; gap: 4px; flex-wrap: wrap; justify-content: center;
+  }
+  .h-cell { width: 16px; height: 16px; border-radius: 3px; background: var(--hairline-strong); }
+  .h-cell.h { background: var(--accent); }
+  .h-cell.x { background: #C25E3A; }
+
+  .tide-legend {
+    display: flex; align-items: center; gap: 16px; justify-content: center;
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .tide-legend .swatch { width: 12px; height: 12px; border-radius: 2px; display: inline-block; vertical-align: middle; margin-right: 4px; }
+</style>
+</head>
+<body data-game="tide" data-mood="dark">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="tide">
+      <div class="game-head">
+        <div class="eyebrow">No. 022 · Tide</div>
+        <h1 class="title">Tide</h1>
+        <p class="rule">Place sources. Water flows downhill, fills basins.</p>
+        <p class="howto"><b>How to play.</b> Tap a cell to place or remove a water source. Targets must end <b>wet</b>; dry cells must stay <b>dry</b>. Water flows to neighbors of equal or lower height. Five attempts.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="tide">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="tide" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="tide" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="tide" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="tide" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="tide" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-tide">
+        <div class="tide-meta"><span><span class="num" id="tide-attempts">0</span> / 5 attempts</span><span><span class="num" id="tide-sources">0</span> / <span id="tide-max">2</span> sources</span></div>
+
+        <div class="tide-board" id="tide-board"></div>
+
+        <div class="tide-legend">
+          <span><span class="swatch" style="background:#525d6e"></span>low</span>
+          <span><span class="swatch" style="background:#b1b8c4"></span>high</span>
+          <span><span class="swatch" style="background:var(--accent);box-shadow:0 0 6px var(--accent)"></span>source</span>
+          <span><span class="swatch" style="border:1px dashed var(--accent);background:transparent"></span>target</span>
+          <span><span class="swatch" style="background:transparent;color:var(--ink-faint)">×</span>dry</span>
+        </div>
+
+        <div class="tide-actions">
+          <button class="tide-clear" id="tide-clear">Clear sources</button>
+          <button class="tide-submit" id="tide-submit" disabled>Run flow</button>
+        </div>
+
+        <div class="tide-history" id="tide-history"></div>
+        <div class="solved" id="solved-tide"><span class="check">✓</span><span class="solved-text">Filled</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Tide() {
+    const N = 5;
+    const PUZZLES = [
+      {
+        id: 'tide-001',
+        // two basins separated by a vertical ridge in column 2
+        heights: [
+          [1,1,3,1,1],
+          [1,0,3,0,1],
+          [1,0,3,0,1],
+          [1,0,3,0,1],
+          [1,1,3,1,1],
+        ],
+        targets: [],   // computed: all non-ridge cells
+        drys:    [],   // computed: ridge cells
+        maxSources: 2,
+      },
+      {
+        id: 'tide-002',
+        // donut: a central peak surrounded by a single ring basin
+        heights: [
+          [2,1,1,1,2],
+          [1,0,0,0,1],
+          [1,0,3,0,1],
+          [1,0,0,0,1],
+          [2,1,1,1,2],
+        ],
+        targets: [],
+        drys:    [[2,2]],
+        maxSources: 1,
+      },
+      {
+        id: 'tide-003',
+        // three basins: two small upper, one wide lower
+        heights: [
+          [1,0,3,0,1],
+          [1,0,3,0,1],
+          [3,3,3,3,3],
+          [1,1,1,1,1],
+          [0,0,0,0,0],
+        ],
+        targets: [],
+        drys:    [],
+        maxSources: 3,
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const boardEl    = $('#tide-board');
+    const submitBtn  = $('#tide-submit');
+    const clearBtn   = $('#tide-clear');
+    const stageEl    = $('#stage-tide');
+    const solvedEl   = $('#solved-tide');
+    const attemptsEl = $('#tide-attempts');
+    const sourcesEl  = $('#tide-sources');
+    const maxEl      = $('#tide-max');
+    const historyEl  = $('#tide-history');
+    const shareBtn   = document.querySelector('.tool-btn[data-game="tide"][data-action="share"]');
+
+    let sources = new Set();   // "r,c"
+    let attempts = [];
+    let solved = false;
+    let cellEls = [];
+    let TARGETS, DRYS;         // Sets of "r,c"
+
+    function build() {
+      // Compute targets/drys if empty: targets = non-dry, non-ridge (height < 3); drys = explicit + height == 3
+      TARGETS = new Set();
+      DRYS = new Set(PUZZLE.drys.map(([r,c]) => `${r},${c}`));
+      for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+        const k = `${r},${c}`;
+        if (PUZZLE.heights[r][c] === 3) DRYS.add(k);
+      }
+      // Override with explicit if provided
+      if (PUZZLE.targets && PUZZLE.targets.length) {
+        TARGETS = new Set(PUZZLE.targets.map(([r,c]) => `${r},${c}`));
+      } else {
+        for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+          const k = `${r},${c}`;
+          if (!DRYS.has(k)) TARGETS.add(k);
+        }
+      }
+
+      sources.clear();
+      attempts = [];
+      solved = false;
+      attemptsEl.textContent = '0';
+      sourcesEl.textContent = '0';
+      maxEl.textContent = String(PUZZLE.maxSources);
+      historyEl.innerHTML = '';
+      submitBtn.hidden = false; submitBtn.disabled = true; submitBtn.textContent = 'Run flow';
+      clearBtn.hidden = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      shareBtn.hidden = true;
+      drawBoard();
+    }
+
+    function drawBoard() {
+      boardEl.innerHTML = '';
+      cellEls = [];
+      for (let r = 0; r < N; r++) {
+        cellEls[r] = [];
+        for (let c = 0; c < N; c++) {
+          const k = `${r},${c}`;
+          const cell = document.createElement('button');
+          cell.className = 'tide-cell';
+          cell.dataset.r = r; cell.dataset.c = c;
+          cell.dataset.h = String(PUZZLE.heights[r][c]);
+          if (TARGETS.has(k)) cell.classList.add('target');
+          if (DRYS.has(k)) cell.classList.add('dry');
+          if (sources.has(k)) {
+            const s = document.createElement('span'); s.className = 'source';
+            cell.appendChild(s);
+          }
+          cell.addEventListener('click', () => toggleSource(r, c));
+          boardEl.appendChild(cell);
+          cellEls[r][c] = cell;
+        }
+      }
+    }
+
+    function toggleSource(r, c) {
+      if (solved) return;
+      const k = `${r},${c}`;
+      if (PUZZLE.heights[r][c] === 3 || DRYS.has(k)) { shake(stageEl); return; }
+      if (sources.has(k)) sources.delete(k);
+      else if (sources.size >= PUZZLE.maxSources) { shake(stageEl); return; }
+      else sources.add(k);
+      sourcesEl.textContent = String(sources.size);
+      submitBtn.disabled = sources.size === 0;
+      drawBoard();
+      haptic(6);
+    }
+
+    function flow() {
+      // BFS from each source. Water spreads to neighbors of equal-or-lower height that aren't height 3.
+      const wet = new Set();
+      const queue = [];
+      for (const k of sources) { wet.add(k); queue.push(k.split(',').map(Number)); }
+      const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+      while (queue.length) {
+        const [r, c] = queue.shift();
+        const h = PUZZLE.heights[r][c];
+        for (const [dr, dc] of dirs) {
+          const nr = r + dr, nc = c + dc;
+          if (nr < 0 || nr >= N || nc < 0 || nc >= N) continue;
+          const nk = `${nr},${nc}`;
+          if (wet.has(nk)) continue;
+          if (PUZZLE.heights[nr][nc] === 3) continue;       // ridge blocks
+          if (PUZZLE.heights[nr][nc] > h) continue;         // can't go uphill
+          wet.add(nk);
+          queue.push([nr, nc]);
+        }
+      }
+      return wet;
+    }
+
+    submitBtn.addEventListener('click', () => {
+      if (solved || sources.size === 0) return;
+      const wet = flow();
+      // Apply visual
+      for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+        const k = `${r},${c}`;
+        const el = cellEls[r][c];
+        el.classList.remove('wet','flooded');
+        if (wet.has(k)) {
+          el.classList.add('wet');
+          if (DRYS.has(k)) el.classList.add('flooded');
+        }
+      }
+      // Score
+      let missTarget = 0, floodDry = 0;
+      for (const k of TARGETS) if (!wet.has(k)) missTarget++;
+      for (const k of DRYS)    if (wet.has(k))   floodDry++;
+      const ok = missTarget === 0 && floodDry === 0;
+      attempts.push({ ok, missTarget, floodDry });
+      attemptsEl.textContent = String(attempts.length);
+      const dot = document.createElement('span');
+      dot.className = 'h-cell ' + (ok ? 'h' : 'x');
+      dot.title = ok ? 'match' : `${missTarget} dry · ${floodDry} flooded`;
+      historyEl.appendChild(dot);
+      haptic(ok ? 22 : 8);
+      if (ok) win();
+      else if (attempts.length >= 5) lose();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      if (solved) return;
+      sources.clear();
+      sourcesEl.textContent = '0';
+      submitBtn.disabled = true;
+      drawBoard();
+    });
+
+    function win() {
+      solved = true;
+      submitBtn.hidden = true; clearBtn.hidden = true;
+      solvedEl.querySelector('.solved-text').textContent = `Filled · ${attempts.length}/5`;
+      solvedEl.classList.add('show');
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+    function lose() {
+      solved = true;
+      submitBtn.hidden = true; clearBtn.hidden = true;
+      solvedEl.querySelector('.solved-text').textContent = 'Out of attempts';
+      solvedEl.classList.add('show', 'is-revealed');
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      const grid = attempts.map(a => a.ok ? '🟦' : '⬛').join('');
+      const won = attempts.some(a => a.ok);
+      copyShare(`Tide · ${won ? attempts.length+'/5' : 'X/5'}\n${grid}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.tide = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

@@ -30,6 +30,10 @@
   --order:      #C68A1E;
   --trio:       #1F8B6E;
   --bridge:     #B8362D;
+  --beam:       #D4A536;
+  --tide:       #3066BE;
+  --weft:       #2E5A3E;
+  --splice:     #8B2E2E;
 
   --accent: var(--ink);
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -94,6 +98,10 @@ body[data-game="rule"]       { --accent: var(--rule); }
 body[data-game="order"]      { --accent: var(--order); }
 body[data-game="trio"]       { --accent: var(--trio); }
 body[data-game="bridge"]     { --accent: var(--bridge); }
+body[data-game="beam"]       { --accent: var(--beam); }
+body[data-game="tide"]       { --accent: var(--tide); }
+body[data-game="weft"]       { --accent: var(--weft); }
+body[data-game="splice"]     { --accent: var(--splice); }
 
 /* ───────── chrome ───────── */
 .masthead {

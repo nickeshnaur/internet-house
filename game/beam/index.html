@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Beam · internet.house</title>
+<meta name="theme-color" content="#0E1218">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .beam-stage { gap: 18px; }
+  .beam-board {
+    width: clamp(280px, 88vw, 460px);
+    aspect-ratio: 1 / 1;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 6px;
+    padding: 10px;
+    position: relative;
+  }
+  .beam-svg { width: 100%; height: 100%; display: block; touch-action: none; }
+  .grid-line { stroke: var(--hairline); stroke-width: 0.4; }
+  .cell-bg { fill: transparent; }
+  .cell-bg.hover { fill: color-mix(in srgb, var(--accent) 8%, transparent); }
+  .wall { fill: var(--ink-soft); fill-opacity: 0.8; }
+  .target {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.6;
+    animation: target-pulse 1800ms ease-in-out infinite;
+  }
+  .target-dot { fill: var(--accent); fill-opacity: 0.4; }
+  @keyframes target-pulse {
+    0%, 100% { stroke-opacity: 0.6; }
+    50%      { stroke-opacity: 1; }
+  }
+  .source-arrow { fill: var(--accent); }
+  .mirror-token {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    fill: var(--ink-soft);
+    text-anchor: middle;
+    dominant-baseline: central;
+    user-select: none;
+    cursor: pointer;
+  }
+  .beam-path {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 70%, transparent));
+    opacity: 0;
+    transition: opacity 380ms var(--ease);
+  }
+  .beam-path.show { opacity: 1; }
+
+  .beam-inventory {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px;
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    background: var(--paper-soft);
+  }
+  .inv-slot {
+    width: 36px; height: 36px;
+    border: 1px dashed var(--hairline-strong);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 1.4rem;
+    color: var(--ink);
+    cursor: grab;
+    transition: background var(--t-fast) var(--ease);
+    touch-action: none;
+  }
+  .inv-slot.spent { color: var(--ink-faint); border-style: solid; opacity: 0.4; cursor: default; }
+  .inv-slot.dragging { background: color-mix(in srgb, var(--accent) 20%, transparent); }
+  .inv-meta {
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .beam-actions {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+  }
+  .beam-submit {
+    padding: 10px 22px;
+    font: 500 0.74rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+    border-radius: 999px;
+    transition: opacity var(--t-fast) var(--ease);
+  }
+  .beam-clear {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 8px 12px;
+    border-radius: 999px;
+  }
+  .beam-clear:hover { color: var(--ink); }
+
+  .beam-meta {
+    width: 100%; max-width: 460px;
+    display: flex; justify-content: space-between;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .beam-meta .num { color: var(--ink); font-family: 'Fraunces', serif; font-size: 0.86rem; }
+
+  .beam-history {
+    display: flex; flex-direction: row; gap: 4px; flex-wrap: wrap; justify-content: center;
+  }
+  .hist-cell { width: 16px; height: 16px; border-radius: 3px; background: var(--hairline-strong); }
+  .hist-cell.h { background: var(--accent); }
+  .hist-cell.x { background: #C25E3A; }
+</style>
+</head>
+<body data-game="beam" data-mood="dark">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="beam">
+      <div class="game-head">
+        <div class="eyebrow">No. 021 · Beam</div>
+        <h1 class="title">Beam</h1>
+        <p class="rule">Place mirrors. Route the light to its target.</p>
+        <p class="howto"><b>How to play.</b> Drag mirrors from the inventory onto cells. Tap a placed mirror to rotate it. Submit to fire the beam — it reflects on diagonals, blocks at walls. Five attempts to hit the target.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="beam">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="beam" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="beam" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="beam" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="beam" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="beam" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage beam-stage" id="stage-beam">
+        <div class="beam-meta"><span><span class="num" id="beam-attempts">0</span> / 5 attempts</span><span id="beam-status"></span></div>
+
+        <div class="beam-board">
+          <svg class="beam-svg" id="beam-svg" viewBox="0 0 500 500" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+
+        <div class="beam-inventory" id="beam-inventory" aria-label="mirror inventory"></div>
+
+        <div class="beam-actions">
+          <button class="beam-clear" id="beam-clear">Clear board</button>
+          <button class="beam-submit" id="beam-submit">Fire</button>
+        </div>
+
+        <div class="beam-history" id="beam-history"></div>
+        <div class="solved" id="solved-beam"><span class="check">✓</span><span class="solved-text">Hit</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Beam() {
+    const N = 5;
+    const PUZZLES = [
+      {
+        id: 'beam-001',
+        source: { r: 0, c: 4, dir: 'down' },     // entering from above col 4
+        target: { r: 4, c: 4 },
+        walls:  [[2,4]],
+        inv:    { '/': 2, '\\': 1 },
+      },
+      {
+        id: 'beam-002',
+        source: { r: 0, c: 2, dir: 'down' },
+        target: { r: 4, c: 4 },
+        walls:  [[2,2]],
+        inv:    { '/': 2, '\\': 1 },
+      },
+      {
+        id: 'beam-003',
+        source: { r: 4, c: 3, dir: 'up' },
+        target: { r: 0, c: 1 },
+        walls:  [[2,3]],
+        inv:    { '/': 1, '\\': 2 },
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const svgEl    = $('#beam-svg');
+    const invEl    = $('#beam-inventory');
+    const submitBtn= $('#beam-submit');
+    const clearBtn = $('#beam-clear');
+    const stageEl  = $('#stage-beam');
+    const solvedEl = $('#solved-beam');
+    const attemptsEl = $('#beam-attempts');
+    const statusEl = $('#beam-status');
+    const historyEl= $('#beam-history');
+    const shareBtn = document.querySelector('.tool-btn[data-game="beam"][data-action="share"]');
+
+    const NS = 'http://www.w3.org/2000/svg';
+    const VB = 500;
+    const PAD = 30;
+    const CELL = (VB - 2 * PAD) / N;
+    const cx = c => PAD + (c + 0.5) * CELL;
+    const cy = r => PAD + (r + 0.5) * CELL;
+
+    const moves = { up: [-1,0], down: [1,0], left: [0,-1], right: [0,1] };
+    const reflect = {
+      '/':  { up: 'right', down: 'left',  left: 'down', right: 'up'   },
+      '\\': { up: 'left',  down: 'right', left: 'up',   right: 'down' },
+    };
+
+    let placed = new Map();    // "r,c" → '/' or '\'
+    let inv;                   // { '/': n, '\\': n } remaining
+    let attempts = [];         // [{outcome, mirrors}]
+    let solved = false;
+
+    function build() {
+      placed.clear();
+      inv = { ...PUZZLE.inv };
+      attempts = [];
+      solved = false;
+      attemptsEl.textContent = '0';
+      statusEl.textContent = '';
+      historyEl.innerHTML = '';
+      submitBtn.hidden = false; submitBtn.disabled = false; submitBtn.textContent = 'Fire';
+      clearBtn.hidden = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      shareBtn.hidden = true;
+      drawBoard();
+      drawInventory();
+    }
+
+    function drawBoard() {
+      svgEl.innerHTML = '';
+      const wallSet = new Set(PUZZLE.walls.map(([r,c]) => `${r},${c}`));
+      // Cell backgrounds + grid
+      for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+        const rect = document.createElementNS(NS, 'rect');
+        rect.setAttribute('x', PAD + c * CELL);
+        rect.setAttribute('y', PAD + r * CELL);
+        rect.setAttribute('width', CELL);
+        rect.setAttribute('height', CELL);
+        rect.setAttribute('class', 'cell-bg');
+        rect.dataset.r = r; rect.dataset.c = c;
+        svgEl.appendChild(rect);
+      }
+      // grid lines
+      for (let i = 0; i <= N; i++) {
+        const ln1 = document.createElementNS(NS, 'line');
+        ln1.setAttribute('class', 'grid-line');
+        ln1.setAttribute('x1', PAD); ln1.setAttribute('x2', PAD + N * CELL);
+        ln1.setAttribute('y1', PAD + i * CELL); ln1.setAttribute('y2', PAD + i * CELL);
+        svgEl.appendChild(ln1);
+        const ln2 = document.createElementNS(NS, 'line');
+        ln2.setAttribute('class', 'grid-line');
+        ln2.setAttribute('y1', PAD); ln2.setAttribute('y2', PAD + N * CELL);
+        ln2.setAttribute('x1', PAD + i * CELL); ln2.setAttribute('x2', PAD + i * CELL);
+        svgEl.appendChild(ln2);
+      }
+      // walls
+      for (const [r, c] of PUZZLE.walls) {
+        const w = document.createElementNS(NS, 'rect');
+        w.setAttribute('class', 'wall');
+        w.setAttribute('x', PAD + c * CELL + 4);
+        w.setAttribute('y', PAD + r * CELL + 4);
+        w.setAttribute('width', CELL - 8);
+        w.setAttribute('height', CELL - 8);
+        w.setAttribute('rx', 2);
+        svgEl.appendChild(w);
+      }
+      // target
+      const tg = document.createElementNS(NS, 'circle');
+      tg.setAttribute('class', 'target');
+      tg.setAttribute('cx', cx(PUZZLE.target.c));
+      tg.setAttribute('cy', cy(PUZZLE.target.r));
+      tg.setAttribute('r', CELL * 0.32);
+      svgEl.appendChild(tg);
+      const tdot = document.createElementNS(NS, 'circle');
+      tdot.setAttribute('class', 'target-dot');
+      tdot.setAttribute('cx', cx(PUZZLE.target.c));
+      tdot.setAttribute('cy', cy(PUZZLE.target.r));
+      tdot.setAttribute('r', CELL * 0.12);
+      svgEl.appendChild(tdot);
+      // source arrow
+      drawSource();
+      // beam path placeholder
+      const p = document.createElementNS(NS, 'polyline');
+      p.setAttribute('class', 'beam-path');
+      p.setAttribute('id', 'beam-trace');
+      p.setAttribute('points', '');
+      svgEl.appendChild(p);
+      // re-render placed mirrors
+      for (const [k, m] of placed) {
+        const [r, c] = k.split(',').map(Number);
+        renderMirror(r, c, m);
+      }
+      attachCellHandlers();
+    }
+
+    function drawSource() {
+      const s = PUZZLE.source;
+      const tri = document.createElementNS(NS, 'polygon');
+      tri.setAttribute('class', 'source-arrow');
+      let pts = '';
+      const sz = 10;
+      // position arrow just outside the grid pointing into the source cell
+      if (s.dir === 'down') {
+        const x = cx(s.c), y = PAD - 6;
+        pts = `${x},${y} ${x-sz},${y-sz} ${x+sz},${y-sz}`;
+        tri.setAttribute('points', pts);
+      } else if (s.dir === 'up') {
+        const x = cx(s.c), y = PAD + N * CELL + 6;
+        pts = `${x},${y} ${x-sz},${y+sz} ${x+sz},${y+sz}`;
+        tri.setAttribute('points', pts);
+      } else if (s.dir === 'right') {
+        const x = PAD - 6, y = cy(s.r);
+        pts = `${x},${y} ${x-sz},${y-sz} ${x-sz},${y+sz}`;
+        tri.setAttribute('points', pts);
+      } else {
+        const x = PAD + N * CELL + 6, y = cy(s.r);
+        pts = `${x},${y} ${x+sz},${y-sz} ${x+sz},${y+sz}`;
+        tri.setAttribute('points', pts);
+      }
+      svgEl.appendChild(tri);
+    }
+
+    function attachCellHandlers() {
+      svgEl.querySelectorAll('.cell-bg').forEach(rect => {
+        rect.addEventListener('pointerup', e => {
+          if (solved) return;
+          const r = +rect.dataset.r, c = +rect.dataset.c;
+          // If this cell already has a placed mirror, rotate it
+          const k = `${r},${c}`;
+          if (placed.has(k)) {
+            const old = placed.get(k);
+            const next = old === '/' ? '\\' : '/';
+            // Need inventory swap
+            if (inv[next] <= 0 && next !== old) {
+              shake(stageEl); return;
+            }
+            inv[old]++; inv[next]--;
+            placed.set(k, next);
+            drawBoard();
+            drawInventory();
+            haptic(6);
+            return;
+          }
+          // If carrying a dragged mirror, drop it here (handled in pointermove drag flow)
+          // Otherwise: try to place from a default mirror = first available.
+          if (carry) {
+            attemptPlace(r, c);
+          }
+        });
+      });
+    }
+
+    function renderMirror(r, c, type) {
+      const t = document.createElementNS(NS, 'text');
+      t.setAttribute('class', 'mirror-token');
+      t.setAttribute('x', cx(c));
+      t.setAttribute('y', cy(r));
+      t.setAttribute('font-size', CELL * 0.7);
+      t.setAttribute('fill', 'var(--ink)');
+      t.textContent = type === '/' ? '╱' : '╲';
+      svgEl.appendChild(t);
+    }
+
+    function drawInventory() {
+      invEl.innerHTML = '';
+      for (const type of ['/', '\\']) {
+        const slot = document.createElement('div');
+        slot.className = 'inv-slot' + (inv[type] <= 0 ? ' spent' : '');
+        slot.textContent = type === '/' ? '╱' : '╲';
+        slot.dataset.type = type;
+        slot.setAttribute('aria-label', `${inv[type]} of ${type === '/' ? 'forward' : 'back'} mirror`);
+        slot.title = `${inv[type]} left`;
+        attachDragSlot(slot, type);
+        invEl.appendChild(slot);
+        const meta = document.createElement('span');
+        meta.className = 'inv-meta';
+        meta.textContent = `× ${inv[type]}`;
+        invEl.appendChild(meta);
+      }
+    }
+
+    let carry = null; // currently dragging mirror type
+    function attachDragSlot(slot, type) {
+      slot.addEventListener('pointerdown', e => {
+        if (solved || inv[type] <= 0) return;
+        e.preventDefault();
+        carry = type;
+        slot.classList.add('dragging');
+        const onMove = ev => {
+          // visual drag: move ghost — for simplicity, no ghost; rely on cell highlight
+          const t = document.elementFromPoint(ev.clientX, ev.clientY);
+          svgEl.querySelectorAll('.cell-bg.hover').forEach(c => c.classList.remove('hover'));
+          if (t && t.classList.contains('cell-bg')) t.classList.add('hover');
+        };
+        const onUp = ev => {
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup',   onUp);
+          slot.classList.remove('dragging');
+          svgEl.querySelectorAll('.cell-bg.hover').forEach(c => c.classList.remove('hover'));
+          const t = document.elementFromPoint(ev.clientX, ev.clientY);
+          if (t && t.classList.contains('cell-bg')) {
+            attemptPlace(+t.dataset.r, +t.dataset.c);
+          }
+          carry = null;
+        };
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup',   onUp);
+      });
+    }
+
+    function attemptPlace(r, c) {
+      if (solved) return;
+      const k = `${r},${c}`;
+      if (PUZZLE.walls.some(([wr,wc]) => wr===r && wc===c)) return;
+      if (placed.has(k)) {
+        // Replace with carry type (refund old)
+        const old = placed.get(k);
+        if (carry && carry !== old) {
+          if (inv[carry] <= 0) return;
+          inv[old]++; inv[carry]--;
+          placed.set(k, carry);
+        }
+      } else {
+        if (!carry || inv[carry] <= 0) return;
+        inv[carry]--;
+        placed.set(k, carry);
+      }
+      drawBoard();
+      drawInventory();
+      haptic(8);
+    }
+
+    // Allow tap on mirror (rendered as text) to remove it
+    svgEl.addEventListener('click', e => {
+      if (solved) return;
+      // click on a placed mirror text? Detect via getBoundingClientRect on placed entries.
+      const rect = svgEl.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width * VB;
+      const y = (e.clientY - rect.top)  / rect.height * VB;
+      const c = Math.floor((x - PAD) / CELL);
+      const r = Math.floor((y - PAD) / CELL);
+      if (r < 0 || r >= N || c < 0 || c >= N) return;
+      const k = `${r},${c}`;
+      if (placed.has(k) && !carry) {
+        // Cycle: rotate to other type if available, else remove
+        const old = placed.get(k);
+        const next = old === '/' ? '\\' : '/';
+        if (inv[next] > 0) {
+          inv[old]++; inv[next]--;
+          placed.set(k, next);
+        } else {
+          inv[old]++;
+          placed.delete(k);
+        }
+        drawBoard();
+        drawInventory();
+        haptic(6);
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      if (solved) return;
+      for (const [k, t] of placed) inv[t]++;
+      placed.clear();
+      drawBoard();
+      drawInventory();
+    });
+
+    submitBtn.addEventListener('click', fire);
+
+    function simulate() {
+      const wallSet = new Set(PUZZLE.walls.map(([r,c]) => `${r},${c}`));
+      const path = [];
+      let dir = PUZZLE.source.dir;
+      let [dr, dc] = moves[dir];
+      let r = PUZZLE.source.r, c = PUZZLE.source.c;
+      // start on the source cell (interior)
+      const visited = new Set();
+      for (let safety = 0; safety < 200; safety++) {
+        if (r < 0 || r >= N || c < 0 || c >= N) return { path, outcome: 'exit' };
+        const visKey = `${r},${c},${dir}`;
+        if (visited.has(visKey)) return { path, outcome: 'loop' };
+        visited.add(visKey);
+        if (wallSet.has(`${r},${c}`)) return { path, outcome: 'blocked' };
+        path.push([r, c]);
+        if (r === PUZZLE.target.r && c === PUZZLE.target.c) return { path, outcome: 'hit' };
+        const m = placed.get(`${r},${c}`);
+        if (m) dir = reflect[m][dir];
+        [dr, dc] = moves[dir];
+        r += dr; c += dc;
+      }
+      return { path, outcome: 'loop' };
+    }
+
+    function fire() {
+      if (solved) return;
+      const sim = simulate();
+      attempts.push({ outcome: sim.outcome, mirrors: [...placed.entries()].map(([k,t]) => ({ k, t })) });
+      attemptsEl.textContent = String(attempts.length);
+      // Trace beam visually
+      const tracePts = [];
+      // Add source-arrow start point
+      const s = PUZZLE.source;
+      const sx = s.dir === 'down' ? cx(s.c) : s.dir === 'up' ? cx(s.c)
+              : s.dir === 'right' ? PAD - 6 : PAD + N * CELL + 6;
+      const sy = s.dir === 'down' ? PAD - 6 : s.dir === 'up' ? PAD + N * CELL + 6
+              : s.dir === 'right' ? cy(s.r) : cy(s.r);
+      tracePts.push([sx, sy]);
+      sim.path.forEach(([r, c]) => tracePts.push([cx(c), cy(r)]));
+      const traceEl = svgEl.querySelector('#beam-trace');
+      traceEl.setAttribute('points', tracePts.map(p => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' '));
+      requestAnimationFrame(() => traceEl.classList.add('show'));
+      // History dot
+      const cell = document.createElement('span');
+      cell.className = 'hist-cell ' + (sim.outcome === 'hit' ? 'h' : 'x');
+      cell.title = sim.outcome;
+      historyEl.appendChild(cell);
+      haptic(sim.outcome === 'hit' ? 22 : 8);
+      if (sim.outcome === 'hit') win();
+      else if (attempts.length >= 5) lose();
+      else statusEl.textContent = sim.outcome + ` · ${5 - attempts.length} left`;
+    }
+
+    function win() {
+      solved = true;
+      submitBtn.hidden = true;
+      clearBtn.hidden = true;
+      solvedEl.querySelector('.solved-text').textContent = `Hit · ${attempts.length}/5`;
+      solvedEl.classList.add('show');
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+    function lose() {
+      solved = true;
+      submitBtn.hidden = true;
+      clearBtn.hidden = true;
+      solvedEl.querySelector('.solved-text').textContent = 'Out of attempts';
+      solvedEl.classList.add('show', 'is-revealed');
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      const grid = attempts.map(a => a.outcome === 'hit' ? '🟧' : '⬛').join('');
+      const won = attempts.some(a => a.outcome === 'hit');
+      copyShare(`Beam · ${won ? attempts.length+'/5' : 'X/5'}\n${grid}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.beam = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Splice · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .splice-given {
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(1.6rem, 6vw, 2.2rem);
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin: 4px 0 4px;
+  }
+  .splice-hint {
+    text-align: center;
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+
+  .splice-slots {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 6px;
+    width: 100%; max-width: 520px;
+  }
+  .splice-word { display: flex; gap: 5px; }
+  .splice-word + .splice-word { margin-left: 14px; }
+  .splice-slot {
+    width: clamp(28px, 7vw, 38px);
+    height: clamp(36px, 9vw, 48px);
+    border-bottom: 2px solid var(--hairline-strong);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(1.2rem, 4.6vw, 1.7rem);
+    color: var(--ink);
+    text-transform: uppercase;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+  }
+  .splice-slot.active { border-color: var(--accent); }
+  .splice-slot.locked {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent);
+    cursor: default;
+  }
+  .splice-slot.shake { animation: shake 320ms var(--ease); }
+
+  .splice-tray {
+    display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+    width: 100%; max-width: 540px;
+    padding: 10px;
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .splice-tile {
+    width: clamp(28px, 7vw, 36px);
+    height: clamp(36px, 9vw, 44px);
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(1.1rem, 4.4vw, 1.5rem);
+    color: var(--ink);
+    text-transform: uppercase;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: transform var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+    user-select: none;
+  }
+  .splice-tile.selected {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    transform: translateY(-2px);
+  }
+  .splice-tile.spent { opacity: 0; pointer-events: none; height: 0; width: 0; padding: 0; margin: -3px; transition: none; }
+
+  .splice-meta {
+    display: flex; justify-content: space-between;
+    width: 100%; max-width: 520px;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .splice-meta .num { color: var(--ink); font-family: 'Fraunces', serif; font-size: 0.86rem; }
+
+  .splice-actions {
+    display: flex; gap: 14px; justify-content: center;
+  }
+  .splice-submit {
+    padding: 10px 22px;
+    font: 500 0.74rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+    border-radius: 999px;
+  }
+  .splice-submit[disabled] { opacity: 0.4; pointer-events: none; }
+  .splice-clear {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 8px 12px;
+  }
+
+  .splice-history {
+    display: flex; flex-direction: column; gap: 4px; align-items: center;
+  }
+  .h-row { display: flex; gap: 3px; }
+  .h-cell {
+    width: 12px; height: 12px; border-radius: 2px; background: var(--hairline-strong);
+  }
+  .h-cell.c { background: var(--accent); }
+
+  .splice-reveal {
+    margin-top: 10px;
+    text-align: center;
+  }
+  .splice-reveal .equals {
+    font-family: 'Fraunces', serif;
+    font-size: 1.2rem;
+    color: var(--ink-faint);
+    margin: 6px 0;
+  }
+  .splice-reveal .answer {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(1.6rem, 6vw, 2.2rem);
+    color: var(--accent);
+    letter-spacing: -0.015em;
+  }
+</style>
+</head>
+<body data-game="splice" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="splice">
+      <div class="game-head">
+        <div class="eyebrow">No. 024 · Splice</div>
+        <h1 class="title">Splice</h1>
+        <p class="rule">Re-arrange the same letters into a new phrase.</p>
+        <p class="howto"><b>How to play.</b> Tap a tile, then tap a slot to place it. Tap a placed letter to send it back to the tray. Submit for per-slot feedback (green = correct letter in correct place). Five attempts.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="splice">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="splice" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="splice" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="splice" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="splice" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="splice" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-splice">
+        <div class="splice-given" id="splice-given"></div>
+        <div class="splice-hint" id="splice-hint"></div>
+
+        <div class="splice-meta"><span><span class="num" id="splice-attempts">0</span> / 5 attempts</span><span><span class="num" id="splice-filled">0</span> / <span id="splice-total">0</span> placed</span></div>
+
+        <div class="splice-slots" id="splice-slots"></div>
+
+        <div class="splice-tray" id="splice-tray"></div>
+
+        <div class="splice-actions">
+          <button class="splice-clear" id="splice-clear">Return all</button>
+          <button class="splice-submit" id="splice-submit" disabled>Submit</button>
+        </div>
+
+        <div class="splice-history" id="splice-history"></div>
+        <div class="solved" id="solved-splice"><span class="check">✓</span><span class="solved-text">Spliced</span></div>
+        <div class="splice-reveal" id="splice-reveal" hidden>
+          <div class="equals">=</div>
+          <div class="answer" id="splice-answer"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Splice() {
+    const PUZZLES = [
+      {
+        id: 'splice-001',
+        given:  'ELEVEN PLUS TWO',
+        answer: 'TWELVE PLUS ONE',
+        hint:   'Restatement',
+      },
+      {
+        id: 'splice-002',
+        given:  'DORMITORY',
+        answer: 'DIRTY ROOM',
+        hint:   'Twist',
+      },
+      {
+        id: 'splice-003',
+        given:  'ASTRONOMER',
+        answer: 'MOON STARER',
+        hint:   'Restatement',
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const givenEl   = $('#splice-given');
+    const hintEl    = $('#splice-hint');
+    const slotsEl   = $('#splice-slots');
+    const trayEl    = $('#splice-tray');
+    const submitBtn = $('#splice-submit');
+    const clearBtn  = $('#splice-clear');
+    const stageEl   = $('#stage-splice');
+    const solvedEl  = $('#solved-splice');
+    const attemptsEl = $('#splice-attempts');
+    const filledEl   = $('#splice-filled');
+    const totalEl    = $('#splice-total');
+    const historyEl  = $('#splice-history');
+    const revealEl   = $('#splice-reveal');
+    const answerEl   = $('#splice-answer');
+    const shareBtn   = document.querySelector('.tool-btn[data-game="splice"][data-action="share"]');
+
+    let answerLetters; // ['T','W','E','L','V','E', null/space marker, 'P','L','U','S', ...] without spaces
+    let answerWordLens; // [6, 4, 3] for "twelve plus one"
+    let totalLetters;
+
+    let tiles;       // [{ id, letter, used, locked }]
+    let slots;       // [{ idx (0..total-1), letter (or null), tileId (or null), locked: bool }]
+    let selectedTile = null;
+    let attempts = [];
+    let solved = false;
+
+    function build() {
+      // Compute answer letters (uppercased, no spaces) + word lengths
+      const ansClean = PUZZLE.answer.toUpperCase().replace(/[^A-Z ]/g, '');
+      answerWordLens = ansClean.split(/\s+/).map(w => w.length);
+      answerLetters  = ansClean.replace(/\s+/g, '').split('');
+      totalLetters   = answerLetters.length;
+
+      // Tiles from given (sorted? tray-style, original order)
+      const givClean = PUZZLE.given.toUpperCase().replace(/[^A-Z]/g, '');
+      tiles = givClean.split('').map((l, i) => ({ id: i, letter: l, used: false, locked: false }));
+
+      // Slots — flat array, but rendered with word groupings
+      slots = Array.from({ length: totalLetters }, (_, i) => ({ idx: i, letter: null, tileId: null, locked: false }));
+
+      attempts = [];
+      solved = false;
+      selectedTile = null;
+      attemptsEl.textContent = '0';
+      filledEl.textContent = '0';
+      totalEl.textContent = String(totalLetters);
+      historyEl.innerHTML = '';
+      submitBtn.hidden = false; submitBtn.disabled = true; submitBtn.textContent = 'Submit';
+      clearBtn.hidden = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      revealEl.hidden = true;
+
+      givenEl.textContent = PUZZLE.given;
+      hintEl.textContent = PUZZLE.hint;
+      shareBtn.hidden = true;
+
+      renderSlots();
+      renderTray();
+    }
+
+    function renderSlots() {
+      slotsEl.innerHTML = '';
+      let cursor = 0;
+      answerWordLens.forEach((wlen, wi) => {
+        const wgroup = document.createElement('div');
+        wgroup.className = 'splice-word';
+        for (let i = 0; i < wlen; i++) {
+          const sIdx = cursor++;
+          const slot = slots[sIdx];
+          const sEl = document.createElement('button');
+          sEl.className = 'splice-slot' + (slot.locked ? ' locked' : '');
+          sEl.dataset.idx = sIdx;
+          sEl.textContent = slot.letter || '';
+          sEl.addEventListener('click', () => onSlotClick(sIdx));
+          wgroup.appendChild(sEl);
+        }
+        slotsEl.appendChild(wgroup);
+      });
+      filledEl.textContent = String(slots.filter(s => s.letter).length);
+      submitBtn.disabled = slots.some(s => !s.letter) || solved;
+    }
+
+    function renderTray() {
+      trayEl.innerHTML = '';
+      tiles.forEach(t => {
+        const tEl = document.createElement('button');
+        tEl.className = 'splice-tile' + (t.used ? ' spent' : '') + (selectedTile === t.id ? ' selected' : '');
+        tEl.dataset.id = t.id;
+        tEl.textContent = t.letter;
+        tEl.addEventListener('click', () => onTileClick(t.id));
+        trayEl.appendChild(tEl);
+      });
+    }
+
+    function onTileClick(tid) {
+      if (solved) return;
+      const t = tiles.find(x => x.id === tid);
+      if (!t || t.used || t.locked) return;
+      selectedTile = (selectedTile === tid) ? null : tid;
+      renderTray();
+    }
+
+    function onSlotClick(sIdx) {
+      if (solved) return;
+      const slot = slots[sIdx];
+      if (slot.locked) return;
+      if (slot.letter) {
+        // Return that tile to tray
+        const t = tiles.find(x => x.id === slot.tileId);
+        if (t) { t.used = false; }
+        slot.letter = null; slot.tileId = null;
+        renderSlots(); renderTray();
+        haptic(4);
+        return;
+      }
+      // Place selected tile
+      if (selectedTile == null) return;
+      const t = tiles.find(x => x.id === selectedTile);
+      if (!t || t.used) return;
+      t.used = true;
+      slot.letter = t.letter;
+      slot.tileId = t.id;
+      selectedTile = null;
+      renderSlots(); renderTray();
+      haptic(8);
+    }
+
+    submitBtn.addEventListener('click', () => {
+      if (solved) return;
+      if (slots.some(s => !s.letter)) return;
+      // Compare slot letters to answerLetters
+      let correctCount = 0;
+      const correctness = slots.map((s, i) => s.letter === answerLetters[i]);
+      correctness.forEach((c, i) => { if (c) correctCount++; });
+      attempts.push({ correctness });
+      attemptsEl.textContent = String(attempts.length);
+      const row = document.createElement('div');
+      row.className = 'h-row';
+      row.innerHTML = correctness.map(c => `<span class="h-cell ${c ? 'c' : ''}"></span>`).join('') +
+        `<span style="font-family:Fraunces,serif;color:var(--ink-soft);font-size:0.84rem;letter-spacing:0;margin-left:6px">${correctCount}/${totalLetters}</span>`;
+      historyEl.appendChild(row);
+      // Lock correct slots; return wrong tiles to tray
+      slots.forEach((s, i) => {
+        if (correctness[i]) {
+          s.locked = true;
+        } else {
+          // return tile
+          const t = tiles.find(x => x.id === s.tileId);
+          if (t) t.used = false;
+          s.letter = null; s.tileId = null;
+        }
+      });
+      renderSlots();
+      renderTray();
+      haptic(correctCount === totalLetters ? 22 : 8);
+      if (correctCount === totalLetters) win();
+      else if (attempts.length >= 5) lose();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      if (solved) return;
+      slots.forEach(s => {
+        if (s.locked) return;
+        if (s.letter) {
+          const t = tiles.find(x => x.id === s.tileId);
+          if (t) t.used = false;
+          s.letter = null; s.tileId = null;
+        }
+      });
+      renderSlots(); renderTray();
+    });
+
+    function win() {
+      solved = true;
+      submitBtn.hidden = true; clearBtn.hidden = true;
+      solvedEl.querySelector('.solved-text').textContent = `Spliced · ${attempts.length}/5`;
+      solvedEl.classList.add('show');
+      answerEl.textContent = PUZZLE.answer;
+      revealEl.hidden = false;
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+    function lose() {
+      solved = true;
+      submitBtn.hidden = true; clearBtn.hidden = true;
+      // Reveal answer
+      slots.forEach((s, i) => { s.letter = answerLetters[i]; s.locked = true; });
+      renderSlots();
+      solvedEl.querySelector('.solved-text').textContent = 'Out of attempts';
+      solvedEl.classList.add('show', 'is-revealed');
+      answerEl.textContent = PUZZLE.answer;
+      revealEl.hidden = false;
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      const grid = attempts.map(a =>
+        a.correctness.map(c => c ? '🟥' : '⬛').join('')
+      ).join('\n');
+      const won = attempts.some(a => a.correctness.every(c => c));
+      copyShare(`Splice · ${won ? attempts.length+'/5' : 'X/5'}\n${PUZZLE.given}\n${grid}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.splice = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

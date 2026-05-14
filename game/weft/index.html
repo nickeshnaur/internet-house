@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Weft · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .weft-board {
+    width: 100%; max-width: 520px;
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    gap: 0;
+    align-items: stretch;
+    padding: 12px 0;
+  }
+  .weft-col { display: flex; flex-direction: column; gap: 14px; }
+  .weft-card {
+    padding: 18px 14px;
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    background: var(--paper-soft);
+    text-align: center;
+    font: 500 1.04rem 'Inter', sans-serif;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+    cursor: grab;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+    transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+    user-select: none;
+    position: relative;
+    z-index: 2;
+  }
+  .weft-card.left { text-align: right; padding-right: 18px; }
+  .weft-card.right { text-align: left; padding-left: 18px; }
+  .weft-card.paired { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .weft-card.dragging { border-color: var(--accent); cursor: grabbing; }
+  .weft-card.target { background: color-mix(in srgb, var(--accent) 16%, transparent); border-color: var(--accent); }
+  .weft-card.solve  { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, transparent); }
+  .weft-svg {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .weft-line {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-opacity: 0.5;
+  }
+  .weft-line.live { stroke-dasharray: 4 4; }
+  .weft-line.solve { stroke-opacity: 1; stroke-width: 2.4; filter: drop-shadow(0 0 4px var(--accent)); }
+
+  .weft-meta {
+    display: flex; justify-content: space-between;
+    width: 100%; max-width: 520px;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .weft-meta .num { color: var(--ink); font-family: 'Fraunces', serif; font-size: 0.86rem; }
+
+  .weft-actions {
+    display: flex; gap: 14px; justify-content: center;
+  }
+  .weft-submit {
+    padding: 10px 22px;
+    font: 500 0.74rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+    border-radius: 999px;
+  }
+  .weft-submit[disabled] { opacity: 0.4; pointer-events: none; }
+  .weft-clear {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 8px 12px;
+  }
+  .weft-clear:hover { color: var(--ink); }
+
+  .weft-history {
+    display: flex; gap: 6px; flex-direction: column; align-items: center;
+  }
+  .weft-row {
+    display: flex; gap: 4px;
+  }
+  .h-cell {
+    width: 14px; height: 14px; border-radius: 3px; background: var(--hairline-strong);
+  }
+  .h-cell.c { background: var(--accent); }
+
+  .weft-reveal {
+    margin-top: 8px;
+    width: 100%; max-width: 520px;
+  }
+  .weft-reveal .pair {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px;
+    padding: 10px 4px;
+    border-bottom: 1px dotted var(--hairline);
+    font-family: 'Fraunces', serif;
+    font-size: 1.16rem;
+    color: var(--ink);
+  }
+  .weft-reveal .pair:last-child { border-bottom: none; }
+  .weft-reveal .pair .compound { color: var(--accent); font-weight: 500; }
+</style>
+</head>
+<body data-game="weft" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="weft">
+      <div class="game-head">
+        <div class="eyebrow">No. 023 · Weft</div>
+        <h1 class="title">Weft</h1>
+        <p class="rule">Pair four left to four right. Each must bind.</p>
+        <p class="howto"><b>How to play.</b> Drag from a left card to a right card to pair them. Each left word must pair with exactly one right word that forms a compound or familiar phrase. Submit for a count-correct. Four attempts.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="weft">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="weft" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="weft" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="weft" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="weft" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="weft" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-weft">
+        <div class="weft-meta"><span><span class="num" id="weft-attempts">0</span> / 4 attempts</span><span><span class="num" id="weft-paired">0</span> / 4 paired</span></div>
+
+        <div class="weft-board" id="weft-board">
+          <div class="weft-col" data-side="left"  id="weft-left"></div>
+          <div></div>
+          <div class="weft-col" data-side="right" id="weft-right"></div>
+          <svg class="weft-svg" id="weft-svg"></svg>
+        </div>
+
+        <div class="weft-actions">
+          <button class="weft-clear" id="weft-clear">Clear pairs</button>
+          <button class="weft-submit" id="weft-submit" disabled>Submit</button>
+        </div>
+
+        <div class="weft-history" id="weft-history"></div>
+        <div class="solved" id="solved-weft"><span class="check">✓</span><span class="solved-text">Bound</span></div>
+        <div class="weft-reveal" id="weft-reveal" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Weft() {
+    const PUZZLES = [
+      {
+        id: 'weft-001',
+        left:  ['FIRE','SNOW','MOON','RAIN'],
+        right: ['BOW','FLAKE','PLACE','LIGHT'],
+        pairs: { FIRE: 'PLACE', SNOW: 'FLAKE', MOON: 'LIGHT', RAIN: 'BOW' },
+        compound: { FIRE: 'FIREPLACE', SNOW: 'SNOWFLAKE', MOON: 'MOONLIGHT', RAIN: 'RAINBOW' },
+      },
+      {
+        id: 'weft-002',
+        left:  ['SUN','BLACK','BLUE','GREEN'],
+        right: ['BERRY','BIRD','FLOWER','HOUSE'],
+        pairs: { SUN: 'FLOWER', BLACK: 'BIRD', BLUE: 'BERRY', GREEN: 'HOUSE' },
+        compound: { SUN: 'SUNFLOWER', BLACK: 'BLACKBIRD', BLUE: 'BLUEBERRY', GREEN: 'GREENHOUSE' },
+      },
+      {
+        id: 'weft-003',
+        left:  ['HORSE','BUTTER','GRAND','MOTHER'],
+        right: ['BOARD','FATHER','FLY','POWER'],
+        pairs: { HORSE: 'POWER', BUTTER: 'FLY', GRAND: 'FATHER', MOTHER: 'BOARD' },
+        compound: { HORSE: 'HORSEPOWER', BUTTER: 'BUTTERFLY', GRAND: 'GRANDFATHER', MOTHER: 'MOTHERBOARD' },
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const boardEl  = $('#weft-board');
+    const leftEl   = $('#weft-left');
+    const rightEl  = $('#weft-right');
+    const svgEl    = $('#weft-svg');
+    const submitBtn= $('#weft-submit');
+    const clearBtn = $('#weft-clear');
+    const stageEl  = $('#stage-weft');
+    const solvedEl = $('#solved-weft');
+    const attemptsEl = $('#weft-attempts');
+    const pairedEl   = $('#weft-paired');
+    const historyEl  = $('#weft-history');
+    const revealEl   = $('#weft-reveal');
+    const shareBtn = document.querySelector('.tool-btn[data-game="weft"][data-action="share"]');
+
+    // Pairings: Map<leftWord, rightWord>
+    let pairs = new Map();
+    let attempts = [];
+    let solved = false;
+
+    function build() {
+      pairs.clear(); attempts = []; solved = false;
+      attemptsEl.textContent = '0';
+      pairedEl.textContent = '0';
+      historyEl.innerHTML = '';
+      submitBtn.hidden = false; submitBtn.disabled = true; submitBtn.textContent = 'Submit';
+      clearBtn.hidden = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      shareBtn.hidden = true;
+      // Render
+      leftEl.innerHTML = '';
+      PUZZLE.left.forEach(w => {
+        const c = document.createElement('div');
+        c.className = 'weft-card left'; c.dataset.word = w; c.dataset.side = 'left';
+        c.textContent = w;
+        leftEl.appendChild(c);
+      });
+      rightEl.innerHTML = '';
+      // shuffle right deterministically per puzzle so it's not in pair order
+      const rights = [...PUZZLE.right];
+      for (let i = rights.length - 1; i > 0; i--) { const j = (i*5+2) % (i+1); [rights[i],rights[j]] = [rights[j],rights[i]]; }
+      rights.forEach(w => {
+        const c = document.createElement('div');
+        c.className = 'weft-card right'; c.dataset.word = w; c.dataset.side = 'right';
+        c.textContent = w;
+        rightEl.appendChild(c);
+      });
+      attachDrag();
+      requestAnimationFrame(redrawLines);
+    }
+
+    function attachDrag() {
+      const cards = boardEl.querySelectorAll('.weft-card');
+      cards.forEach(card => {
+        card.addEventListener('pointerdown', e => {
+          if (solved) return;
+          if (card.dataset.side !== 'left') return;
+          e.preventDefault();
+          const rect = card.getBoundingClientRect();
+          const startX = rect.right;
+          const startY = rect.top + rect.height / 2;
+          card.classList.add('dragging');
+          card.setPointerCapture && card.setPointerCapture(e.pointerId);
+          let activeTarget = null;
+
+          function onMove(ev) {
+            // draw a live line from card edge to pointer
+            renderLines({ from: [startX, startY], to: [ev.clientX, ev.clientY] });
+            // hover detection over right cards
+            const t = document.elementFromPoint(ev.clientX, ev.clientY);
+            const rcard = t && t.closest('.weft-card.right');
+            if (activeTarget && activeTarget !== rcard) activeTarget.classList.remove('target');
+            activeTarget = rcard;
+            if (activeTarget) activeTarget.classList.add('target');
+          }
+          function onUp(ev) {
+            card.classList.remove('dragging');
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('pointerup',   onUp);
+            if (activeTarget) {
+              activeTarget.classList.remove('target');
+              const lw = card.dataset.word;
+              const rw = activeTarget.dataset.word;
+              // Remove any existing pair for this left or right word
+              for (const [k, v] of pairs) {
+                if (k === lw || v === rw) pairs.delete(k);
+              }
+              pairs.set(lw, rw);
+              haptic(10);
+              updateState();
+            }
+            redrawLines();
+          }
+          document.addEventListener('pointermove', onMove);
+          document.addEventListener('pointerup',   onUp);
+        });
+      });
+    }
+
+    function updateState() {
+      pairedEl.textContent = String(pairs.size);
+      submitBtn.disabled = pairs.size !== 4 || solved;
+      // mark cards
+      boardEl.querySelectorAll('.weft-card').forEach(c => c.classList.remove('paired'));
+      for (const [lw, rw] of pairs) {
+        boardEl.querySelector(`.weft-card.left[data-word="${lw}"]`)?.classList.add('paired');
+        boardEl.querySelector(`.weft-card.right[data-word="${rw}"]`)?.classList.add('paired');
+      }
+    }
+
+    function renderLines(live = null) {
+      const boardR = boardEl.getBoundingClientRect();
+      const lines = [];
+      for (const [lw, rw] of pairs) {
+        const lc = boardEl.querySelector(`.weft-card.left[data-word="${lw}"]`);
+        const rc = boardEl.querySelector(`.weft-card.right[data-word="${rw}"]`);
+        if (!lc || !rc) continue;
+        const lr = lc.getBoundingClientRect(), rr = rc.getBoundingClientRect();
+        lines.push({
+          x1: lr.right - boardR.left,
+          y1: lr.top + lr.height/2 - boardR.top,
+          x2: rr.left - boardR.left,
+          y2: rr.top + rr.height/2 - boardR.top,
+          cls: solved ? 'solve' : '',
+        });
+      }
+      if (live) {
+        lines.push({
+          x1: live.from[0] - boardR.left,
+          y1: live.from[1] - boardR.top,
+          x2: live.to[0] - boardR.left,
+          y2: live.to[1] - boardR.top,
+          cls: 'live',
+        });
+      }
+      svgEl.setAttribute('viewBox', `0 0 ${boardR.width} ${boardR.height}`);
+      svgEl.setAttribute('width', boardR.width);
+      svgEl.setAttribute('height', boardR.height);
+      svgEl.innerHTML = lines.map(l =>
+        `<path class="weft-line ${l.cls}" d="M${l.x1},${l.y1} C${(l.x1+l.x2)/2},${l.y1} ${(l.x1+l.x2)/2},${l.y2} ${l.x2},${l.y2}"/>`
+      ).join('');
+    }
+    function redrawLines() { renderLines(); }
+    window.addEventListener('resize', redrawLines);
+
+    submitBtn.addEventListener('click', () => {
+      if (solved || pairs.size !== 4) return;
+      let count = 0;
+      for (const [lw, rw] of pairs) if (PUZZLE.pairs[lw] === rw) count++;
+      attempts.push({ count });
+      attemptsEl.textContent = String(attempts.length);
+      const row = document.createElement('div');
+      row.className = 'weft-row';
+      const cells = Array.from({length:4}).map((_, i) =>
+        `<span class="h-cell ${i < count ? 'c' : ''}"></span>`).join('');
+      row.innerHTML = cells + ` <span style="font-family:Fraunces,serif;color:var(--ink-soft);font-size:0.86rem;letter-spacing:0;margin-left:8px">${count}/4</span>`;
+      historyEl.appendChild(row);
+      haptic(count === 4 ? 22 : 8);
+      if (count === 4) win();
+      else if (attempts.length >= 4) lose();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      if (solved) return;
+      pairs.clear();
+      updateState();
+      redrawLines();
+    });
+
+    function win() {
+      solved = true;
+      submitBtn.hidden = true; clearBtn.hidden = true;
+      boardEl.querySelectorAll('.weft-card').forEach(c => c.classList.add('solve'));
+      redrawLines();
+      solvedEl.querySelector('.solved-text').textContent = `Bound · ${attempts.length}/4`;
+      solvedEl.classList.add('show');
+      revealEl.innerHTML = PUZZLE.left.map(lw =>
+        `<div class="pair">${lw} <span style="color:var(--ink-faint)">+</span> ${PUZZLE.pairs[lw]} <span style="color:var(--ink-faint)">→</span> <span class="compound">${PUZZLE.compound[lw]}</span></div>`
+      ).join('');
+      revealEl.hidden = false;
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+    function lose() {
+      solved = true;
+      submitBtn.hidden = true; clearBtn.hidden = true;
+      // snap to truth
+      pairs.clear();
+      for (const lw of PUZZLE.left) pairs.set(lw, PUZZLE.pairs[lw]);
+      updateState();
+      redrawLines();
+      solvedEl.querySelector('.solved-text').textContent = 'Out of attempts';
+      solvedEl.classList.add('show', 'is-revealed');
+      revealEl.innerHTML = PUZZLE.left.map(lw =>
+        `<div class="pair">${lw} <span style="color:var(--ink-faint)">+</span> ${PUZZLE.pairs[lw]} <span style="color:var(--ink-faint)">→</span> <span class="compound">${PUZZLE.compound[lw]}</span></div>`
+      ).join('');
+      revealEl.hidden = false;
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      const grid = attempts.map(a => '🟢'.repeat(a.count) + '⚫'.repeat(4 - a.count)).join('\n');
+      const won = attempts.some(a => a.count === 4);
+      copyShare(`Weft · ${won ? attempts.length+'/4' : 'X/4'}\n${grid}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.weft = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

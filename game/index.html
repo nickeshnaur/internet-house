@@ -162,6 +162,10 @@
   .card[data-game="order"]      { --card-accent: var(--order); }
   .card[data-game="trio"]       { --card-accent: var(--trio); }
   .card[data-game="bridge"]     { --card-accent: var(--bridge); }
+  .card[data-game="beam"]       { --card-accent: var(--beam); }
+  .card[data-game="tide"]       { --card-accent: var(--tide); }
+  .card[data-game="weft"]       { --card-accent: var(--weft); }
+  .card[data-game="splice"]     { --card-accent: var(--splice); }
 
   @media (max-width: 480px) {
     .grid { grid-template-columns: 1fr; gap: 10px; }
@@ -408,6 +412,52 @@
           </div>
           <h3 class="card-name">Bridge</h3>
           <p class="card-desc">A word that joins to both sides.</p>
+        </a>
+
+      </div>
+    </section>
+
+    <section class="group" aria-labelledby="grp-field">
+      <div class="group-head">
+        <h2 class="group-name" id="grp-field">Field</h2>
+        <span class="group-tagline">Place, simulate, see what happened.</span>
+      </div>
+      <div class="grid">
+
+        <a class="card" data-game="beam" href="beam/">
+          <span class="card-tag">No. 021</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><rect x="6" y="6" width="72" height="44" rx="2" stroke="currentColor" stroke-width="0.8" stroke-opacity="0.35" fill="none"/><line x1="20" y1="10" x2="20" y2="28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="20" y1="28" x2="50" y2="28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="34" x2="26" y2="22" stroke="currentColor" stroke-width="1.4" opacity="0.8"/><circle cx="62" cy="40" r="4" fill="currentColor"/></svg>
+          </div>
+          <h3 class="card-name">Beam</h3>
+          <p class="card-desc">Place mirrors. Route the light to its target.</p>
+        </a>
+
+        <a class="card" data-game="tide" href="tide/">
+          <span class="card-tag">No. 022</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><g><rect x="6"  y="6"  width="14" height="14" fill="currentColor" fill-opacity="0.35"/><rect x="22" y="6"  width="14" height="14" fill="currentColor" fill-opacity="0.55"/><rect x="38" y="6"  width="14" height="14" fill="currentColor"/><rect x="54" y="6"  width="14" height="14" fill="currentColor" fill-opacity="0.55"/><rect x="6"  y="22" width="14" height="14" fill="currentColor" fill-opacity="0.6"/><rect x="22" y="22" width="14" height="14" fill="currentColor" fill-opacity="0.18"/><rect x="38" y="22" width="14" height="14" fill="currentColor"/><rect x="54" y="22" width="14" height="14" fill="currentColor" fill-opacity="0.18"/><rect x="6"  y="38" width="14" height="14" fill="currentColor" fill-opacity="0.35"/><rect x="22" y="38" width="14" height="14" fill="currentColor" fill-opacity="0.55"/><rect x="38" y="38" width="14" height="14" fill="currentColor"/><rect x="54" y="38" width="14" height="14" fill="currentColor" fill-opacity="0.55"/></g></svg>
+          </div>
+          <h3 class="card-name">Tide</h3>
+          <p class="card-desc">Place sources. Watch the water find its level.</p>
+        </a>
+
+        <a class="card" data-game="weft" href="weft/">
+          <span class="card-tag">No. 023</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><g stroke="currentColor" stroke-width="1.2"><rect x="4"  y="6"  width="22" height="10" rx="2" fill="currentColor" fill-opacity="0.85" stroke="none"/><rect x="58" y="6"  width="22" height="10" rx="2" fill="currentColor" fill-opacity="0.18" stroke="none"/><rect x="4"  y="20" width="22" height="10" rx="2" fill="currentColor" fill-opacity="0.55" stroke="none"/><rect x="58" y="20" width="22" height="10" rx="2" fill="currentColor" fill-opacity="0.85" stroke="none"/><rect x="4"  y="34" width="22" height="10" rx="2" fill="currentColor" fill-opacity="0.18" stroke="none"/><rect x="58" y="34" width="22" height="10" rx="2" fill="currentColor" fill-opacity="0.55" stroke="none"/></g><path d="M26 11 L58 25 M26 25 L58 11 M26 39 L58 39" stroke="currentColor" stroke-width="1" fill="none" opacity="0.7"/></svg>
+          </div>
+          <h3 class="card-name">Weft</h3>
+          <p class="card-desc">Pair four left to four right. Each must bind.</p>
+        </a>
+
+        <a class="card" data-game="splice" href="splice/">
+          <span class="card-tag">No. 024</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="92" height="42" viewBox="0 0 92 42" fill="none"><text x="0" y="20" font-family="Fraunces, serif" font-size="14" fill="currentColor" font-style="italic" fill-opacity="0.5">eleven plus two</text><text x="0" y="36" font-family="Fraunces, serif" font-size="14" fill="currentColor" font-weight="500">twelve plus one</text></svg>
+          </div>
+          <h3 class="card-name">Splice</h3>
+          <p class="card-desc">Re-arrange the same letters into a new phrase.</p>
         </a>
 
       </div>
