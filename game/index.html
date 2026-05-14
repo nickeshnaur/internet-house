@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Daily · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F7F4EE;
+    --paper-deep: #EFEBE2;
+    --paper-soft: #FAF7F1;
+    --ink: #1A1A1A;
+    --ink-soft: #4A4845;
+    --ink-faint: #8A8579;
+    --hairline: #D9D3C5;
+    --hairline-strong: #BFB8A8;
+
+    --tableau: #B33A3A;
+    --filament: #1F3A5F;
+    --beatsheet: #B8862C;
+
+    --accent: var(--tableau);
+    --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --t-fast: 120ms;
+    --t-med: 220ms;
+    --t-slow: 480ms;
+
+    --max-content: 640px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { background: var(--paper); }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, -apple-system, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  button { font: inherit; color: inherit; background: none; border: none; padding: 0; cursor: pointer; }
+
+  /* ───────── chrome ───────── */
+  .masthead {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 18px 24px 12px;
+    border-bottom: 1px solid var(--hairline);
+    max-width: var(--max-content);
+    margin: 0 auto;
+  }
+  .masthead a.brand {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.05rem;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .masthead .brand .dot { color: var(--ink-faint); }
+  .masthead .today {
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ───────── tabs ───────── */
+  .tabs-wrap {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--paper);
+    border-bottom: 1px solid var(--hairline);
+    transition: border-color var(--t-med) var(--ease);
+  }
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    max-width: var(--max-content);
+    margin: 0 auto;
+    padding: 0 8px;
+    position: relative;
+  }
+  .tab {
+    flex: 1 1 0;
+    max-width: 180px;
+    padding: 16px 10px 14px;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.02rem;
+    letter-spacing: -0.005em;
+    color: var(--ink-faint);
+    position: relative;
+    text-align: center;
+    transition: color var(--t-med) var(--ease);
+    white-space: nowrap;
+  }
+  .tab:hover { color: var(--ink-soft); }
+  .tab[aria-selected="true"] { color: var(--ink); }
+  .tab-underline {
+    position: absolute;
+    bottom: -1px; left: 0;
+    height: 2px;
+    background: var(--accent);
+    transition: transform var(--t-med) var(--ease),
+                width var(--t-med) var(--ease),
+                background-color var(--t-med) var(--ease);
+    border-radius: 1px;
+    pointer-events: none;
+  }
+
+  /* ───────── game container ───────── */
+  main {
+    max-width: var(--max-content);
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+  .game { display: none; }
+  .game.active { display: block; animation: fadein var(--t-slow) var(--ease); }
+  @keyframes fadein {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .game-head {
+    text-align: center;
+    margin-bottom: 22px;
+  }
+  .eyebrow {
+    font-size: 0.66rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+    transition: color var(--t-med) var(--ease);
+  }
+  .title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(2.1rem, 7vw, 2.7rem);
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin: 6px 0 8px;
+    color: var(--ink);
+  }
+  .rule {
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    max-width: 28em;
+    margin: 0 auto;
+  }
+
+  /* ───────── toolbar ───────── */
+  .toolbar {
+    display: flex; align-items: center; justify-content: center;
+    gap: 18px;
+    margin: 22px 0 26px;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+  .timer {
+    display: inline-flex; align-items: baseline; gap: 6px;
+    color: var(--ink-soft);
+  }
+  .timer .num { color: var(--ink); font-weight: 500; min-width: 4ch; text-align: left; }
+  .tool-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--ink-faint);
+    padding: 6px 10px;
+    margin: -6px -10px;
+    border-radius: 4px;
+    transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+  }
+  .tool-btn:hover { color: var(--ink); background: var(--paper-deep); }
+  .tool-btn[hidden] { display: none; }
+  .sep {
+    width: 1px; height: 12px; background: var(--hairline-strong);
+    display: inline-block;
+  }
+
+  /* ───────── stage (play surface area) ───────── */
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+  .stage.shake { animation: shake 320ms var(--ease); }
+  @keyframes shake {
+    10%, 90% { transform: translateX(-1px); }
+    20%, 80% { transform: translateX(2px); }
+    30%, 50%, 70% { transform: translateX(-4px); }
+    40%, 60% { transform: translateX(4px); }
+  }
+
+  /* ───────── clue list ───────── */
+  .clues {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    list-style: none;
+    padding: 0;
+    counter-reset: clue;
+  }
+  .clues li {
+    counter-increment: clue;
+    display: flex;
+    gap: 14px;
+    padding: 12px 0;
+    border-top: 1px solid var(--hairline);
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  .clues li:last-child { border-bottom: 1px solid var(--hairline); }
+  .clues li::before {
+    content: counter(clue);
+    font-family: 'Fraunces', serif;
+    font-feature-settings: "lnum" 1;
+    color: var(--accent);
+    font-weight: 500;
+    flex: 0 0 1.2em;
+    font-size: 0.95rem;
+    transition: color var(--t-med) var(--ease);
+  }
+
+  /* ───────── solved badge ───────── */
+  .solved {
+    display: none;
+    text-align: center;
+    margin-top: 8px;
+    font-family: 'Fraunces', serif;
+    font-size: 1.1rem;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+    transition: color var(--t-med) var(--ease);
+  }
+  .solved.show { display: block; animation: solved-in 480ms var(--ease); }
+  .solved .check {
+    display: inline-block;
+    margin-right: 6px;
+    transform: translateY(1px);
+  }
+  @keyframes solved-in {
+    0%   { opacity: 0; transform: translateY(8px); letter-spacing: 0.06em; }
+    60%  { opacity: 1; }
+    100% { opacity: 1; transform: translateY(0); letter-spacing: -0.01em; }
+  }
+
+  /* ───────── tableau game ───────── */
+  .tableau-grid {
+    --cell: clamp(46px, 14vw, 64px);
+    display: grid;
+    grid-template-columns: repeat(5, var(--cell));
+    grid-template-rows: repeat(5, var(--cell));
+    gap: 0;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+  }
+  .tableau-cell {
+    background: var(--paper-soft);
+    border: 0.5px solid var(--hairline-strong);
+    position: relative;
+    transition: background var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tableau-cell:hover { background: var(--paper-deep); }
+  .tableau-cell .fill {
+    position: absolute; inset: 0;
+    background: var(--ink);
+    transform: scale(0);
+    transition: transform var(--t-fast) var(--ease);
+  }
+  .tableau-cell[data-state="1"] .fill { transform: scale(1); }
+  .tableau-cell .x {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-faint);
+    font-size: calc(var(--cell) * 0.42);
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+    user-select: none;
+    pointer-events: none;
+  }
+  .tableau-cell[data-state="2"] .x { opacity: 1; transform: scale(1); }
+  .tableau-grid.solved .tableau-cell[data-state="1"] .fill {
+    animation: pulse-fill 760ms var(--ease);
+  }
+  @keyframes pulse-fill {
+    0%   { box-shadow: inset 0 0 0 0 rgba(179,58,58,0); }
+    35%  { box-shadow: inset 0 0 0 6px rgba(179,58,58,0.35); }
+    100% { box-shadow: inset 0 0 0 0 rgba(179,58,58,0); }
+  }
+
+  /* ───────── filament game ───────── */
+  .filament-board {
+    --size: min(92vw, 420px);
+    width: var(--size);
+    height: var(--size);
+    position: relative;
+  }
+  .filament-board svg {
+    width: 100%; height: 100%;
+    display: block;
+    overflow: visible;
+    touch-action: manipulation;
+  }
+  .fila-cell-num {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 500;
+    fill: var(--ink-soft);
+    text-anchor: middle;
+    dominant-baseline: central;
+    user-select: none;
+    transition: opacity var(--t-slow) var(--ease), fill var(--t-fast) var(--ease);
+  }
+  .fila-cell-num.bad { fill: var(--filament); }
+  .fila-dot {
+    fill: var(--ink-faint);
+    stroke: var(--paper);
+    stroke-width: 0;
+    cursor: pointer;
+    transition: fill var(--t-fast) var(--ease), r var(--t-fast) var(--ease), opacity var(--t-slow) var(--ease);
+  }
+  .fila-dot:hover { fill: var(--ink); }
+  .fila-dot.selected {
+    fill: var(--filament);
+  }
+  .fila-seg-hit {
+    stroke: transparent;
+    stroke-width: 16;
+    cursor: pointer;
+    fill: none;
+    pointer-events: stroke;
+  }
+  .fila-seg {
+    stroke: var(--filament);
+    stroke-width: 3;
+    stroke-linecap: round;
+    fill: none;
+    pointer-events: none;
+    transition: stroke-width var(--t-fast) var(--ease);
+  }
+  .filament-board.solved .fila-dot { opacity: 0; pointer-events: none; }
+  .filament-board.solved .fila-cell-num { opacity: 0; }
+  .filament-board.solved .fila-seg { stroke-width: 4; }
+
+  /* ───────── beat sheet game ───────── */
+  .beat-board {
+    --size: min(92vw, 400px);
+    width: var(--size);
+    height: var(--size);
+    position: relative;
+  }
+  .beat-svg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  .beat-path {
+    stroke: var(--beatsheet);
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+    stroke-dasharray: 4 6;
+    stroke-dashoffset: 0;
+    opacity: 0.9;
+  }
+  .beat-board.solved .beat-path {
+    stroke-dasharray: none;
+    stroke-width: 2.5;
+    animation: pathdraw 600ms var(--ease);
+  }
+  @keyframes pathdraw {
+    from { stroke-opacity: 0.4; }
+    to   { stroke-opacity: 1; }
+  }
+  .beat-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 32%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 1px solid var(--hairline-strong);
+    background: var(--paper-soft);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.92rem;
+    color: var(--ink-faint);
+    text-align: center;
+    padding: 8px;
+    line-height: 1.2;
+    pointer-events: none;
+  }
+  .beat-token {
+    position: absolute;
+    width: 30%;
+    aspect-ratio: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border: 1px solid var(--hairline-strong);
+    background: var(--paper-soft);
+    border-radius: 50%;
+    transition: border-color var(--t-fast) var(--ease),
+                background var(--t-fast) var(--ease),
+                transform var(--t-fast) var(--ease),
+                color var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+  }
+  .beat-token:hover {
+    border-color: var(--beatsheet);
+    transform: scale(1.03);
+  }
+  .beat-token[data-pos] {
+    border-color: var(--beatsheet);
+    background: #fff;
+  }
+  .beat-token .glyph {
+    font-size: clamp(1.4rem, 5vw, 1.8rem);
+    line-height: 1;
+  }
+  .beat-token .name {
+    font-family: 'Fraunces', serif;
+    font-size: 0.78rem;
+    margin-top: 4px;
+    color: var(--ink-soft);
+    letter-spacing: -0.005em;
+  }
+  .beat-token .order {
+    position: absolute;
+    top: -10px; right: -10px;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--beatsheet);
+    color: #fff;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: none;
+    align-items: center; justify-content: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+  .beat-token[data-pos] .order { display: flex; }
+
+  /* token positions (NW, NE, SE, SW order) */
+  .beat-token.pos-nw { top: 0; left: 0; }
+  .beat-token.pos-ne { top: 0; right: 0; }
+  .beat-token.pos-se { bottom: 0; right: 0; }
+  .beat-token.pos-sw { bottom: 0; left: 0; }
+
+  /* ───────── footer ───────── */
+  footer {
+    max-width: var(--max-content);
+    margin: 0 auto;
+    padding: 18px 24px 24px;
+    border-top: 1px solid var(--hairline);
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  footer a { color: inherit; text-decoration: none; }
+  footer a:hover { color: var(--ink); }
+
+  /* ───────── toast (share copied) ───────── */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translate(-50%, 20px);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+    z-index: 100;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  /* ───────── accent theming per game ───────── */
+  body[data-game="tableau"]   { --accent: var(--tableau); }
+  body[data-game="filament"]  { --accent: var(--filament); }
+  body[data-game="beatsheet"] { --accent: var(--beatsheet); }
+
+  /* ───────── small-screen tweaks ───────── */
+  @media (max-width: 420px) {
+    main { padding: 24px 16px 64px; }
+    .masthead { padding-left: 16px; padding-right: 16px; }
+    .tabs { padding: 0 4px; }
+    .tab { font-size: 0.96rem; padding: 14px 8px 12px; }
+    .clues li { font-size: 0.92rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 1ms !important;
+      transition-duration: 1ms !important;
+    }
+  }
+</style>
+</head>
+<body data-game="tableau">
+
+<header class="masthead">
+  <a class="brand" href="/"><span>internet</span><span class="dot">.</span><span>house</span></a>
+  <div class="today" id="today"></div>
+</header>
+
+<nav class="tabs-wrap" aria-label="Games">
+  <div class="tabs" id="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-tableau"   aria-selected="true"  data-game="tableau">Tableau</button>
+    <button class="tab" role="tab" id="tab-filament"  aria-selected="false" data-game="filament">Filament</button>
+    <button class="tab" role="tab" id="tab-beatsheet" aria-selected="false" data-game="beatsheet">Beat Sheet</button>
+    <span class="tab-underline" id="tab-underline" aria-hidden="true"></span>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ─────────── TABLEAU ─────────── -->
+  <section class="game active" id="game-tableau" data-game="tableau" role="tabpanel" aria-labelledby="tab-tableau">
+    <div class="game-head">
+      <div class="eyebrow">No. 001 · Tableau</div>
+      <h1 class="title">Tableau</h1>
+      <p class="rule">Five clues. Twenty‑five cells. Deduce which are filled.</p>
+    </div>
+
+    <div class="toolbar">
+      <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-tableau">0:00</span></span>
+      <span class="sep"></span>
+      <button class="tool-btn" data-action="reset" data-game="tableau">Reset</button>
+      <button class="tool-btn" data-action="share" data-game="tableau" hidden>Share</button>
+    </div>
+
+    <div class="stage" id="stage-tableau">
+      <div class="tableau-grid" id="tableau-grid" role="grid" aria-label="5 by 5 puzzle grid"></div>
+      <div class="solved" id="solved-tableau"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+      <ol class="clues" id="tableau-clues"></ol>
+    </div>
+  </section>
+
+  <!-- ─────────── FILAMENT ─────────── -->
+  <section class="game" id="game-filament" data-game="filament" role="tabpanel" aria-labelledby="tab-filament">
+    <div class="game-head">
+      <div class="eyebrow">No. 001 · Filament</div>
+      <h1 class="title">Filament</h1>
+      <p class="rule">Draw one closed loop. Numbers count the edges they touch.</p>
+    </div>
+
+    <div class="toolbar">
+      <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-filament">0:00</span></span>
+      <span class="sep"></span>
+      <button class="tool-btn" data-action="reset" data-game="filament">Reset</button>
+      <button class="tool-btn" data-action="share" data-game="filament" hidden>Share</button>
+    </div>
+
+    <div class="stage" id="stage-filament">
+      <div class="filament-board" id="filament-board"></div>
+      <div class="solved" id="solved-filament"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+      <ol class="clues" id="filament-clues"></ol>
+    </div>
+  </section>
+
+  <!-- ─────────── BEAT SHEET ─────────── -->
+  <section class="game" id="game-beatsheet" data-game="beatsheet" role="tabpanel" aria-labelledby="tab-beatsheet">
+    <div class="game-head">
+      <div class="eyebrow">No. 001 · Beat Sheet</div>
+      <h1 class="title">Beat Sheet</h1>
+      <p class="rule">Tap the witnesses in the order they were questioned.</p>
+    </div>
+
+    <div class="toolbar">
+      <span class="timer"><span class="lbl">Time</span> <span class="num" id="timer-beatsheet">0:00</span></span>
+      <span class="sep"></span>
+      <button class="tool-btn" data-action="reset" data-game="beatsheet">Reset</button>
+      <button class="tool-btn" data-action="share" data-game="beatsheet" hidden>Share</button>
+    </div>
+
+    <div class="stage" id="stage-beatsheet">
+      <div class="beat-board" id="beat-board"></div>
+      <div class="solved" id="solved-beatsheet"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+      <ol class="clues" id="beat-clues"></ol>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>internet.house</span>
+  <span><a href="/">← home</a></span>
+</footer>
+
+<div class="toast" id="toast">Copied to clipboard</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  Shared utilities
+// ─────────────────────────────────────────────
+
+const $  = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+function fmtTime(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+// Timer factory — one per game. Starts on first interaction, stops on solve.
+function createTimer(displayEl) {
+  let started = false, stopped = false, t0 = 0, raf = null;
+  function tick() {
+    const secs = Math.floor((performance.now() - t0) / 1000);
+    displayEl.textContent = fmtTime(secs);
+    if (!stopped) raf = requestAnimationFrame(tick);
+  }
+  return {
+    start() {
+      if (started) return;
+      started = true; stopped = false;
+      t0 = performance.now();
+      tick();
+    },
+    stop() {
+      stopped = true;
+      if (raf) cancelAnimationFrame(raf);
+    },
+    reset() {
+      started = false; stopped = true;
+      if (raf) cancelAnimationFrame(raf);
+      displayEl.textContent = '0:00';
+    },
+    elapsed() {
+      if (!started) return 0;
+      return Math.floor((performance.now() - t0) / 1000);
+    },
+    formatted() {
+      return displayEl.textContent;
+    }
+  };
+}
+
+// Share — copies a text summary to the clipboard, shows a toast.
+const toastEl = $('#toast');
+let toastTimer = null;
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1600);
+}
+async function copyShare(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast('Copied to clipboard');
+  } catch (e) {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    ta.remove();
+    showToast('Copied to clipboard');
+  }
+}
+
+function shake(el) {
+  el.classList.remove('shake');
+  // force reflow so the animation can restart
+  void el.offsetWidth;
+  el.classList.add('shake');
+  setTimeout(() => el.classList.remove('shake'), 360);
+}
+
+// Today date
+(function setToday() {
+  const d = new Date();
+  const opts = { month: 'long', day: 'numeric', year: 'numeric' };
+  $('#today').textContent = d.toLocaleDateString('en-US', opts);
+})();
+
+// ─────────────────────────────────────────────
+//  Tabs
+// ─────────────────────────────────────────────
+
+const tabsEl = $('#tabs');
+const underlineEl = $('#tab-underline');
+function selectTab(game) {
+  document.body.dataset.game = game;
+  $$('.tab', tabsEl).forEach(b => {
+    b.setAttribute('aria-selected', String(b.dataset.game === game));
+  });
+  $$('.game').forEach(s => {
+    s.classList.toggle('active', s.dataset.game === game);
+  });
+  positionUnderline();
+}
+function positionUnderline() {
+  const active = $('.tab[aria-selected="true"]', tabsEl);
+  if (!active) return;
+  const tr = tabsEl.getBoundingClientRect();
+  const ar = active.getBoundingClientRect();
+  underlineEl.style.width = `${ar.width}px`;
+  underlineEl.style.transform = `translateX(${ar.left - tr.left}px)`;
+}
+tabsEl.addEventListener('click', e => {
+  const t = e.target.closest('.tab');
+  if (!t) return;
+  selectTab(t.dataset.game);
+});
+window.addEventListener('resize', positionUnderline);
+window.addEventListener('load', positionUnderline);
+// run once after fonts/styles settle
+setTimeout(positionUnderline, 60);
+
+// Toolbar wiring (reset / share)
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.tool-btn');
+  if (!btn) return;
+  const game = btn.dataset.game;
+  const action = btn.dataset.action;
+  const mod = GAMES[game];
+  if (!mod) return;
+  if (action === 'reset') mod.reset();
+  if (action === 'share') mod.share();
+});
+
+// ─────────────────────────────────────────────
+//  Game registry
+// ─────────────────────────────────────────────
+const GAMES = {};
+
+// ═════════════════════════════════════════════
+//  GAME 1 — TABLEAU
+// ═════════════════════════════════════════════
+(function Tableau() {
+  // Puzzle definition — see README for authoring notes.
+  const PUZZLE = {
+    id: 'tableau-001',
+    target: [
+      [0,0,1,0,0],
+      [0,0,1,0,0],
+      [1,1,1,1,1],
+      [0,0,1,0,0],
+      [0,0,1,0,0],
+    ],
+    clues: [
+      'The grid is symmetric both horizontally and vertically.',
+      'Row 3 is entirely filled.',
+      'Column 3 is entirely filled.',
+      'No filled cell is diagonally adjacent to another filled cell.',
+      'Exactly 9 cells are filled in total.',
+    ],
+  };
+
+  const gridEl   = $('#tableau-grid');
+  const cluesEl  = $('#tableau-clues');
+  const stageEl  = $('#stage-tableau');
+  const solvedEl = $('#solved-tableau');
+  const shareBtn = document.querySelector('.tool-btn[data-game="tableau"][data-action="share"]');
+  const timer    = createTimer($('#timer-tableau'));
+
+  let state;   // 5x5 of 0|1|2
+  let solved = false;
+
+  function build() {
+    gridEl.innerHTML = '';
+    state = Array.from({length:5}, () => Array(5).fill(0));
+    for (let r = 0; r < 5; r++) {
+      for (let c = 0; c < 5; c++) {
+        const cell = document.createElement('button');
+        cell.className = 'tableau-cell';
+        cell.dataset.r = r; cell.dataset.c = c;
+        cell.dataset.state = '0';
+        cell.setAttribute('aria-label', `cell row ${r+1} column ${c+1}`);
+        cell.innerHTML = `<span class="fill"></span><span class="x">×</span>`;
+        cell.addEventListener('click', onClick);
+        gridEl.appendChild(cell);
+      }
+    }
+    cluesEl.innerHTML = PUZZLE.clues.map(c => `<li>${c}</li>`).join('');
+  }
+
+  function onClick(e) {
+    if (solved) return;
+    timer.start();
+    const cell = e.currentTarget;
+    const r = +cell.dataset.r, c = +cell.dataset.c;
+    state[r][c] = (state[r][c] + 1) % 3;
+    cell.dataset.state = String(state[r][c]);
+    // Auto-check only on transition into filled — keeps surprise without nagging.
+    if (state[r][c] === 1) checkSolved();
+  }
+
+  function checkSolved() {
+    let allFilledMatch = true;
+    let anyFalseFill = false;
+    for (let r = 0; r < 5; r++) {
+      for (let c = 0; c < 5; c++) {
+        const want = PUZZLE.target[r][c] === 1;
+        const have = state[r][c] === 1;
+        if (want && !have) allFilledMatch = false;
+        if (!want && have) { anyFalseFill = true; allFilledMatch = false; }
+      }
+    }
+    // Total filled count of correct cells reached but extras present → shake
+    const filledCount = state.flat().filter(v => v === 1).length;
+    if (anyFalseFill && filledCount === 9) {
+      shake(stageEl);
+      return;
+    }
+    if (allFilledMatch) win();
+  }
+
+  function win() {
+    solved = true;
+    timer.stop();
+    gridEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = `Solved · ${timer.formatted()}`;
+    solvedEl.classList.add('show');
+    shareBtn.hidden = false;
+  }
+
+  function reset() {
+    solved = false;
+    timer.reset();
+    gridEl.classList.remove('solved');
+    solvedEl.classList.remove('show');
+    shareBtn.hidden = true;
+    build();
+  }
+
+  function share() {
+    const rows = PUZZLE.target.map(row =>
+      row.map(v => v ? '⬛' : '⬜').join('')
+    );
+    const text =
+`Tableau · ${timer.formatted()}
+${rows.join('\n')}
+internet.house/game`;
+    copyShare(text);
+  }
+
+  build();
+  GAMES.tableau = { reset, share };
+})();
+
+// ═════════════════════════════════════════════
+//  GAME 2 — FILAMENT
+// ═════════════════════════════════════════════
+(function Filament() {
+  // Lattice: 6x6 dots, indices [0..5][0..5]. Cells at [0..4][0..4].
+  // Segments stored as undirected edges keyed "c1,r1-c2,r2" (lexicographic).
+  const N = 5;              // cells per side
+  const DOTS = N + 1;       // dots per side
+
+  // The "answer" loop — a stepped diamond. Used to derive clue counts.
+  // (We don't compare user segments to this — any valid loop satisfying
+  //  the clue counts is accepted. See README.)
+  const ANSWER_PATH = [
+    [2,0],[3,0],[3,1],[4,1],[4,2],[5,2],[5,3],[4,3],[4,4],[3,4],
+    [3,5],[2,5],[2,4],[1,4],[1,3],[0,3],[0,2],[1,2],[1,1],[2,1],[2,0],
+  ];
+
+  // Clue cells: { c, r, n }. Hand-picked for symmetry & readability.
+  const CLUES_CELLS = [
+    {c:1,r:0,n:2},{c:2,r:0,n:3},{c:3,r:0,n:2},
+    {c:2,r:1,n:0},
+    {c:0,r:2,n:3},{c:2,r:2,n:0},{c:4,r:2,n:3},
+    {c:2,r:3,n:0},
+    {c:1,r:4,n:2},{c:2,r:4,n:3},{c:3,r:4,n:2},
+  ];
+
+  const CLUE_TEXT = [
+    'Draw segments between adjacent dots to form one closed loop.',
+    'A number is the count of that cell\'s four edges used by the loop.',
+    'Tap a segment again to erase it.',
+  ];
+
+  const boardEl  = $('#filament-board');
+  const cluesEl  = $('#filament-clues');
+  const stageEl  = $('#stage-filament');
+  const solvedEl = $('#solved-filament');
+  const shareBtn = document.querySelector('.tool-btn[data-game="filament"][data-action="share"]');
+  const timer    = createTimer($('#timer-filament'));
+
+  // SVG geometry
+  const VB = 100;                        // viewBox is 0..VB on both axes
+  const margin = 6;
+  const step = (VB - 2 * margin) / N;
+  const dotX = c => margin + c * step;
+  const dotY = r => margin + r * step;
+
+  let svg, edges, solved = false;
+  // edges: Map<key, {a:[c,r], b:[c,r]}>
+
+  function key(a, b) {
+    // canonicalize: smaller (c,r) first
+    const [ac,ar] = a, [bc,br] = b;
+    const aFirst = (ac < bc) || (ac === bc && ar < br);
+    const [p,q] = aFirst ? [a,b] : [b,a];
+    return `${p[0]},${p[1]}-${q[0]},${q[1]}`;
+  }
+
+  function isAdjacent(a, b) {
+    const d = Math.abs(a[0]-b[0]) + Math.abs(a[1]-b[1]);
+    return d === 1;
+  }
+
+  function build() {
+    edges = new Map();
+    boardEl.innerHTML = '';
+    solved = false;
+    boardEl.classList.remove('solved');
+
+    const ns = 'http://www.w3.org/2000/svg';
+    svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', `0 0 ${VB} ${VB}`);
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    boardEl.appendChild(svg);
+
+    // 1. background hairlines (cell grid)
+    const gGrid = document.createElementNS(ns, 'g');
+    for (let i = 0; i <= N; i++) {
+      const ln1 = document.createElementNS(ns, 'line');
+      ln1.setAttribute('x1', margin); ln1.setAttribute('x2', VB - margin);
+      ln1.setAttribute('y1', margin + i*step); ln1.setAttribute('y2', margin + i*step);
+      ln1.setAttribute('stroke', 'rgba(26,26,26,0.07)');
+      ln1.setAttribute('stroke-width', '0.4');
+      gGrid.appendChild(ln1);
+      const ln2 = document.createElementNS(ns, 'line');
+      ln2.setAttribute('y1', margin); ln2.setAttribute('y2', VB - margin);
+      ln2.setAttribute('x1', margin + i*step); ln2.setAttribute('x2', margin + i*step);
+      ln2.setAttribute('stroke', 'rgba(26,26,26,0.07)');
+      ln2.setAttribute('stroke-width', '0.4');
+      gGrid.appendChild(ln2);
+    }
+    svg.appendChild(gGrid);
+
+    // 2. cell clue numbers
+    const gNums = document.createElementNS(ns, 'g');
+    gNums.classList.add('fila-nums');
+    CLUES_CELLS.forEach(({c,r,n}) => {
+      const t = document.createElementNS(ns, 'text');
+      t.setAttribute('class', 'fila-cell-num');
+      t.setAttribute('x', margin + (c + 0.5) * step);
+      t.setAttribute('y', margin + (r + 0.5) * step);
+      t.setAttribute('font-size', step * 0.45);
+      t.textContent = String(n);
+      gNums.appendChild(t);
+    });
+    svg.appendChild(gNums);
+
+    // 3. segments layer (drawn lines)
+    const gSegs = document.createElementNS(ns, 'g');
+    gSegs.setAttribute('id', 'fila-segs');
+    svg.appendChild(gSegs);
+
+    // 4. dots layer
+    const gDots = document.createElementNS(ns, 'g');
+    for (let r = 0; r < DOTS; r++) {
+      for (let c = 0; c < DOTS; c++) {
+        const dot = document.createElementNS(ns, 'circle');
+        dot.setAttribute('class', 'fila-dot');
+        dot.setAttribute('cx', dotX(c));
+        dot.setAttribute('cy', dotY(r));
+        dot.setAttribute('r', 1.6);
+        dot.dataset.c = c; dot.dataset.r = r;
+        dot.addEventListener('click', () => onDotClick(c, r, dot));
+        gDots.appendChild(dot);
+      }
+    }
+    svg.appendChild(gDots);
+
+    cluesEl.innerHTML = CLUE_TEXT.map(t => `<li>${t}</li>`).join('');
+  }
+
+  let pending = null; // {c,r,el}
+
+  function onDotClick(c, r, el) {
+    if (solved) return;
+    timer.start();
+    if (!pending) {
+      pending = { c, r, el };
+      el.classList.add('selected');
+      return;
+    }
+    // second click
+    if (pending.c === c && pending.r === r) {
+      // deselect
+      pending.el.classList.remove('selected');
+      pending = null;
+      return;
+    }
+    if (!isAdjacent([pending.c, pending.r], [c, r])) {
+      // invalid — replace selection
+      pending.el.classList.remove('selected');
+      pending = { c, r, el };
+      el.classList.add('selected');
+      return;
+    }
+    // draw or toggle segment
+    const k = key([pending.c, pending.r], [c, r]);
+    if (edges.has(k)) {
+      removeSegment(k);
+    } else {
+      addSegment(k, [pending.c, pending.r], [c, r]);
+    }
+    pending.el.classList.remove('selected');
+    pending = null;
+    checkSolved();
+  }
+
+  function addSegment(k, a, b) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const g = $('#fila-segs', svg);
+
+    const hit = document.createElementNS(ns, 'line');
+    hit.setAttribute('class', 'fila-seg-hit');
+    hit.setAttribute('x1', dotX(a[0])); hit.setAttribute('y1', dotY(a[1]));
+    hit.setAttribute('x2', dotX(b[0])); hit.setAttribute('y2', dotY(b[1]));
+    hit.dataset.k = k;
+    hit.addEventListener('click', () => {
+      if (solved) return;
+      removeSegment(k);
+      checkSolved();
+    });
+    g.appendChild(hit);
+
+    const ln = document.createElementNS(ns, 'line');
+    ln.setAttribute('class', 'fila-seg');
+    ln.setAttribute('x1', dotX(a[0])); ln.setAttribute('y1', dotY(a[1]));
+    ln.setAttribute('x2', dotX(b[0])); ln.setAttribute('y2', dotY(b[1]));
+    ln.dataset.k = k;
+    g.appendChild(ln);
+
+    edges.set(k, { a, b, hit, ln });
+  }
+
+  function removeSegment(k) {
+    const e = edges.get(k);
+    if (!e) return;
+    e.hit.remove();
+    e.ln.remove();
+    edges.delete(k);
+  }
+
+  function cellEdgeCount(c, r) {
+    // edges of cell (c,r) are between dots:
+    // top:    (c,r)-(c+1,r)
+    // right:  (c+1,r)-(c+1,r+1)
+    // bottom: (c,r+1)-(c+1,r+1)
+    // left:   (c,r)-(c,r+1)
+    const keys = [
+      key([c,r],[c+1,r]),
+      key([c+1,r],[c+1,r+1]),
+      key([c,r+1],[c+1,r+1]),
+      key([c,r],[c,r+1]),
+    ];
+    return keys.reduce((acc, k) => acc + (edges.has(k) ? 1 : 0), 0);
+  }
+
+  function isSingleLoop() {
+    if (edges.size === 0) return false;
+    // Build adjacency by dot
+    const adj = new Map(); // "c,r" -> [["c,r",segKey], ...]
+    function ad(dot, other, k) {
+      const dk = `${dot[0]},${dot[1]}`;
+      const ok = `${other[0]},${other[1]}`;
+      if (!adj.has(dk)) adj.set(dk, []);
+      adj.get(dk).push({ to: ok, dot: other, k });
+    }
+    for (const { a, b, } of edges.values()) {
+      const kk = key(a,b);
+      ad(a, b, kk);
+      ad(b, a, kk);
+    }
+    // Every dot used must have degree 2
+    for (const [_, arr] of adj) {
+      if (arr.length !== 2) return false;
+    }
+    // Walk from any starting dot
+    const start = adj.keys().next().value;
+    let prevKey = null;
+    let curKey = start;
+    const visited = new Set([curKey]);
+    let safety = edges.size + 4;
+    while (safety-- > 0) {
+      const next = adj.get(curKey).find(x => x.to !== prevKey);
+      // For a clean 2-regular graph this picks the unvisited neighbor unless we're at start
+      if (!next) return false;
+      prevKey = curKey;
+      curKey = next.to;
+      if (curKey === start) break;
+      if (visited.has(curKey)) return false; // revisited mid-walk → not a single simple loop
+      visited.add(curKey);
+    }
+    if (safety <= 0) return false;
+    if (visited.size !== adj.size) return false; // some component disconnected
+    return true;
+  }
+
+  function checkSolved() {
+    // First: are all numbered cells correct so far? Highlight any wrong.
+    let allCluesOk = true;
+    $$('.fila-cell-num', svg).forEach((t, i) => {
+      const {c,r,n} = CLUES_CELLS[i];
+      const actual = cellEdgeCount(c, r);
+      if (actual === n) t.classList.remove('bad');
+      else { allCluesOk = false; }
+    });
+    if (!allCluesOk) return;
+    if (!isSingleLoop()) return;
+    win();
+  }
+
+  function win() {
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = `Solved · ${timer.formatted()}`;
+    solvedEl.classList.add('show');
+    shareBtn.hidden = false;
+  }
+
+  function reset() {
+    solved = false;
+    pending = null;
+    timer.reset();
+    boardEl.classList.remove('solved');
+    solvedEl.classList.remove('show');
+    shareBtn.hidden = true;
+    build();
+  }
+
+  function share() {
+    const text =
+`Filament · ${timer.formatted()}
+◇ a stepped diamond
+internet.house/game`;
+    copyShare(text);
+  }
+
+  build();
+  GAMES.filament = { reset, share };
+})();
+
+// ═════════════════════════════════════════════
+//  GAME 3 — BEAT SHEET
+// ═════════════════════════════════════════════
+(function BeatSheet() {
+
+  // Four characters, placed at 2x2 corners.
+  // Position order around the board is arbitrary; ordering is built by player clicks.
+  const CHARS = [
+    { id: 'detective', name: 'Detective', glyph: '🕵️', pos: 'pos-nw' },
+    { id: 'maid',      name: 'Maid',      glyph: '👒', pos: 'pos-ne' },
+    { id: 'butler',    name: 'Butler',    glyph: '🎩', pos: 'pos-se' },
+    { id: 'heir',      name: 'Heir',      glyph: '👑', pos: 'pos-sw' },
+  ];
+
+  const CLUES = [
+    {
+      text: 'The Detective interviewed the Maid before the Butler.',
+      check: order => order.indexOf('maid') < order.indexOf('butler')
+                   && order.includes('detective')
+                   && order.indexOf('detective') < order.indexOf('butler'),
+    },
+    {
+      text: 'The Heir was the last person interviewed.',
+      check: order => order[order.length - 1] === 'heir',
+    },
+    {
+      text: 'The Maid was not the first person interviewed.',
+      check: order => order[0] !== 'maid',
+    },
+  ];
+
+  const boardEl  = $('#beat-board');
+  const cluesEl  = $('#beat-clues');
+  const stageEl  = $('#stage-beatsheet');
+  const solvedEl = $('#solved-beatsheet');
+  const shareBtn = document.querySelector('.tool-btn[data-game="beatsheet"][data-action="share"]');
+  const timer    = createTimer($('#timer-beatsheet'));
+
+  let order = []; // ids in click sequence
+  let solved = false;
+  let tokenEls = {};
+  let svgEl, pathEl;
+
+  function build() {
+    boardEl.innerHTML = '';
+    order = [];
+    solved = false;
+    boardEl.classList.remove('solved');
+
+    // SVG overlay for path
+    const ns = 'http://www.w3.org/2000/svg';
+    svgEl = document.createElementNS(ns, 'svg');
+    svgEl.setAttribute('class', 'beat-svg');
+    svgEl.setAttribute('viewBox', '0 0 100 100');
+    svgEl.setAttribute('preserveAspectRatio', 'none');
+    pathEl = document.createElementNS(ns, 'polyline');
+    pathEl.setAttribute('class', 'beat-path');
+    pathEl.setAttribute('points', '');
+    svgEl.appendChild(pathEl);
+    boardEl.appendChild(svgEl);
+
+    // Center vignette
+    const center = document.createElement('div');
+    center.className = 'beat-center';
+    center.textContent = 'A locked study. Four witnesses.';
+    boardEl.appendChild(center);
+
+    // Tokens
+    tokenEls = {};
+    CHARS.forEach(ch => {
+      const el = document.createElement('button');
+      el.className = `beat-token ${ch.pos}`;
+      el.dataset.id = ch.id;
+      el.innerHTML = `
+        <span class="glyph" aria-hidden="true">${ch.glyph}</span>
+        <span class="name">${ch.name}</span>
+        <span class="order" aria-hidden="true"></span>
+      `;
+      el.addEventListener('click', () => onToken(ch.id));
+      boardEl.appendChild(el);
+      tokenEls[ch.id] = el;
+    });
+
+    cluesEl.innerHTML = CLUES.map(c => `<li>${c.text}</li>`).join('');
+  }
+
+  function onToken(id) {
+    if (solved) return;
+    timer.start();
+    const i = order.indexOf(id);
+    if (i >= 0) {
+      // un-select this and everything later (so order remains contiguous)
+      order.splice(i);
+    } else {
+      if (order.length >= 4) return;
+      order.push(id);
+    }
+    render();
+    if (order.length === 4) maybeWin();
+  }
+
+  function render() {
+    CHARS.forEach(ch => {
+      const el = tokenEls[ch.id];
+      const idx = order.indexOf(ch.id);
+      if (idx >= 0) {
+        el.dataset.pos = String(idx + 1);
+        el.querySelector('.order').textContent = idx + 1;
+      } else {
+        delete el.dataset.pos;
+      }
+    });
+    drawPath();
+  }
+
+  function tokenCenter(id) {
+    const el = tokenEls[id];
+    const tr = el.getBoundingClientRect();
+    const br = boardEl.getBoundingClientRect();
+    return {
+      x: ((tr.left + tr.width/2) - br.left) / br.width * 100,
+      y: ((tr.top + tr.height/2) - br.top) / br.height * 100,
+    };
+  }
+
+  function drawPath() {
+    if (order.length < 2) {
+      pathEl.setAttribute('points', '');
+      return;
+    }
+    const pts = order.map(id => {
+      const p = tokenCenter(id);
+      return `${p.x.toFixed(2)},${p.y.toFixed(2)}`;
+    }).join(' ');
+    pathEl.setAttribute('points', pts);
+  }
+
+  function maybeWin() {
+    const ok = CLUES.every(c => c.check(order));
+    if (ok) win();
+    else shake(stageEl);
+  }
+
+  function win() {
+    solved = true;
+    timer.stop();
+    boardEl.classList.add('solved');
+    solvedEl.querySelector('.solved-text').textContent = `Solved · ${timer.formatted()}`;
+    solvedEl.classList.add('show');
+    shareBtn.hidden = false;
+  }
+
+  function reset() {
+    timer.reset();
+    solvedEl.classList.remove('show');
+    shareBtn.hidden = true;
+    build();
+  }
+
+  function share() {
+    const glyphs = order.map(id => CHARS.find(c => c.id === id).glyph).join(' → ');
+    const text =
+`Beat Sheet · ${timer.formatted()}
+${glyphs}
+internet.house/game`;
+    copyShare(text);
+  }
+
+  // Redraw path lines on resize (positions are percent-based but the polyline
+  // is in viewBox coords derived from getBoundingClientRect — re-measure).
+  window.addEventListener('resize', () => { if (!solved) drawPath(); else drawPath(); });
+
+  build();
+  GAMES.beatsheet = { reset, share };
+})();
+
+</script>
+
+</body>
+</html>
