@@ -681,8 +681,8 @@
   .knot-edge.near { stroke-opacity: 0.85; }
   .knot-board.solved .knot-edge {
     stroke-opacity: 1;
-    stroke-width: 1.8;
-    filter: drop-shadow(0 0 6px rgba(94,227,214,0.45));
+    stroke-width: 3;
+    filter: drop-shadow(0 0 10px rgba(94,227,214,0.55));
   }
   .knot-node {
     fill: var(--accent);
@@ -695,9 +695,10 @@
     animation: knot-pulse 900ms var(--ease) infinite;
   }
   .knot-board.solved .knot-node {
-    opacity: 0;
+    opacity: 0.75;
     pointer-events: none;
     transition: opacity 700ms var(--ease);
+    r: 5;
   }
   @keyframes knot-pulse {
     0%, 100% { filter: drop-shadow(0 0 6px var(--accent)); }
@@ -2494,15 +2495,31 @@ internet.house/game`;
 
   function reveal() {
     if (solved) return;
-    positions = TARGETS.map(p => p.slice());
-    redraw();
     solved = true;
     timer.stop();
-    boardEl.classList.add('solved');
-    solvedEl.querySelector('.solved-text').textContent = 'Revealed';
-    solvedEl.classList.add('show', 'is-revealed');
     revealBtn.hidden = true;
     flashReveal(stageEl);
+    // Animate each node from its current position to its target so the
+    // shape forms visibly rather than appearing in a single frame.
+    const start = positions.map(p => p.slice());
+    const dur = 620;
+    const t0 = performance.now();
+    function step(now) {
+      const t = Math.min(1, (now - t0) / dur);
+      const e = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      for (let i = 0; i < positions.length; i++) {
+        const [sx, sy] = start[i], [tx, ty] = TARGETS[i];
+        positions[i] = [sx + (tx - sx) * e, sy + (ty - sy) * e];
+      }
+      redraw();
+      if (t < 1) requestAnimationFrame(step);
+      else {
+        boardEl.classList.add('solved');
+        solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+        solvedEl.classList.add('show', 'is-revealed');
+      }
+    }
+    requestAnimationFrame(step);
   }
 
   function load(i) {
