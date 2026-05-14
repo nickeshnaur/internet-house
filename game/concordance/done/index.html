@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Concordance · Day 30 of 30 · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../shared.css">
+<style>
+  /* mirrors concordance styles + a finished-poem flourish */
+  .conc-progress {
+    text-align: center;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 6px;
+  }
+  .conc-progress .num { color: var(--accent); font-weight: 600; }
+
+  .conc-poem {
+    width: 100%;
+    max-width: 460px;
+    margin: 12px auto 0;
+    padding: 8px 0;
+  }
+  .conc-row {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    align-items: baseline;
+    gap: 14px;
+    padding: 12px 6px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .conc-row:first-child { border-top: 1px solid var(--hairline); }
+  .conc-day {
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: right;
+  }
+  .conc-line .constraint {
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .conc-line .word {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.6rem;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+
+  .conc-coda {
+    margin-top: 30px;
+    padding-top: 24px;
+    border-top: 1px solid var(--hairline);
+    text-align: center;
+  }
+  .conc-coda h3 {
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 10px;
+  }
+  .conc-coda p {
+    font-family: 'Fraunces', serif;
+    font-size: 1.16rem;
+    line-height: 1.65;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    margin: 0 auto;
+    max-width: 26em;
+  }
+  .conc-coda .sig {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--ink-faint);
+    margin-top: 18px;
+    font-size: 0.88rem;
+    letter-spacing: -0.005em;
+  }
+
+  .preview-bar {
+    max-width: var(--max-content);
+    margin: 0 auto;
+    padding: 10px 24px;
+    text-align: center;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .preview-bar a {
+    color: var(--accent);
+    text-decoration: none;
+    margin-left: 6px;
+  }
+</style>
+</head>
+<body data-game="concordance" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <div class="preview-bar">
+    Preview · completed poem
+    <a href="../">↩ back to today</a>
+  </div>
+
+  <main>
+    <section class="game" data-game="concordance">
+      <div class="game-head">
+        <div class="eyebrow">No. 009 · Concordance</div>
+        <h1 class="title">Concordance</h1>
+        <p class="rule">Thirty days. One word a day. Your composition.</p>
+      </div>
+
+      <div class="stage">
+        <div class="conc-progress">Day <span class="num">30</span> of 30 · "<span>Compositions</span>" · complete</div>
+
+        <div class="conc-poem" id="conc-poem" aria-label="completed poem"></div>
+
+        <div class="conc-coda" aria-label="poem read aloud">
+          <h3>Read aloud</h3>
+          <p id="conc-recite"></p>
+          <div class="sig">— composed over thirty days</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../../">internet.house · daily</a>
+    <a href="https://github.com/nickeshnaur/internet-house">source</a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../../shared.js"></script>
+  <script>
+  (function ConcordanceDone() {
+    const POEM = {
+      title: 'Compositions',
+      days: [
+        { day:  1, constraint: 'A noun evoking weather, one syllable',     word: 'mist' },
+        { day:  2, constraint: 'A color in two syllables',                 word: 'ember' },
+        { day:  3, constraint: 'A verb of small movement',                 word: 'ripple' },
+        { day:  4, constraint: 'An object found on a desk',                word: 'letter' },
+        { day:  5, constraint: 'An adjective ending in "-less"',           word: 'soundless' },
+        { day:  6, constraint: 'A word for a kind of light',               word: 'glimmer' },
+        { day:  7, constraint: 'An animal that is small and quiet',        word: 'moth' },
+        { day:  8, constraint: 'A word borrowed from Latin',               word: 'vellum' },
+        { day:  9, constraint: 'A musical instrument, plucked',            word: 'harp' },
+        { day: 10, constraint: 'An action one does alone',                 word: 'unfold' },
+        { day: 11, constraint: 'A word that rhymes with "stone"',          word: 'alone' },
+        { day: 12, constraint: 'A verb evoking dusk',                      word: 'soften' },
+        { day: 13, constraint: 'A room one stores time in',                word: 'attic' },
+        { day: 14, constraint: 'A kind of doorway',                        word: 'threshold' },
+        { day: 15, constraint: 'A fabric with two soft consonants',        word: 'linen' },
+        { day: 16, constraint: 'A wood named for its smell',               word: 'cedar' },
+        { day: 17, constraint: 'An archaic word for paper',                word: 'parchment' },
+        { day: 18, constraint: 'A noun meaning a small flame',             word: 'taper' },
+        { day: 19, constraint: 'A word that begins and ends with the same letter', word: 'level' },
+        { day: 20, constraint: 'An adverb of slowness',                    word: 'softly' },
+        { day: 21, constraint: 'A bird whose name is two syllables',       word: 'sparrow' },
+        { day: 22, constraint: 'A month, written out',                     word: 'november' },
+        { day: 23, constraint: 'A garment one inherits',                   word: 'shawl' },
+        { day: 24, constraint: 'A book one keeps but does not read',       word: 'ledger' },
+        { day: 25, constraint: 'A four-syllable noun involving the hand',  word: 'signature' },
+        { day: 26, constraint: 'A part of a vine',                         word: 'tendril' },
+        { day: 27, constraint: 'A word that rhymes with "most"',           word: 'ghost' },
+        { day: 28, constraint: 'A time without a number',                  word: 'midnight' },
+        { day: 29, constraint: 'A participle ending in "-ing"',            word: 'unbinding' },
+        { day: 30, constraint: 'A noun for the end of a thing',            word: 'closing' },
+      ],
+    };
+
+    const poemEl   = document.getElementById('conc-poem');
+    const reciteEl = document.getElementById('conc-recite');
+
+    poemEl.innerHTML = POEM.days.map(d => `
+      <div class="conc-row">
+        <span class="conc-day">${String(d.day).padStart(2,'0')}</span>
+        <div class="conc-line">
+          <span class="constraint">${d.constraint}</span>
+          <span class="word">${d.word}</span>
+        </div>
+      </div>`).join('');
+
+    reciteEl.textContent = POEM.days.map(d => d.word).join(' · ');
+  })();
+  </script>
+</body>
+</html>
