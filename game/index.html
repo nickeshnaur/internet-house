@@ -276,6 +276,7 @@
     flex-direction: column;
     align-items: center;
     gap: 24px;
+    position: relative;
   }
   .stage.shake { animation: shake 320ms var(--ease); }
   @keyframes shake {
@@ -283,6 +284,55 @@
     20%, 80% { transform: translateX(2px); }
     30%, 50%, 70% { transform: translateX(-4px); }
     40%, 60% { transform: translateX(4px); }
+  }
+  .stage::after {
+    content: '';
+    position: absolute; inset: -12px;
+    background: radial-gradient(closest-side, var(--accent), transparent 70%);
+    opacity: 0;
+    pointer-events: none;
+    border-radius: 16px;
+  }
+  .stage.revealing::after { animation: reveal-flash 780ms var(--ease); }
+  @keyframes reveal-flash {
+    0%   { opacity: 0; transform: scale(0.94); }
+    35%  { opacity: 0.28; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.04); }
+  }
+
+  /* ───────── puzzle picker ───────── */
+  .puzzle-picker {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--ink-faint);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    margin-left: 4px;
+  }
+  .puzzle-picker .lbl {
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    margin-right: 2px;
+  }
+  .puzzle-pick {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font: 500 0.72rem 'Inter', sans-serif;
+    color: var(--ink-faint);
+    background: transparent;
+    border: 1px solid var(--hairline-strong);
+    transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  @media (hover: hover) {
+    .puzzle-pick:hover { color: var(--ink); border-color: var(--ink-soft); }
+  }
+  .puzzle-pick[aria-current="true"] {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
   }
 
   /* ───────── clue list ───────── */
@@ -972,6 +1022,12 @@
       <button class="tool-btn" data-action="reset" data-game="tableau">Reset</button>
       <button class="tool-btn" data-action="reveal" data-game="tableau">Reveal</button>
       <button class="tool-btn" data-action="share" data-game="tableau" hidden>Share</button>
+      <span class="sep"></span>
+      <span class="puzzle-picker" data-game="tableau" role="group" aria-label="Choose puzzle">
+        <button class="puzzle-pick" data-game="tableau" data-idx="0" aria-current="true" aria-label="puzzle 1">1</button>
+        <button class="puzzle-pick" data-game="tableau" data-idx="1" aria-label="puzzle 2">2</button>
+        <button class="puzzle-pick" data-game="tableau" data-idx="2" aria-label="puzzle 3">3</button>
+      </span>
     </div>
 
     <div class="stage" id="stage-tableau">
@@ -996,6 +1052,12 @@
       <button class="tool-btn" data-action="reset" data-game="filament">Reset</button>
       <button class="tool-btn" data-action="reveal" data-game="filament">Reveal</button>
       <button class="tool-btn" data-action="share" data-game="filament" hidden>Share</button>
+      <span class="sep"></span>
+      <span class="puzzle-picker" data-game="filament" role="group" aria-label="Choose puzzle">
+        <button class="puzzle-pick" data-game="filament" data-idx="0" aria-current="true" aria-label="puzzle 1">1</button>
+        <button class="puzzle-pick" data-game="filament" data-idx="1" aria-label="puzzle 2">2</button>
+        <button class="puzzle-pick" data-game="filament" data-idx="2" aria-label="puzzle 3">3</button>
+      </span>
     </div>
 
     <div class="stage" id="stage-filament">
@@ -1020,6 +1082,12 @@
       <button class="tool-btn" data-action="reset" data-game="beatsheet">Reset</button>
       <button class="tool-btn" data-action="reveal" data-game="beatsheet">Reveal</button>
       <button class="tool-btn" data-action="share" data-game="beatsheet" hidden>Share</button>
+      <span class="sep"></span>
+      <span class="puzzle-picker" data-game="beatsheet" role="group" aria-label="Choose puzzle">
+        <button class="puzzle-pick" data-game="beatsheet" data-idx="0" aria-current="true" aria-label="puzzle 1">1</button>
+        <button class="puzzle-pick" data-game="beatsheet" data-idx="1" aria-label="puzzle 2">2</button>
+        <button class="puzzle-pick" data-game="beatsheet" data-idx="2" aria-label="puzzle 3">3</button>
+      </span>
     </div>
 
     <div class="stage" id="stage-beatsheet">
@@ -1044,6 +1112,12 @@
       <button class="tool-btn" data-action="reset" data-game="knot">Reset</button>
       <button class="tool-btn" data-action="reveal" data-game="knot">Reveal</button>
       <button class="tool-btn" data-action="share" data-game="knot" hidden>Share</button>
+      <span class="sep"></span>
+      <span class="puzzle-picker" data-game="knot" role="group" aria-label="Choose puzzle">
+        <button class="puzzle-pick" data-game="knot" data-idx="0" aria-current="true" aria-label="puzzle 1">1</button>
+        <button class="puzzle-pick" data-game="knot" data-idx="1" aria-label="puzzle 2">2</button>
+        <button class="puzzle-pick" data-game="knot" data-idx="2" aria-label="puzzle 3">3</button>
+      </span>
     </div>
 
     <div class="stage" id="stage-knot">
@@ -1067,6 +1141,12 @@
       <button class="tool-btn" data-action="reset" data-game="bloom">Reset</button>
       <button class="tool-btn" data-action="reveal" data-game="bloom">Reveal</button>
       <button class="tool-btn" data-action="share" data-game="bloom" hidden>Share</button>
+      <span class="sep"></span>
+      <span class="puzzle-picker" data-game="bloom" role="group" aria-label="Choose puzzle">
+        <button class="puzzle-pick" data-game="bloom" data-idx="0" aria-current="true" aria-label="puzzle 1">1</button>
+        <button class="puzzle-pick" data-game="bloom" data-idx="1" aria-label="puzzle 2">2</button>
+        <button class="puzzle-pick" data-game="bloom" data-idx="2" aria-label="puzzle 3">3</button>
+      </span>
     </div>
 
     <div class="stage" id="stage-bloom">
@@ -1094,6 +1174,12 @@
       <button class="tool-btn" data-action="reset" data-game="cleave">Reset</button>
       <button class="tool-btn" data-action="reveal" data-game="cleave">Reveal</button>
       <button class="tool-btn" data-action="share" data-game="cleave" hidden>Share</button>
+      <span class="sep"></span>
+      <span class="puzzle-picker" data-game="cleave" role="group" aria-label="Choose puzzle">
+        <button class="puzzle-pick" data-game="cleave" data-idx="0" aria-current="true" aria-label="puzzle 1">1</button>
+        <button class="puzzle-pick" data-game="cleave" data-idx="1" aria-label="puzzle 2">2</button>
+        <button class="puzzle-pick" data-game="cleave" data-idx="2" aria-label="puzzle 3">3</button>
+      </span>
     </div>
 
     <div class="stage" id="stage-cleave">
@@ -1118,6 +1204,12 @@
       <button class="tool-btn" data-action="reset" data-game="strand">Reset</button>
       <button class="tool-btn" data-action="reveal" data-game="strand">Reveal</button>
       <button class="tool-btn" data-action="share" data-game="strand" hidden>Share</button>
+      <span class="sep"></span>
+      <span class="puzzle-picker" data-game="strand" role="group" aria-label="Choose puzzle">
+        <button class="puzzle-pick" data-game="strand" data-idx="0" aria-current="true" aria-label="puzzle 1">1</button>
+        <button class="puzzle-pick" data-game="strand" data-idx="1" aria-label="puzzle 2">2</button>
+        <button class="puzzle-pick" data-game="strand" data-idx="2" aria-label="puzzle 3">3</button>
+      </span>
     </div>
 
     <div class="stage" id="stage-strand">
@@ -1303,8 +1395,22 @@ if (document.fonts && document.fonts.ready) {
 // Default mood for first paint
 document.body.dataset.mood = 'light';
 
-// Toolbar wiring (reset / reveal / share)
+// Toolbar wiring (reset / reveal / share / puzzle picker)
 document.addEventListener('click', e => {
+  const pick = e.target.closest('.puzzle-pick');
+  if (pick) {
+    const game = pick.dataset.game;
+    const idx = +pick.dataset.idx;
+    const mod = GAMES[game];
+    if (mod && mod.load) {
+      mod.load(idx);
+      document.querySelectorAll(`.puzzle-pick[data-game="${game}"]`).forEach(b => {
+        if (+b.dataset.idx === idx) b.setAttribute('aria-current', 'true');
+        else b.removeAttribute('aria-current');
+      });
+    }
+    return;
+  }
   const btn = e.target.closest('.tool-btn');
   if (!btn) return;
   const game = btn.dataset.game;
@@ -1316,6 +1422,14 @@ document.addEventListener('click', e => {
   if (action === 'reveal') mod.reveal && mod.reveal();
 });
 
+// Brief accent flash on stage to confirm reveal triggered.
+function flashReveal(stageEl) {
+  stageEl.classList.remove('revealing');
+  void stageEl.offsetWidth; // force reflow to restart animation
+  stageEl.classList.add('revealing');
+  setTimeout(() => stageEl.classList.remove('revealing'), 800);
+}
+
 // ─────────────────────────────────────────────
 //  Game registry
 // ─────────────────────────────────────────────
@@ -1325,24 +1439,62 @@ const GAMES = {};
 //  GAME 1 — TABLEAU
 // ═════════════════════════════════════════════
 (function Tableau() {
-  // Puzzle definition — see README for authoring notes.
-  const PUZZLE = {
-    id: 'tableau-001',
-    target: [
-      [0,0,1,0,0],
-      [0,0,1,0,0],
-      [1,1,1,1,1],
-      [0,0,1,0,0],
-      [0,0,1,0,0],
-    ],
-    clues: [
-      'The grid is symmetric both horizontally and vertically.',
-      'Row 3 is entirely filled.',
-      'Column 3 is entirely filled.',
-      'No filled cell is diagonally adjacent to another filled cell.',
-      'Exactly 9 cells are filled in total.',
-    ],
-  };
+  // Puzzle definitions — see README for authoring notes.
+  const PUZZLES = [
+    {
+      id: 'tableau-001',
+      target: [
+        [0,0,1,0,0],
+        [0,0,1,0,0],
+        [1,1,1,1,1],
+        [0,0,1,0,0],
+        [0,0,1,0,0],
+      ],
+      clues: [
+        'The grid is symmetric both horizontally and vertically.',
+        'Row 3 is entirely filled.',
+        'Column 3 is entirely filled.',
+        'No filled cell is diagonally adjacent to another filled cell.',
+        'Exactly 9 cells are filled in total.',
+      ],
+    },
+    {
+      id: 'tableau-002',
+      target: [
+        [1,0,1,0,1],
+        [0,0,0,0,0],
+        [1,0,1,0,1],
+        [0,0,0,0,0],
+        [1,0,1,0,1],
+      ],
+      clues: [
+        'All four corners are filled.',
+        'The center cell is filled.',
+        'No two filled cells share an edge.',
+        'The pattern is symmetric across both diagonals.',
+        'Exactly 9 cells are filled in total.',
+      ],
+    },
+    {
+      id: 'tableau-003',
+      target: [
+        [0,0,1,0,0],
+        [0,1,1,1,0],
+        [1,1,1,1,1],
+        [0,1,1,1,0],
+        [0,0,1,0,0],
+      ],
+      clues: [
+        'Symmetric across all four axes (horizontal, vertical, and both diagonals).',
+        'Row 3 and column 3 are both entirely filled.',
+        'The four corners are empty.',
+        'Every cell diagonally adjacent to the center is filled.',
+        'Exactly 13 cells are filled in total.',
+      ],
+    },
+  ];
+  let pIdx = 0;
+  let PUZZLE = PUZZLES[pIdx];
 
   const gridEl   = $('#tableau-grid');
   const cluesEl  = $('#tableau-clues');
@@ -1437,6 +1589,13 @@ const GAMES = {};
     solvedEl.querySelector('.solved-text').textContent = 'Revealed';
     solvedEl.classList.add('show', 'is-revealed');
     revealBtn.hidden = true;
+    flashReveal(stageEl);
+  }
+
+  function load(i) {
+    pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+    PUZZLE = PUZZLES[pIdx];
+    reset();
   }
 
   function share() {
@@ -1451,7 +1610,7 @@ internet.house/game`;
   }
 
   build();
-  GAMES.tableau = { reset, share, reveal };
+  GAMES.tableau = { reset, share, reveal, load };
 })();
 
 // ═════════════════════════════════════════════
@@ -1463,22 +1622,61 @@ internet.house/game`;
   const N = 5;              // cells per side
   const DOTS = N + 1;       // dots per side
 
-  // The "answer" loop — a stepped diamond. Used to derive clue counts.
-  // (We don't compare user segments to this — any valid loop satisfying
-  //  the clue counts is accepted. See README.)
-  const ANSWER_PATH = [
-    [2,0],[3,0],[3,1],[4,1],[4,2],[5,2],[5,3],[4,3],[4,4],[3,4],
-    [3,5],[2,5],[2,4],[1,4],[1,3],[0,3],[0,2],[1,2],[1,1],[2,1],[2,0],
+  // Each puzzle defines a closed reference loop, the clue cells that
+  // pin its edge counts, and a short share glyph for the social text.
+  // (We don't compare user segments to ANSWER_PATH — any valid loop
+  //  satisfying the clue counts is accepted. See README.)
+  const PUZZLES = [
+    {
+      id: 'filament-001',
+      shape: '◇ a stepped diamond',
+      ANSWER_PATH: [
+        [2,0],[3,0],[3,1],[4,1],[4,2],[5,2],[5,3],[4,3],[4,4],[3,4],
+        [3,5],[2,5],[2,4],[1,4],[1,3],[0,3],[0,2],[1,2],[1,1],[2,1],[2,0],
+      ],
+      CLUES_CELLS: [
+        {c:1,r:0,n:2},{c:2,r:0,n:3},{c:3,r:0,n:2},
+        {c:2,r:1,n:0},
+        {c:0,r:2,n:3},{c:2,r:2,n:0},{c:4,r:2,n:3},
+        {c:2,r:3,n:0},
+        {c:1,r:4,n:2},{c:2,r:4,n:3},{c:3,r:4,n:2},
+      ],
+    },
+    {
+      id: 'filament-002',
+      shape: '▢ a clean square',
+      // Loop around the inner 3×3 block (cells [1..3][1..3]).
+      ANSWER_PATH: [
+        [1,1],[2,1],[3,1],[4,1],[4,2],[4,3],[4,4],
+        [3,4],[2,4],[1,4],[1,3],[1,2],[1,1],
+      ],
+      CLUES_CELLS: [
+        {c:1,r:1,n:2},{c:2,r:1,n:1},{c:3,r:1,n:2},
+        {c:1,r:2,n:1},{c:2,r:2,n:0},{c:3,r:2,n:1},
+        {c:1,r:3,n:2},{c:2,r:3,n:1},{c:3,r:3,n:2},
+      ],
+    },
+    {
+      id: 'filament-003',
+      shape: '⌐ a notched bracket',
+      // L-shaped loop: full 5×5 with a 2×2 notch missing top-right.
+      ANSWER_PATH: [
+        [0,0],[1,0],[2,0],[3,0],[3,1],[3,2],[4,2],[5,2],
+        [5,3],[5,4],[5,5],[4,5],[3,5],[2,5],[1,5],[0,5],
+        [0,4],[0,3],[0,2],[0,1],[0,0],
+      ],
+      CLUES_CELLS: [
+        {c:0,r:0,n:2},{c:1,r:0,n:1},{c:2,r:0,n:2},
+        {c:3,r:1,n:2},{c:4,r:1,n:1},
+        {c:0,r:2,n:1},{c:4,r:2,n:2},
+        {c:2,r:3,n:0},{c:0,r:4,n:2},{c:4,r:4,n:2},
+      ],
+    },
   ];
-
-  // Clue cells: { c, r, n }. Hand-picked for symmetry & readability.
-  const CLUES_CELLS = [
-    {c:1,r:0,n:2},{c:2,r:0,n:3},{c:3,r:0,n:2},
-    {c:2,r:1,n:0},
-    {c:0,r:2,n:3},{c:2,r:2,n:0},{c:4,r:2,n:3},
-    {c:2,r:3,n:0},
-    {c:1,r:4,n:2},{c:2,r:4,n:3},{c:3,r:4,n:2},
-  ];
+  let pIdx = 0;
+  let PUZZLE = PUZZLES[pIdx];
+  let ANSWER_PATH = PUZZLE.ANSWER_PATH;
+  let CLUES_CELLS = PUZZLE.CLUES_CELLS;
 
   const CLUE_TEXT = [
     'Draw segments between adjacent dots to form one closed loop.',
@@ -1760,18 +1958,27 @@ internet.house/game`;
     solvedEl.querySelector('.solved-text').textContent = 'Revealed';
     solvedEl.classList.add('show', 'is-revealed');
     revealBtn.hidden = true;
+    flashReveal(stageEl);
+  }
+
+  function load(i) {
+    pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+    PUZZLE = PUZZLES[pIdx];
+    ANSWER_PATH = PUZZLE.ANSWER_PATH;
+    CLUES_CELLS = PUZZLE.CLUES_CELLS;
+    reset();
   }
 
   function share() {
     const text =
 `Filament · ${timer.formatted()}
-◇ a stepped diamond
+${PUZZLE.shape}
 internet.house/game`;
     copyShare(text);
   }
 
   build();
-  GAMES.filament = { reset, share, reveal };
+  GAMES.filament = { reset, share, reveal, load };
 })();
 
 // ═════════════════════════════════════════════
@@ -1779,31 +1986,111 @@ internet.house/game`;
 // ═════════════════════════════════════════════
 (function BeatSheet() {
 
-  // Four characters, placed at 2x2 corners.
-  // Position order around the board is arbitrary; ordering is built by player clicks.
-  const CHARS = [
-    { id: 'detective', name: 'Detective', glyph: '🕵️', pos: 'pos-nw' },
-    { id: 'maid',      name: 'Maid',      glyph: '👒', pos: 'pos-ne' },
-    { id: 'butler',    name: 'Butler',    glyph: '🎩', pos: 'pos-se' },
-    { id: 'heir',      name: 'Heir',      glyph: '👑', pos: 'pos-sw' },
+  // Each puzzle defines a 4-character cast at 2×2 corners plus the
+  // constraints that pin one valid ordering. `answer` is used by reveal.
+  const PUZZLES = [
+    {
+      id: 'beatsheet-001',
+      headline: 'A locked study. Four witnesses.',
+      CHARS: [
+        { id: 'detective', name: 'Detective', glyph: '🕵️', pos: 'pos-nw' },
+        { id: 'maid',      name: 'Maid',      glyph: '👒', pos: 'pos-ne' },
+        { id: 'butler',    name: 'Butler',    glyph: '🎩', pos: 'pos-se' },
+        { id: 'heir',      name: 'Heir',      glyph: '👑', pos: 'pos-sw' },
+      ],
+      CLUES: [
+        {
+          text: 'The Detective interviewed the Maid before the Butler.',
+          check: order => order.indexOf('maid') < order.indexOf('butler')
+                       && order.includes('detective')
+                       && order.indexOf('detective') < order.indexOf('butler'),
+        },
+        {
+          text: 'The Heir was the last person interviewed.',
+          check: order => order[order.length - 1] === 'heir',
+        },
+        {
+          text: 'The Maid was not the first person interviewed.',
+          check: order => order[0] !== 'maid',
+        },
+      ],
+      answer: ['detective', 'maid', 'butler', 'heir'],
+    },
+    {
+      id: 'beatsheet-002',
+      headline: 'A safe cracked open. Four shadows.',
+      CHARS: [
+        { id: 'lookout',     name: 'Lookout',     glyph: '🕶️', pos: 'pos-nw' },
+        { id: 'safecracker', name: 'Safecracker', glyph: '🧰', pos: 'pos-ne' },
+        { id: 'driver',      name: 'Driver',      glyph: '🚗', pos: 'pos-sw' },
+        { id: 'forger',      name: 'Forger',      glyph: '🖋️', pos: 'pos-se' },
+      ],
+      CLUES: [
+        {
+          text: 'The Lookout entered first to clear the path.',
+          check: order => order[0] === 'lookout',
+        },
+        {
+          text: 'The Forger was the last to leave.',
+          check: order => order[order.length - 1] === 'forger',
+        },
+        {
+          text: 'The Driver arrived immediately before the Forger.',
+          check: order => {
+            const di = order.indexOf('driver'), fi = order.indexOf('forger');
+            return di >= 0 && fi >= 0 && fi - di === 1;
+          },
+        },
+        {
+          text: 'The Safecracker came after the Lookout but before the Driver.',
+          check: order => {
+            const li = order.indexOf('lookout'), si = order.indexOf('safecracker'), di = order.indexOf('driver');
+            return li >= 0 && si >= 0 && di >= 0 && li < si && si < di;
+          },
+        },
+      ],
+      answer: ['lookout', 'safecracker', 'driver', 'forger'],
+    },
+    {
+      id: 'beatsheet-003',
+      headline: 'A quiet dining room. Four meetings.',
+      CHARS: [
+        { id: 'host',   name: 'Host',   glyph: '🛎️', pos: 'pos-nw' },
+        { id: 'critic', name: 'Critic', glyph: '📝', pos: 'pos-ne' },
+        { id: 'waiter', name: 'Waiter', glyph: '🍽️', pos: 'pos-sw' },
+        { id: 'chef',   name: 'Chef',   glyph: '👨‍🍳', pos: 'pos-se' },
+      ],
+      CLUES: [
+        {
+          text: 'The Host greeted the Critic at the door first.',
+          check: order => order[0] === 'host',
+        },
+        {
+          text: 'The Chef was the last to come out from the kitchen.',
+          check: order => order[order.length - 1] === 'chef',
+        },
+        {
+          text: 'The Critic was seated before the Waiter approached.',
+          check: order => {
+            const ci = order.indexOf('critic'), wi = order.indexOf('waiter');
+            return ci >= 0 && wi >= 0 && ci < wi;
+          },
+        },
+        {
+          text: 'The Waiter announced the Chef would come out next.',
+          check: order => {
+            const wi = order.indexOf('waiter'), ci = order.indexOf('chef');
+            return wi >= 0 && ci >= 0 && ci - wi === 1;
+          },
+        },
+      ],
+      answer: ['host', 'critic', 'waiter', 'chef'],
+    },
   ];
-
-  const CLUES = [
-    {
-      text: 'The Detective interviewed the Maid before the Butler.',
-      check: order => order.indexOf('maid') < order.indexOf('butler')
-                   && order.includes('detective')
-                   && order.indexOf('detective') < order.indexOf('butler'),
-    },
-    {
-      text: 'The Heir was the last person interviewed.',
-      check: order => order[order.length - 1] === 'heir',
-    },
-    {
-      text: 'The Maid was not the first person interviewed.',
-      check: order => order[0] !== 'maid',
-    },
-  ];
+  let pIdx = 0;
+  let PUZZLE = PUZZLES[pIdx];
+  let CHARS = PUZZLE.CHARS;
+  let CLUES = PUZZLE.CLUES;
 
   const boardEl  = $('#beat-board');
   const cluesEl  = $('#beat-clues');
@@ -1839,7 +2126,7 @@ internet.house/game`;
     // Center vignette
     const center = document.createElement('div');
     center.className = 'beat-center';
-    center.textContent = 'A locked study. Four witnesses.';
+    center.textContent = PUZZLE.headline;
     boardEl.appendChild(center);
 
     // Tokens
@@ -1937,7 +2224,7 @@ internet.house/game`;
 
   function reveal() {
     if (solved) return;
-    order = ['detective', 'maid', 'butler', 'heir'];
+    order = PUZZLE.answer.slice();
     render();
     solved = true;
     timer.stop();
@@ -1945,6 +2232,15 @@ internet.house/game`;
     solvedEl.querySelector('.solved-text').textContent = 'Revealed';
     solvedEl.classList.add('show', 'is-revealed');
     revealBtn.hidden = true;
+    flashReveal(stageEl);
+  }
+
+  function load(i) {
+    pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+    PUZZLE = PUZZLES[pIdx];
+    CHARS = PUZZLE.CHARS;
+    CLUES = PUZZLE.CLUES;
+    reset();
   }
 
   function share() {
@@ -1961,35 +2257,77 @@ internet.house/game`;
   window.addEventListener('resize', () => { if (!solved) drawPath(); else drawPath(); });
 
   build();
-  GAMES.beatsheet = { reset, share, reveal };
+  GAMES.beatsheet = { reset, share, reveal, load };
 })();
 
 // ═════════════════════════════════════════════
 //  GAME 4 — KNOT
 // ═════════════════════════════════════════════
 (function Knot() {
-  // Hexagram-flower: 6 inner ring + 6 outer petals = 12 nodes.
-  // viewBox 0..600 on both axes; center at (300, 300).
-  const TARGETS = [
-    // Inner hexagon (radius 90, starting at top, clockwise)
-    [300, 210], [378, 255], [378, 345], [300, 390], [222, 345], [222, 255],
-    // Outer petals (radius 180, offset 30°, clockwise from NE)
-    [390, 144], [480, 300], [390, 456], [210, 456], [120, 300], [210, 144],
+  // Each puzzle: 12 nodes (TARGETS), scrambled STARTS, and EDGES that
+  // form the final line drawing. viewBox is 0..600 on both axes.
+  const PUZZLES = [
+    {
+      id: 'knot-001',
+      shape: '✦ a six-petaled bloom',
+      TARGETS: [
+        [300, 210], [378, 255], [378, 345], [300, 390], [222, 345], [222, 255],
+        [390, 144], [480, 300], [390, 456], [210, 456], [120, 300], [210, 144],
+      ],
+      STARTS: [
+        [140, 480], [520, 130], [ 90, 200], [450, 530],
+        [560, 410], [160, 110], [300, 540], [440, 200],
+        [110, 320], [500, 360], [260,  70], [370, 410],
+      ],
+      EDGES: [
+        [0,1],[1,2],[2,3],[3,4],[4,5],[5,0],
+        [6,0],[6,1], [7,1],[7,2], [8,2],[8,3],
+        [9,3],[9,4], [10,4],[10,5], [11,5],[11,0],
+      ],
+    },
+    {
+      id: 'knot-002',
+      shape: '◈ a compass medallion',
+      // Octagon perimeter + inner diamond.
+      TARGETS: [
+        [300, 100], [500, 300], [300, 500], [100, 300],
+        [400, 200], [400, 400], [200, 400], [200, 200],
+        [300, 220], [380, 300], [300, 380], [220, 300],
+      ],
+      STARTS: [
+        [ 80, 480], [520, 100], [ 80, 130], [560, 540],
+        [560, 320], [120, 420], [320,  60], [560, 200],
+        [ 80, 280], [500,  80], [200, 540], [340, 540],
+      ],
+      EDGES: [
+        [0,4],[4,1],[1,5],[5,2],[2,6],[6,3],[3,7],[7,0],
+        [8,9],[9,10],[10,11],[11,8],
+      ],
+    },
+    {
+      id: 'knot-003',
+      shape: '❄ a six-spoke snowflake',
+      // Inner hexagon with a spoke out to each of six tips.
+      TARGETS: [
+        [300, 100], [473, 200], [473, 400], [300, 500], [127, 400], [127, 200],
+        [300, 200], [387, 250], [387, 350], [300, 400], [213, 350], [213, 250],
+      ],
+      STARTS: [
+        [ 80, 540], [540,  80], [560, 540], [ 80, 100],
+        [340,  60], [180, 540], [ 80, 380], [520, 160],
+        [240,  80], [540, 360], [120, 130], [400, 540],
+      ],
+      EDGES: [
+        [6,7],[7,8],[8,9],[9,10],[10,11],[11,6],
+        [0,6],[1,7],[2,8],[3,9],[4,10],[5,11],
+      ],
+    },
   ];
-  // Scattered starting positions — deliberately tangled.
-  const STARTS = [
-    [140, 480], [520, 130], [ 90, 200], [450, 530],
-    [560, 410], [160, 110], [300, 540], [440, 200],
-    [110, 320], [500, 360], [260,  70], [370, 410],
-  ];
-  // Edges as [a, b] index pairs. Forms a 6-petaled flower.
-  const EDGES = [
-    // inner hex
-    [0,1],[1,2],[2,3],[3,4],[4,5],[5,0],
-    // outer-to-inner petals (each outer connects to its two flanking inner)
-    [6,0],[6,1], [7,1],[7,2], [8,2],[8,3],
-    [9,3],[9,4], [10,4],[10,5], [11,5],[11,0],
-  ];
+  let pIdx = 0;
+  let PUZZLE = PUZZLES[pIdx];
+  let TARGETS = PUZZLE.TARGETS;
+  let STARTS  = PUZZLE.STARTS;
+  let EDGES   = PUZZLE.EDGES;
 
   const SNAP_R  = 14;   // win radius (svg units)
   const NEAR_R  = 26;   // "tight" pulse radius
@@ -2164,45 +2502,88 @@ internet.house/game`;
     solvedEl.querySelector('.solved-text').textContent = 'Revealed';
     solvedEl.classList.add('show', 'is-revealed');
     revealBtn.hidden = true;
+    flashReveal(stageEl);
+  }
+
+  function load(i) {
+    pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+    PUZZLE = PUZZLES[pIdx];
+    TARGETS = PUZZLE.TARGETS;
+    STARTS  = PUZZLE.STARTS;
+    EDGES   = PUZZLE.EDGES;
+    reset();
   }
 
   function share() {
     const text =
 `Knot · ${timer.formatted()}
-✦ a six-petaled bloom
+${PUZZLE.shape}
 internet.house/game`;
     copyShare(text);
   }
 
   build();
-  GAMES.knot = { reset, share, reveal };
+  GAMES.knot = { reset, share, reveal, load };
 })();
 
 // ═════════════════════════════════════════════
 //  GAME 5 — BLOOM
 // ═════════════════════════════════════════════
 (function Bloom() {
-  // 7x7 grid. Walls form an anti-diagonal; seed at (r=1, c=5) blooms into
-  // a clean triangular wedge above the diagonal in 5 generations.
+  // 7×7 grid; walls channel a cascading bloom from a single seed.
+  // Each puzzle's TARGET_LIST is the deterministic result of cascading
+  // from ANSWER_SEED through WALL_LIST for GENERATIONS rounds.
   const SIZE = 7;
   const GENERATIONS = 5;
 
-  // Walls form an anti-diagonal plus two pinch-points (0,6) and (2,4),
-  // which makes (1,5) the unique seed that produces today's target.
-  const WALL_LIST = [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[0,6],[2,4]];
-  const WALLS = new Set(WALL_LIST.map(([r,c]) => `${r},${c}`));
-
-  // Target = the bloom pattern produced by the intended seed.
-  // (Derived by running cascade(SEED, GENERATIONS) — see README for how to author.)
-  const TARGET_LIST = [
-    [0,1],[0,2],[0,3],[0,4],[0,5],
-    [1,2],[1,3],[1,4],[1,5],[1,6],
-    [2,3],[2,5],[2,6],
-    [3,4],[3,5],[3,6],
-    [4,5],[4,6],
-    [5,6],
+  const PUZZLES = [
+    {
+      id: 'bloom-001',
+      WALL_LIST: [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[0,6],[2,4]],
+      ANSWER_SEED: [1, 5],
+      TARGET_LIST: [
+        [0,1],[0,2],[0,3],[0,4],[0,5],
+        [1,2],[1,3],[1,4],[1,5],[1,6],
+        [2,3],[2,5],[2,6],
+        [3,4],[3,5],[3,6],
+        [4,5],[4,6],
+        [5,6],
+      ],
+    },
+    {
+      id: 'bloom-002',
+      // L-shaped walls cradling the top-left corner.
+      WALL_LIST: [[0,5],[1,5],[2,5],[3,5],[5,0],[5,1],[5,2],[5,3]],
+      ANSWER_SEED: [0, 0],
+      TARGET_LIST: [
+        [0,0],[0,1],[0,2],[0,3],[0,4],
+        [1,0],[1,1],[1,2],[1,3],[1,4],
+        [2,0],[2,1],[2,2],[2,3],
+        [3,0],[3,1],[3,2],
+        [4,0],[4,1],
+      ],
+    },
+    {
+      id: 'bloom-003',
+      // Two horizontal walls form a "C" channel; seed enters from the left.
+      WALL_LIST: [[1,1],[1,2],[1,3],[1,4],[5,1],[5,2],[5,3],[5,4]],
+      ANSWER_SEED: [3, 0],
+      TARGET_LIST: [
+        [0,0],[0,1],[0,2],
+        [1,0],
+        [2,0],[2,1],[2,2],[2,3],[2,4],
+        [3,0],[3,1],[3,2],[3,3],[3,4],[3,5],
+        [4,0],[4,1],[4,2],[4,3],[4,4],
+        [5,0],
+        [6,0],[6,1],[6,2],
+      ],
+    },
   ];
-  const TARGET = new Set(TARGET_LIST.map(([r,c]) => `${r},${c}`));
+  let pIdx = 0;
+  let PUZZLE = PUZZLES[pIdx];
+  let WALLS  = new Set(PUZZLE.WALL_LIST.map(([r,c]) => `${r},${c}`));
+  let TARGET = new Set(PUZZLE.TARGET_LIST.map(([r,c]) => `${r},${c}`));
+  let ANSWER_SEED = PUZZLE.ANSWER_SEED;
 
   const boardEl  = $('#bloom-board');
   const stageEl  = $('#stage-bloom');
@@ -2210,9 +2591,6 @@ internet.house/game`;
   const shareBtn  = document.querySelector('.tool-btn[data-game="bloom"][data-action="share"]');
   const revealBtn = document.querySelector('.tool-btn[data-game="bloom"][data-action="reveal"]');
   const timer     = createTimer($('#timer-bloom'));
-
-  // The seed cell that produces the target — used by reveal().
-  const ANSWER_SEED = [1, 5];
 
   let cellEls;   // cellEls[r][c]
   let busy = false;
@@ -2330,17 +2708,28 @@ internet.house/game`;
     if (busy || solved) return;
     busy = true;
     clearFilled();
+    flashReveal(stageEl);
     const { gens } = computeGenerations(ANSWER_SEED[0], ANSWER_SEED[1]);
     for (const gen of gens) {
       for (const [gr, gc] of gen) cellEls[gr][gc].classList.add('filled');
       await new Promise(res => setTimeout(res, 170));
     }
     solved = true;
+    busy = false;
     timer.stop();
     boardEl.classList.add('solved');
     solvedEl.querySelector('.solved-text').textContent = 'Revealed';
     solvedEl.classList.add('show', 'is-revealed');
     revealBtn.hidden = true;
+  }
+
+  function load(i) {
+    pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+    PUZZLE = PUZZLES[pIdx];
+    WALLS  = new Set(PUZZLE.WALL_LIST.map(([r,c]) => `${r},${c}`));
+    TARGET = new Set(PUZZLE.TARGET_LIST.map(([r,c]) => `${r},${c}`));
+    ANSWER_SEED = PUZZLE.ANSWER_SEED;
+    reset();
   }
 
   function share() {
@@ -2363,21 +2752,40 @@ internet.house/game`;
   }
 
   build();
-  GAMES.bloom = { reset, share, reveal };
+  GAMES.bloom = { reset, share, reveal, load };
 })();
 
 // ═════════════════════════════════════════════
 //  GAME 6 — CLEAVE
 // ═════════════════════════════════════════════
 (function Cleave() {
-  // Letterstring stripped of spaces. Canonical cut positions are the
-  // indices at which a space should appear (i.e., between letters i-1 and i).
-  const PUZZLE = {
-    letters:    'AROLLINGSTONEGATHERSNOMOSS',
-    canonical:  [1, 8, 13, 20, 22],         // A | ROLLING | STONE | GATHERS | NO | MOSS
-    phrase:     'A rolling stone gathers no moss',
-    attribution:'Proverb',
-  };
+  // Each puzzle is a letterstring with the canonical cut positions —
+  // the indices at which a space should appear (between letters i-1 and i).
+  const PUZZLES = [
+    {
+      id: 'cleave-001',
+      letters:    'AROLLINGSTONEGATHERSNOMOSS',
+      canonical:  [1, 8, 13, 20, 22],         // A | ROLLING | STONE | GATHERS | NO | MOSS
+      phrase:     'A rolling stone gathers no moss',
+      attribution:'Proverb',
+    },
+    {
+      id: 'cleave-002',
+      letters:    'STRIKEWHILETHEIRONISHOT',
+      canonical:  [6, 11, 14, 18, 20],        // STRIKE | WHILE | THE | IRON | IS | HOT
+      phrase:     'Strike while the iron is hot',
+      attribution:'Proverb',
+    },
+    {
+      id: 'cleave-003',
+      letters:    'THEEARLYBIRDCATCHESTHEWORM',
+      canonical:  [3, 8, 12, 19, 22],         // THE | EARLY | BIRD | CATCHES | THE | WORM
+      phrase:     'The early bird catches the worm',
+      attribution:'Proverb',
+    },
+  ];
+  let pIdx = 0;
+  let PUZZLE = PUZZLES[pIdx];
 
   const stageEl  = $('#cleave-stage');
   const attrEl   = $('#cleave-attr');
@@ -2386,7 +2794,7 @@ internet.house/game`;
   const revealBtn = document.querySelector('.tool-btn[data-game="cleave"][data-action="reveal"]');
   const timer     = createTimer($('#timer-cleave'));
 
-  const canonical = new Set(PUZZLE.canonical);
+  let canonical = new Set(PUZZLE.canonical);
   let cuts;           // Set<number>
   let gapEls;         // gap elements keyed by position
   let solved = false;
@@ -2473,6 +2881,14 @@ internet.house/game`;
     solvedEl.querySelector('.solved-text').textContent = 'Revealed';
     solvedEl.classList.add('show', 'is-revealed');
     revealBtn.hidden = true;
+    flashReveal(stageEl);
+  }
+
+  function load(i) {
+    pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+    PUZZLE = PUZZLES[pIdx];
+    canonical = new Set(PUZZLE.canonical);
+    reset();
   }
 
   function share() {
@@ -2484,7 +2900,7 @@ internet.house/game`;
   }
 
   build();
-  GAMES.cleave = { reset, share, reveal };
+  GAMES.cleave = { reset, share, reveal, load };
 })();
 
 // ═════════════════════════════════════════════
@@ -2497,26 +2913,45 @@ internet.house/game`;
   const VBW = 500, VBH = 600;
   const HIT_R = 38;   // hit radius in viewBox units (touch-friendly)
 
-  const PUZZLE = {
-    theme: 'Night Sky',
-    words: ['STAR', 'ORBIT', 'COMET', 'BEAM', 'GLINT'],
-    letters: [
-      // [letter, x, y]
-      ['S', 178, 131],
-      ['T', 240, 300],
-      ['A', 254, 221],
-      ['R', 330, 144],
-      ['O',  90, 280],
-      ['M', 240, 380],
-      ['E', 320, 300],
-      ['B', 380, 220],
-      ['I', 380, 380],
-      ['C',  90, 416],
-      ['N', 300, 470],
-      ['L', 170, 470],
-      ['G',  90, 540],
-    ],
-  };
+  // Each puzzle: a theme, 4–5 target words (no internal letter repeats),
+  // and the letter field laid out so each word can be drawn as one gesture.
+  const PUZZLES = [
+    {
+      id: 'strand-001',
+      theme: 'Night Sky',
+      words: ['STAR', 'ORBIT', 'COMET', 'BEAM', 'GLINT'],
+      letters: [
+        ['S', 178, 131], ['T', 240, 300], ['A', 254, 221], ['R', 330, 144],
+        ['O',  90, 280], ['M', 240, 380], ['E', 320, 300], ['B', 380, 220],
+        ['I', 380, 380], ['C',  90, 416], ['N', 300, 470], ['L', 170, 470],
+        ['G',  90, 540],
+      ],
+    },
+    {
+      id: 'strand-002',
+      theme: 'Feelings',
+      words: ['LOVE', 'FEAR', 'CALM', 'ANGER', 'JOY'],
+      letters: [
+        ['L', 180, 130], ['O', 290, 200], ['V', 150, 280], ['E', 360, 280],
+        ['F', 430, 150], ['A', 310, 350], ['R', 440, 380], ['C',  95, 380],
+        ['M', 210, 440], ['N', 370, 460], ['G', 470, 520], ['J',  95, 510],
+        ['Y', 270, 540],
+      ],
+    },
+    {
+      id: 'strand-003',
+      theme: 'Coast',
+      words: ['TIDE', 'FOAM', 'SHORE', 'SAIL', 'SWAM'],
+      letters: [
+        ['T', 180, 130], ['I', 320, 180], ['D', 430, 240], ['E', 300, 320],
+        ['F', 110, 220], ['O', 200, 360], ['A', 380, 380], ['M', 450, 470],
+        ['W',  90, 340], ['S', 240, 470], ['H',  95, 470], ['R', 420, 170],
+        ['L', 340, 540],
+      ],
+    },
+  ];
+  let pIdx = 0;
+  let PUZZLE = PUZZLES[pIdx];
 
   const boardEl   = $('#strand-board');
   const themeEl   = $('#strand-theme');
@@ -2745,6 +3180,13 @@ internet.house/game`;
     solvedEl.querySelector('.solved-text').textContent = 'Revealed';
     solvedEl.classList.add('show', 'is-revealed');
     revealBtn.hidden = true;
+    flashReveal(stageEl);
+  }
+
+  function load(i) {
+    pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+    PUZZLE = PUZZLES[pIdx];
+    reset();
   }
 
   function share() {
@@ -2765,7 +3207,7 @@ internet.house/game`;
   boardEl.addEventListener('pointercancel', onUp);
 
   build();
-  GAMES.strand = { reset, share, reveal, onShow: () => { /* layout-safe re-render */ } };
+  GAMES.strand = { reset, share, reveal, load, onShow: () => { /* layout-safe re-render */ } };
 })();
 
 </script>
