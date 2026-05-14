@@ -62,35 +62,91 @@
     line-height: 1.1;
   }
 
-  .conc-coda {
-    margin-top: 30px;
-    padding-top: 24px;
+  /* The poem itself — the 30 words composed as a five-stanza piece.
+     Single-word lines, varied indents, large breathing room. */
+  .composition-wrap {
+    margin: 56px auto 0;
+    padding-top: 40px;
     border-top: 1px solid var(--hairline);
-    text-align: center;
+    width: 100%;
+    max-width: 520px;
   }
-  .conc-coda h3 {
-    font: 500 0.6rem 'Inter', sans-serif;
+  .composition-wrap > h3 {
+    font: 500 0.62rem 'Inter', sans-serif;
     letter-spacing: 0.28em;
     text-transform: uppercase;
     color: var(--ink-faint);
-    margin: 0 0 10px;
+    margin: 0 0 6px;
+    text-align: center;
   }
-  .conc-coda p {
+  .composition-wrap > .author {
     font-family: 'Fraunces', serif;
-    font-size: 1.16rem;
-    line-height: 1.65;
-    color: var(--ink);
+    font-style: italic;
+    font-size: 1.04rem;
+    color: var(--ink-soft);
+    text-align: center;
+    margin: 0 0 36px;
     letter-spacing: -0.005em;
-    margin: 0 auto;
-    max-width: 26em;
   }
-  .conc-coda .sig {
+  .stanza {
+    margin: 0 auto 32px;
+    padding-left: 12%;
+  }
+  .stanza:nth-child(even) { padding-left: 24%; }
+  .stanza .roman {
+    font: 500 0.7rem 'Fraunces', serif;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .line {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 1.55rem;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    line-height: 1.85;
+    display: block;
+  }
+  .line.indent-1 { padding-left: 1.4em; }
+  .line.indent-2 { padding-left: 2.8em; }
+  .line.italic   { font-style: italic; color: var(--ink-soft); }
+  .line.large    { font-size: 1.95rem; letter-spacing: -0.02em; }
+
+  .composition-wrap .coda {
+    margin-top: 8px;
+    padding-top: 22px;
+    border-top: 1px solid var(--hairline);
+    text-align: center;
     font-family: 'Fraunces', serif;
     font-style: italic;
     color: var(--ink-faint);
-    margin-top: 18px;
-    font-size: 0.88rem;
+    font-size: 0.86rem;
     letter-spacing: -0.005em;
+  }
+  @media (max-width: 480px) {
+    .stanza { padding-left: 8%; }
+    .stanza:nth-child(even) { padding-left: 16%; }
+    .line { font-size: 1.32rem; line-height: 1.8; }
+  }
+
+  /* prose-poem reading */
+  .prose-poem {
+    font-family: 'Fraunces', serif;
+    font-size: 1.18rem;
+    line-height: 1.85;
+    color: var(--ink-faint);
+    letter-spacing: -0.005em;
+    max-width: 30em;
+    margin: 0 auto;
+    text-align: left;
+  }
+  .prose-poem p { margin: 0 0 22px; }
+  .prose-poem p:last-child { margin-bottom: 0; }
+  .prose-poem .kw {
+    color: var(--ink);
+    font-weight: 500;
   }
 
   .preview-bar {
@@ -133,12 +189,92 @@
       <div class="stage">
         <div class="conc-progress">Day <span class="num">30</span> of 30 · "<span>Compositions</span>" · complete</div>
 
-        <div class="conc-poem" id="conc-poem" aria-label="completed poem"></div>
+        <div class="conc-poem" id="conc-poem" aria-label="day-by-day log of the composition"></div>
 
-        <div class="conc-coda" aria-label="poem read aloud">
-          <h3>Read aloud</h3>
-          <p id="conc-recite"></p>
-          <div class="sig">— composed over thirty days</div>
+        <div class="composition-wrap" aria-label="the composition">
+          <h3>The composition</h3>
+          <p class="author">— assembled from thirty days' words</p>
+
+          <div class="stanza">
+            <span class="roman">I.</span>
+            <span class="line large">mist</span>
+            <span class="line indent-1">ember</span>
+            <span class="line indent-2">ripple</span>
+            <span class="line italic indent-1">letter</span>
+            <span class="line">soundless</span>
+            <span class="line indent-1">glimmer</span>
+          </div>
+
+          <div class="stanza">
+            <span class="roman">II.</span>
+            <span class="line">moth</span>
+            <span class="line indent-2 italic">vellum</span>
+            <span class="line indent-1">harp</span>
+            <span class="line">unfold</span>
+            <span class="line indent-2">alone</span>
+            <span class="line italic">soften</span>
+          </div>
+
+          <div class="stanza">
+            <span class="roman">III.</span>
+            <span class="line indent-1 large">attic</span>
+            <span class="line">threshold</span>
+            <span class="line indent-2 italic">linen</span>
+            <span class="line">cedar</span>
+            <span class="line indent-1">parchment</span>
+            <span class="line indent-2">taper</span>
+          </div>
+
+          <div class="stanza">
+            <span class="roman">IV.</span>
+            <span class="line">level</span>
+            <span class="line italic indent-1">softly</span>
+            <span class="line indent-2">sparrow</span>
+            <span class="line">november</span>
+            <span class="line indent-1 italic">shawl</span>
+            <span class="line">ledger</span>
+          </div>
+
+          <div class="stanza">
+            <span class="roman">V.</span>
+            <span class="line indent-2">signature</span>
+            <span class="line indent-1 italic">tendril</span>
+            <span class="line">ghost</span>
+            <span class="line indent-2">midnight</span>
+            <span class="line indent-1 italic">unbinding</span>
+            <span class="line large">closing</span>
+          </div>
+
+          <div class="coda">— thirty days, thirty words, one composition</div>
+        </div>
+
+        <div class="composition-wrap" aria-label="the composition, read as prose">
+          <h3>Read as prose</h3>
+          <p class="author">— the same thirty words, knit into sentences</p>
+
+          <div class="prose-poem">
+            <p><span class="kw">A mist.</span> An <span class="kw">ember</span> on the windowsill.<br>
+            A <span class="kw">ripple</span> in the <span class="kw">letter</span>,<br>
+            <span class="kw">soundless</span> — a <span class="kw">glimmer</span><br>
+            of the <span class="kw">moth</span> on <span class="kw">vellum</span>.</p>
+
+            <p>The <span class="kw">harp</span>'s <span class="kw">unfold</span>.<br>
+            <span class="kw">Alone</span>, the dusk <span class="kw">softens</span><br>
+            the <span class="kw">attic</span> — the <span class="kw">threshold</span><br>
+            of <span class="kw">linen</span>, of <span class="kw">cedar</span>,<br>
+            of <span class="kw">parchment</span> and a <span class="kw">taper</span><br>
+            <span class="kw">level</span> with what's left.</p>
+
+            <p><span class="kw">Softly</span>. A <span class="kw">sparrow</span>.<br>
+            <span class="kw">November</span>. A <span class="kw">shawl</span><br>
+            folded over the <span class="kw">ledger</span>.</p>
+
+            <p>A <span class="kw">signature</span>. A <span class="kw">tendril</span>.<br>
+            A <span class="kw">ghost</span> at <span class="kw">midnight</span> —<br>
+            the <span class="kw">unbinding</span>,<br>
+            the <span class="kw">closing</span>.</p>
+          </div>
+          <div class="coda">— the player's words in dark ink; the editor's connective tissue is grey</div>
         </div>
       </div>
     </section>
@@ -189,9 +325,7 @@
       ],
     };
 
-    const poemEl   = document.getElementById('conc-poem');
-    const reciteEl = document.getElementById('conc-recite');
-
+    const poemEl = document.getElementById('conc-poem');
     poemEl.innerHTML = POEM.days.map(d => `
       <div class="conc-row">
         <span class="conc-day">${String(d.day).padStart(2,'0')}</span>
@@ -200,8 +334,6 @@
           <span class="word">${d.word}</span>
         </div>
       </div>`).join('');
-
-    reciteEl.textContent = POEM.days.map(d => d.word).join(' · ');
   })();
   </script>
 </body>
