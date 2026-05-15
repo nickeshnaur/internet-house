@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Constellation · internet.house</title>
+<meta name="theme-color" content="#0E1218">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .co-hint {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.96rem;
+    color: var(--ink-soft);
+    text-align: center;
+    margin: 0;
+  }
+
+  .co-board {
+    width: clamp(260px, 88vw, 380px);
+    aspect-ratio: 1 / 1;
+    position: relative;
+    background: radial-gradient(ellipse at 30% 20%, #1a2030 0%, #0a0d14 65%);
+    border: 1px solid #232932;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .co-board svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .co-grid {
+    position: absolute; inset: 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+  }
+  .co-cell {
+    border-right: 1px dashed rgba(180,170,140,0.06);
+    border-bottom: 1px dashed rgba(180,170,140,0.06);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    position: relative;
+  }
+  .co-cell:nth-child(5n) { border-right: none; }
+  .co-cell:nth-child(n+21) { border-bottom: none; }
+  @media (hover: hover) {
+    .co-cell:hover { background: rgba(255,250,220,0.04); }
+  }
+
+  .co-meta {
+    display: flex; justify-content: space-between;
+    width: clamp(260px, 88vw, 380px);
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(180,170,140,0.6);
+  }
+  .co-meta b { color: rgba(220,212,190,1); font-weight: 600; }
+
+  .co-submit {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: transparent;
+  }
+  .co-submit[disabled] { opacity: 0.32; pointer-events: none; }
+
+  .co-clear {
+    padding: 6px 14px;
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(180,170,140,0.7);
+    border: 1px solid rgba(180,170,140,0.4);
+    border-radius: 999px;
+  }
+
+  .co-actions { display: flex; gap: 10px; align-items: center; }
+
+  .co-history {
+    width: clamp(260px, 88vw, 380px);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .co-history-row {
+    display: flex; align-items: center; gap: 8px;
+    font: 500 0.62rem 'Inter', sans-serif;
+    color: rgba(180,170,140,0.65);
+  }
+  .co-history-row .gn { color: rgba(180,170,140,0.4); width: 14px; }
+  .co-history-row .fb-row .fb-dot { width: 14px; height: 14px; font-size: 0.56rem; }
+  .co-history-row .mini-grid {
+    width: 40px; height: 40px;
+    background: #0a0d14;
+    border: 1px solid #232932;
+    border-radius: 2px;
+    position: relative;
+  }
+  .co-history-row .mini-grid .ms {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: rgba(220,212,190,0.9);
+    transform: translate(-50%,-50%);
+  }
+  .co-history-row .mini-grid .ms.exact   { background: var(--accent); box-shadow: 0 0 4px var(--accent); }
+  .co-history-row .mini-grid .ms.partial { background: color-mix(in srgb, var(--accent) 60%, #d4cbb6); }
+
+  .co-reveal {
+    text-align: center;
+    color: rgba(220,212,190,0.7);
+    font-family: 'Fraunces', serif;
+    font-size: 0.98rem;
+    line-height: 1.4;
+    margin-top: 6px;
+    max-width: 28em;
+  }
+  .co-reveal em { color: var(--accent); font-style: normal; font-weight: 500; }
+  .co-reveal .myth { display: block; margin-top: 4px; font-style: italic; color: rgba(180,170,140,0.7); font-size: 0.86rem; }
+</style>
+</head>
+<body data-game="constellation" data-mood="dark">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="constellation">
+      <div class="game-head">
+        <div class="eyebrow">No. 035 · Constellation</div>
+        <h1 class="title">Constellation</h1>
+        <p class="rule">Five stars. Place them where the sky says.</p>
+        <p class="howto"><b>How to play.</b> Tap five cells to set your stars in order. Submit. Per star you'll see ✓ exact cell, ~ within one cell, or ✗ far. The faint outline behind the grid is tonight's true shape — your own lines connect 1→2→3→4→5.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="constellation">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="constellation">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="constellation" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="constellation" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="constellation" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="constellation" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="constellation" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="constellation" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="constellation" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-constellation">
+        <p class="co-hint" id="co-hint"></p>
+
+        <div class="co-meta">
+          <span>Attempt <b id="co-num">1</b> of <b>5</b></span>
+          <span><b id="co-placed">0</b>/5 placed</span>
+        </div>
+
+        <div class="co-board" id="co-board">
+          <svg id="co-svg" viewBox="0 0 100 100"></svg>
+          <div class="co-grid" id="co-grid"></div>
+        </div>
+
+        <div class="co-actions">
+          <button class="co-clear" id="co-clear">Clear</button>
+          <button class="co-submit" id="co-submit" disabled>Submit</button>
+        </div>
+
+        <div class="co-history" id="co-history"></div>
+
+        <div class="solved" id="solved-constellation"><span class="check">✓</span><span class="solved-text">Charted</span></div>
+        <p class="co-reveal" id="co-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Constellation() {
+    // Each puzzle: 5 stars on 5x5 grid in canonical drawing order. Stars are [r,c].
+    const PUZZLES = [
+      {
+        id: 'constellation-001',
+        name: 'Cassiopeia',
+        hint: 'Visible in the Northern Hemisphere year-round.',
+        myth: 'The vain queen, set among the stars forever upside-down.',
+        stars: [[1,0],[3,1],[1,2],[3,3],[1,4]],
+      },
+      {
+        id: 'constellation-002',
+        name: 'The Big Dipper',
+        hint: 'A ladle pouring toward the north star.',
+        myth: 'Part of Ursa Major. The two outer stars of the bowl point to Polaris.',
+        stars: [[0,4],[1,3],[2,2],[3,1],[3,3]],
+      },
+      {
+        id: 'constellation-003',
+        name: 'Orion',
+        hint: 'The hunter\'s belt — three in a row.',
+        myth: 'A boastful giant. The three belt stars line up exactly toward Sirius.',
+        stars: [[0,1],[0,3],[2,2],[4,1],[4,3]],
+      },
+      {
+        id: 'constellation-004',
+        name: 'Cygnus',
+        hint: 'The swan, flying south along the Milky Way.',
+        myth: 'Also called the Northern Cross. Deneb sits at its tail.',
+        stars: [[0,2],[2,2],[4,2],[2,0],[2,4]],
+      },
+      {
+        id: 'constellation-005',
+        name: 'Crux',
+        hint: 'The Southern Cross — small, brilliant, never seen above the tropics.',
+        myth: 'The smallest of all 88 constellations. Points to the south celestial pole.',
+        stars: [[0,2],[2,2],[4,2],[2,1],[2,3]],
+      },
+    ];
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let placed = []; // array of [r,c] in placement order
+    let guesses = []; // [{placed, fb:[5]}]
+    let solved = false, done = false;
+    const MAX_GUESSES = 5;
+
+    const stageEl   = $('#stage-constellation');
+    const hintEl    = $('#co-hint');
+    const boardEl   = $('#co-board');
+    const svgEl     = $('#co-svg');
+    const gridEl    = $('#co-grid');
+    const placedEl  = $('#co-placed');
+    const numEl     = $('#co-num');
+    const submitBtn = $('#co-submit');
+    const clearBtn  = $('#co-clear');
+    const histEl    = $('#co-history');
+    const solvedEl  = $('#solved-constellation');
+    const revealEl  = $('#co-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="constellation"][data-action="share"]');
+
+    function cellCenter(r, c) {
+      // 5x5 grid in viewBox 0..100; each cell 20 wide. Center at (10 + c*20, 10 + r*20).
+      return { x: 10 + c * 20, y: 10 + r * 20 };
+    }
+
+    function cheb(a, b) { return Math.max(Math.abs(a[0]-b[0]), Math.abs(a[1]-b[1])); }
+
+    function feedback(placedStars, targetStars) {
+      // For each placed star, find best unmatched target.
+      const fb = placedStars.map(() => 'absent');
+      const used = new Array(targetStars.length).fill(false);
+      // Exact pass
+      for (let i = 0; i < placedStars.length; i++) {
+        for (let j = 0; j < targetStars.length; j++) {
+          if (used[j]) continue;
+          if (placedStars[i][0] === targetStars[j][0] && placedStars[i][1] === targetStars[j][1]) {
+            fb[i] = 'exact'; used[j] = true; break;
+          }
+        }
+      }
+      // Partial pass
+      for (let i = 0; i < placedStars.length; i++) {
+        if (fb[i] === 'exact') continue;
+        let bestJ = -1, bestD = 99;
+        for (let j = 0; j < targetStars.length; j++) {
+          if (used[j]) continue;
+          const d = cheb(placedStars[i], targetStars[j]);
+          if (d <= 1 && d < bestD) { bestD = d; bestJ = j; }
+        }
+        if (bestJ >= 0) { fb[i] = 'partial'; used[bestJ] = true; }
+      }
+      return fb;
+    }
+
+    function renderSVG(opts = {}) {
+      const showGhost = opts.showGhost !== false;
+      const showReveal = !!opts.showReveal;
+      const fb = opts.fb || null;
+
+      let inner = '';
+
+      // Ambient stars (decoration)
+      const dust = [[8,12],[88,18],[24,80],[72,90],[14,42],[78,52],[58,8],[42,72]];
+      for (const [x,y] of dust) inner += `<circle cx="${x}" cy="${y}" r="0.5" fill="#c8c2b0" opacity="0.32"/>`;
+
+      // Ghost outline of target — faint, behind
+      if (showGhost) {
+        const tgt = PUZZLE.stars;
+        let path = '';
+        tgt.forEach((s, i) => {
+          const p = cellCenter(s[0], s[1]);
+          path += (i === 0 ? `M${p.x} ${p.y}` : ` L${p.x} ${p.y}`);
+        });
+        const ghostOp = showReveal ? '0.55' : '0.16';
+        const ghostStarOp = showReveal ? '0.85' : '0.22';
+        inner += `<path d="${path}" stroke="#BFC9E0" stroke-width="0.4" fill="none" opacity="${ghostOp}"/>`;
+        for (const s of tgt) {
+          const p = cellCenter(s[0], s[1]);
+          inner += `<circle cx="${p.x}" cy="${p.y}" r="1.4" fill="#BFC9E0" opacity="${ghostStarOp}"/>`;
+        }
+      }
+
+      // Player placed stars with connecting line in placement order
+      if (placed.length > 0) {
+        let path = '';
+        placed.forEach((s, i) => {
+          const p = cellCenter(s[0], s[1]);
+          path += (i === 0 ? `M${p.x} ${p.y}` : ` L${p.x} ${p.y}`);
+        });
+        inner += `<path d="${path}" stroke="#E8DCB6" stroke-width="0.5" fill="none" opacity="0.7"/>`;
+        placed.forEach((s, i) => {
+          const p = cellCenter(s[0], s[1]);
+          let fill = '#F4E9C7';
+          let glow = 'rgba(244,233,199,0.5)';
+          if (fb) {
+            const f = fb[i];
+            if (f === 'exact')   { fill = '#BFC9E0'; glow = 'rgba(191,201,224,0.9)'; }
+            if (f === 'partial') { fill = '#D4CBA6'; glow = 'rgba(212,203,166,0.7)'; }
+            if (f === 'absent')  { fill = '#7a7665'; glow = 'rgba(122,118,101,0.4)'; }
+          }
+          inner += `<circle cx="${p.x}" cy="${p.y}" r="2.4" fill="${fill}" filter="url(#glow${pIdx})"/>`;
+          inner += `<circle cx="${p.x}" cy="${p.y}" r="4.5" fill="${glow}" opacity="0.7"/>`;
+          inner += `<text x="${p.x+3.4}" y="${p.y+1.2}" font-family="Inter, sans-serif" font-size="2.6" fill="#c8c2b0" opacity="0.7">${i+1}</text>`;
+        });
+      }
+
+      svgEl.innerHTML = `<defs><filter id="glow${pIdx}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.6"/></filter></defs>${inner}`;
+    }
+
+    function build() {
+      placed = []; guesses = []; solved = false; done = false;
+      submitBtn.disabled = true;
+      placedEl.textContent = '0';
+      numEl.textContent = '1';
+      hintEl.textContent = PUZZLE.hint;
+      solvedEl.classList.remove('show', 'is-revealed');
+      revealEl.hidden = true;
+      shareBtn.hidden = true;
+      histEl.innerHTML = '';
+
+      // Grid cells
+      gridEl.innerHTML = '';
+      for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
+        const cell = document.createElement('button');
+        cell.className = 'co-cell';
+        cell.dataset.r = r; cell.dataset.c = c;
+        cell.addEventListener('click', () => place(r, c));
+        gridEl.appendChild(cell);
+      }
+      renderSVG();
+    }
+
+    function place(r, c) {
+      if (done) return;
+      // Toggle: if cell already in placed (any), remove
+      const existing = placed.findIndex(s => s[0] === r && s[1] === c);
+      if (existing >= 0) {
+        placed.splice(existing, 1);
+      } else {
+        if (placed.length >= 5) return;
+        placed.push([r, c]);
+      }
+      placedEl.textContent = String(placed.length);
+      submitBtn.disabled = placed.length !== 5;
+      renderSVG();
+    }
+
+    function renderHistory() {
+      histEl.innerHTML = '';
+      guesses.forEach((g, gi) => {
+        const row = document.createElement('div');
+        row.className = 'co-history-row';
+        // Mini-grid with 5 stars colored by feedback
+        let dots = '';
+        g.placed.forEach((s, i) => {
+          const x = 4 + s[1] * 8;
+          const y = 4 + s[0] * 8;
+          dots += `<span class="ms ${g.fb[i]}" style="left:${x}px;top:${y}px"></span>`;
+        });
+        const fbHtml = g.fb.map(f => {
+          const sym = f === 'exact' ? '✓' : f === 'partial' ? '~' : '✗';
+          return `<span class="fb-dot ${f}">${sym}</span>`;
+        }).join('');
+        row.innerHTML = `<span class="gn">${gi+1}</span><span class="mini-grid">${dots}</span><span class="fb-row">${fbHtml}</span>`;
+        histEl.appendChild(row);
+      });
+    }
+
+    function submit() {
+      if (done || placed.length !== 5) return;
+      const fb = feedback(placed, PUZZLE.stars);
+      guesses.push({ placed: placed.slice(), fb });
+      renderSVG({ fb });
+      renderHistory();
+      const allExact = fb.every(f => f === 'exact');
+      if (allExact) {
+        solved = true; done = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl); haptic(20);
+        shareBtn.hidden = false;
+        revealEl.innerHTML = `<em>${PUZZLE.name}</em><span class="myth">${PUZZLE.myth}</span>`;
+        revealEl.hidden = false;
+        renderSVG({ showReveal: true, fb });
+      } else if (guesses.length >= MAX_GUESSES) {
+        done = true;
+        solvedEl.classList.add('show', 'is-revealed');
+        solvedEl.querySelector('.solved-text').textContent = 'Lost in the dark';
+        revealEl.innerHTML = `<em>${PUZZLE.name}</em><span class="myth">${PUZZLE.myth}</span>`;
+        revealEl.hidden = false;
+        shareBtn.hidden = false;
+        renderSVG({ showReveal: true, fb });
+      } else {
+        shake(stageEl); haptic(8);
+        numEl.textContent = String(guesses.length + 1);
+        // After feedback shown briefly, restore live editing state
+        setTimeout(() => {
+          if (done) return;
+          placed = [];
+          placedEl.textContent = '0';
+          submitBtn.disabled = true;
+          renderSVG();
+        }, 1500);
+      }
+    }
+
+    submitBtn.addEventListener('click', submit);
+    clearBtn.addEventListener('click', () => {
+      if (done) return;
+      placed = [];
+      placedEl.textContent = '0';
+      submitBtn.disabled = true;
+      renderSVG();
+    });
+
+    GAMES.constellation = {
+      reset() { build(); },
+      reveal() {
+        if (done) return;
+        done = true;
+        solvedEl.classList.add('show', 'is-revealed');
+        solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+        placed = PUZZLE.stars.slice();
+        placedEl.textContent = '5';
+        revealEl.innerHTML = `<em>${PUZZLE.name}</em><span class="myth">${PUZZLE.myth}</span>`;
+        revealEl.hidden = false;
+        renderSVG({ showReveal: true, fb: ['exact','exact','exact','exact','exact'] });
+        flashReveal(stageEl); shareBtn.hidden = false;
+      },
+      share() {
+        const lines = guesses.map(g => g.fb.map(f => f === 'exact' ? '🟦' : f === 'partial' ? '🟨' : '⬛').join('')).join('\n');
+        const head = `Constellation · ${guesses.length}/${MAX_GUESSES}${solved?' ✓':''}\n`;
+        copyShare(head + lines + '\ninternet.house/game/constellation');
+      },
+      load(i) {
+        pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+        PUZZLE = PUZZLES[pIdx];
+        build();
+      },
+    };
+
+    build();
+  })();
+  </script>
+</body>
+</html>

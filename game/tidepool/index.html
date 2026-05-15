@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tidepool · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .tp-hint {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.96rem;
+    color: var(--ink-soft);
+    text-align: center;
+    margin: 0;
+  }
+  .tp-hint b { color: var(--accent); font-style: normal; font-weight: 500; }
+
+  .tp-pool {
+    width: clamp(260px, 86vw, 360px);
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #b8d8d8 0%, #6a9090 70%, #406070 100%);
+    border: 3px solid #3a5060;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.18);
+  }
+  .tp-pool svg { width: 100%; height: 100%; display: block; }
+
+  .tp-slots {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    width: clamp(260px, 92vw, 420px);
+  }
+  .tp-slot {
+    border: 1px dashed var(--hairline-strong);
+    border-radius: 6px;
+    padding: 6px 4px 8px;
+    background: var(--paper-soft);
+    text-align: center;
+    cursor: pointer;
+    min-height: 84px;
+    display: flex; flex-direction: column; align-items: center;
+    transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tp-slot.filled { border-style: solid; border-color: var(--ink-soft); }
+  .tp-slot.active { border-color: var(--accent); border-style: solid; }
+  .tp-slot .role-lbl {
+    font: 600 0.56rem 'Inter', sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+  .tp-slot .creature {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(180,200,200,0.18);
+    display: inline-flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .tp-slot .creature.empty { background: transparent; }
+  .tp-slot .creature svg { width: 100%; height: 100%; }
+  .tp-slot .sname {
+    font: 500 0.6rem 'Inter', sans-serif;
+    color: var(--ink-soft);
+    margin-top: 3px;
+  }
+
+  .tp-lib {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    width: clamp(260px, 92vw, 420px);
+  }
+  @media (max-width: 420px) {
+    .tp-lib { grid-template-columns: repeat(5, 1fr); gap: 5px; }
+  }
+  .tp-card {
+    border: 1px solid var(--hairline);
+    border-radius: 5px;
+    padding: 5px 2px 6px;
+    background: var(--paper-soft);
+    text-align: center;
+    cursor: pointer;
+    transition: transform var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+  }
+  @media (hover: hover) {
+    .tp-card:hover { transform: translateY(-1px); border-color: var(--ink-soft); }
+  }
+  .tp-card.used { opacity: 0.32; pointer-events: none; }
+  .tp-card .ill { width: 38px; height: 38px; margin: 0 auto; }
+  .tp-card .ill svg { width: 100%; height: 100%; display: block; }
+  .tp-card .cname {
+    font: 600 0.58rem 'Inter', sans-serif;
+    color: var(--ink);
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+  }
+  .tp-card .crole {
+    font: 400 0.5rem 'Inter', sans-serif;
+    color: var(--ink-faint);
+    margin-top: 1px;
+  }
+
+  .tp-submit {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+  }
+  .tp-submit[disabled] { opacity: 0.32; pointer-events: none; }
+
+  .tp-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .tp-status b { color: var(--ink); font-weight: 600; }
+
+  .tp-history {
+    width: clamp(260px, 92vw, 420px);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .tp-history-row {
+    display: flex; align-items: center; gap: 8px;
+    font: 500 0.62rem 'Inter', sans-serif;
+    color: var(--ink-soft);
+  }
+  .tp-history-row .gn { color: var(--ink-faint); width: 14px; }
+  .tp-history-row .fb-row .fb-dot { width: 14px; height: 14px; font-size: 0.56rem; }
+  .tp-history-row .crew {
+    display: flex; gap: 3px;
+  }
+  .tp-history-row .crew .mini {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: rgba(180,200,200,0.18);
+  }
+  .tp-history-row .crew .mini svg { width: 100%; height: 100%; display: block; }
+
+  .tp-reveal {
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.98rem;
+    margin-top: 6px;
+  }
+  .tp-reveal em { color: var(--accent); font-style: normal; font-weight: 500; }
+
+  /* Pool denizens float gently */
+  .swimmer {
+    animation: drift 6s ease-in-out infinite alternate;
+    transform-origin: center;
+    transform-box: fill-box;
+  }
+  @keyframes drift {
+    0%   { transform: translate(0,0) rotate(0deg); }
+    50%  { transform: translate(4px,-3px) rotate(6deg); }
+    100% { transform: translate(-3px,4px) rotate(-4deg); }
+  }
+  .pulse {
+    animation: pulse 2.4s ease-in-out infinite;
+    transform-origin: center;
+    transform-box: fill-box;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.06); }
+  }
+</style>
+</head>
+<body data-game="tidepool" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="tidepool">
+      <div class="game-head">
+        <div class="eyebrow">No. 036 · Tidepool</div>
+        <h1 class="title">Tidepool</h1>
+        <p class="rule">Compose today's four-species pool.</p>
+        <p class="howto"><b>How to play.</b> Tap a role, then a species. Submit four. Per role: ✓ right species, ~ in the pool but wrong role, ✗ not in the pool. After each submit, the pool plays — survivors drift, mismatches scatter.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="tidepool">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="tidepool">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="tidepool" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="tidepool" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="tidepool" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="tidepool" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="tidepool" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="tidepool" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="tidepool" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-tidepool">
+        <p class="tp-hint" id="tp-hint"></p>
+
+        <div class="tp-pool" id="tp-pool"><svg viewBox="0 0 100 100" id="tp-pool-svg"></svg></div>
+
+        <div class="tp-slots" id="tp-slots"></div>
+
+        <div class="tp-lib" id="tp-lib"></div>
+
+        <div class="tp-status"><span id="tp-num">Attempt <b>1</b> of <b>5</b></span></div>
+
+        <button class="tp-submit" id="tp-submit" disabled>Compose</button>
+
+        <div class="tp-history" id="tp-history"></div>
+
+        <div class="solved" id="solved-tidepool"><span class="check">✓</span><span class="solved-text">Composed</span></div>
+        <p class="tp-reveal" id="tp-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Tidepool() {
+    const ROLES = ['PRODUCER','GRAZER','PREDATOR','SCAVENGER'];
+    const ROLE_VERB = {
+      PRODUCER: 'photosynthesizes',
+      GRAZER:   'grazes algae',
+      PREDATOR: 'hunts small prey',
+      SCAVENGER:'cleans the floor',
+    };
+
+    // 10 species; each has a canonical role + ill SVG
+    const SPECIES = {
+      kelp:      { name:'KELP',       role:'PRODUCER',  ill:'<svg viewBox="0 0 48 48"><path d="M24 44 Q18 30 24 16 Q30 28 24 4" stroke="#3B6B4A" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M24 36 Q14 32 12 26" stroke="#3B6B4A" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M24 22 Q34 18 36 12" stroke="#3B6B4A" stroke-width="2" fill="none" stroke-linecap="round"/></svg>' },
+      eelgrass:  { name:'EELGRASS',   role:'PRODUCER',  ill:'<svg viewBox="0 0 48 48"><path d="M14 44 Q14 24 18 8" stroke="#2E7D5F" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M24 44 Q24 22 22 6" stroke="#2E7D5F" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M34 44 Q32 24 30 12" stroke="#2E7D5F" stroke-width="2" fill="none" stroke-linecap="round"/></svg>' },
+      surfgrass: { name:'SURFGRASS',  role:'PRODUCER',  ill:'<svg viewBox="0 0 48 48"><path d="M10 44 Q14 28 22 14" stroke="#1F8B6E" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M22 44 Q22 26 26 10" stroke="#1F8B6E" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M36 44 Q32 28 30 16" stroke="#1F8B6E" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="24" cy="40" r="3" fill="#5C3A1E"/></svg>' },
+      urchin:    { name:'URCHIN',     role:'GRAZER',    ill:'<svg viewBox="0 0 48 48"><g stroke="#6B2C5F" stroke-width="1.6" stroke-linecap="round"><line x1="24" y1="6"  x2="24" y2="20"/><line x1="24" y1="28" x2="24" y2="42"/><line x1="6"  y1="24" x2="20" y2="24"/><line x1="28" y1="24" x2="42" y2="24"/><line x1="10" y1="10" x2="20" y2="20"/><line x1="28" y1="28" x2="38" y2="38"/><line x1="38" y1="10" x2="28" y2="20"/><line x1="20" y1="28" x2="10" y2="38"/></g><circle cx="24" cy="24" r="6" fill="#4A1530"/></svg>' },
+      snail:     { name:'PERIWINKLE', role:'GRAZER',    ill:'<svg viewBox="0 0 48 48"><path d="M14 38 Q14 14 30 14 Q42 14 42 26 Q42 36 32 36 Q24 36 24 28 Q24 22 30 22 Q34 22 34 26" stroke="#8B6F3F" stroke-width="2.2" fill="#D9B85A" stroke-linecap="round"/><path d="M8 40 L18 40 L16 44 L10 44 Z" fill="#8B6F3F"/></svg>' },
+      chiton:    { name:'CHITON',     role:'GRAZER',    ill:'<svg viewBox="0 0 48 48"><ellipse cx="24" cy="26" rx="16" ry="10" fill="#5C3A1E"/><g stroke="#3a2210" stroke-width="1.4" fill="none"><path d="M14 26 Q14 18 24 18 Q34 18 34 26"/><line x1="18" y1="20" x2="18" y2="32"/><line x1="22" y1="18" x2="22" y2="34"/><line x1="26" y1="18" x2="26" y2="34"/><line x1="30" y1="20" x2="30" y2="32"/></g></svg>' },
+      seastar:   { name:'SEA STAR',   role:'PREDATOR',  ill:'<svg viewBox="0 0 48 48"><polygon points="24,4 30,18 44,18 33,28 38,42 24,34 10,42 15,28 4,18 18,18" fill="#C25E6F" stroke="#7C2D4D" stroke-width="1.4"/><circle cx="24" cy="22" r="2" fill="#7C2D4D"/></svg>' },
+      anemone:   { name:'ANEMONE',    role:'PREDATOR',  ill:'<svg viewBox="0 0 48 48"><circle cx="24" cy="34" r="10" fill="#7C2D4D"/><g stroke="#C25E6F" stroke-width="1.8" stroke-linecap="round"><line x1="24" y1="24" x2="22" y2="8"/><line x1="24" y1="24" x2="30" y2="10"/><line x1="24" y1="24" x2="14" y2="12"/><line x1="24" y1="24" x2="36" y2="14"/><line x1="24" y1="24" x2="10" y2="20"/><line x1="24" y1="24" x2="38" y2="22"/><line x1="24" y1="24" x2="18" y2="6"/><line x1="24" y1="24" x2="32" y2="6"/></g></svg>' },
+      hermit:    { name:'HERMIT CRAB',role:'SCAVENGER', ill:'<svg viewBox="0 0 48 48"><path d="M10 26 Q10 12 24 12 Q40 12 40 26 Q40 38 28 38 Q22 38 22 30 Q22 26 26 26 Q28 26 28 28" stroke="#8B6F3F" stroke-width="2.2" fill="#D9B85A"/><g stroke="#8B6F3F" stroke-width="1.6" fill="#8B6F3F"><circle cx="8" cy="34" r="2.5"/><line x1="6" y1="38" x2="12" y2="42"/><line x1="14" y1="38" x2="18" y2="42"/></g></svg>' },
+      crab:      { name:'ROCK CRAB',  role:'SCAVENGER', ill:'<svg viewBox="0 0 48 48"><ellipse cx="24" cy="28" rx="14" ry="10" fill="#C25E3A"/><circle cx="20" cy="24" r="1.6" fill="#1A1A1A"/><circle cx="28" cy="24" r="1.6" fill="#1A1A1A"/><g stroke="#C25E3A" stroke-width="2.4" stroke-linecap="round" fill="none"><path d="M10 28 Q4 22 6 14"/><path d="M38 28 Q44 22 42 14"/><line x1="14" y1="38" x2="10" y2="42"/><line x1="34" y1="38" x2="38" y2="42"/></g></svg>' },
+    };
+
+    const PUZZLES = [
+      {
+        id: 'tidepool-001',
+        hint: 'A <b>kelp-forest edge</b> at low tide.',
+        canonical: 'Kelp forest, central California.',
+        pool: { PRODUCER:'kelp', GRAZER:'urchin', PREDATOR:'seastar', SCAVENGER:'hermit' },
+      },
+      {
+        id: 'tidepool-002',
+        hint: 'A <b>sheltered lagoon</b> with eelgrass beds.',
+        canonical: 'Eelgrass lagoon, Pacific Northwest.',
+        pool: { PRODUCER:'eelgrass', GRAZER:'chiton', PREDATOR:'anemone', SCAVENGER:'crab' },
+      },
+      {
+        id: 'tidepool-003',
+        hint: 'A <b>rocky shore</b> high in the splash zone.',
+        canonical: 'Rocky intertidal, mid-Atlantic.',
+        pool: { PRODUCER:'surfgrass', GRAZER:'snail', PREDATOR:'seastar', SCAVENGER:'hermit' },
+      },
+      {
+        id: 'tidepool-004',
+        hint: 'A <b>warm tide pool</b>, midsummer afternoon.',
+        canonical: 'Tropical tide pool, Hawaii.',
+        pool: { PRODUCER:'kelp', GRAZER:'chiton', PREDATOR:'anemone', SCAVENGER:'crab' },
+      },
+      {
+        id: 'tidepool-005',
+        hint: 'A <b>nutrient-rich basin</b> just after upwelling.',
+        canonical: 'Upwelling basin, southern Oregon.',
+        pool: { PRODUCER:'eelgrass', GRAZER:'urchin', PREDATOR:'seastar', SCAVENGER:'hermit' },
+      },
+    ];
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let slots = { PRODUCER:null, GRAZER:null, PREDATOR:null, SCAVENGER:null };
+    let activeRole = 'PRODUCER';
+    let guesses = []; let solved = false, done = false;
+    const MAX_GUESSES = 5;
+
+    const stageEl   = $('#stage-tidepool');
+    const hintEl    = $('#tp-hint');
+    const poolSvg   = $('#tp-pool-svg');
+    const slotsEl   = $('#tp-slots');
+    const libEl     = $('#tp-lib');
+    const submitBtn = $('#tp-submit');
+    const histEl    = $('#tp-history');
+    const numEl     = $('#tp-num');
+    const solvedEl  = $('#solved-tidepool');
+    const revealEl  = $('#tp-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="tidepool"][data-action="share"]');
+
+    function feedback(slotMap, poolMap) {
+      const fb = {};
+      const inPool = new Set(Object.values(poolMap));
+      for (const role of ROLES) {
+        const placed = slotMap[role];
+        if (!placed) { fb[role] = 'absent'; continue; }
+        if (poolMap[role] === placed) fb[role] = 'exact';
+        else if (inPool.has(placed)) fb[role] = 'partial';
+        else fb[role] = 'absent';
+      }
+      return fb;
+    }
+
+    function illOf(id, size = 38) {
+      return SPECIES[id].ill.replace('<svg ', `<svg width="${size}" height="${size}" `);
+    }
+
+    function build() {
+      slots = { PRODUCER:null, GRAZER:null, PREDATOR:null, SCAVENGER:null };
+      activeRole = 'PRODUCER';
+      guesses = []; solved = false; done = false;
+      submitBtn.disabled = true;
+      solvedEl.classList.remove('show', 'is-revealed');
+      revealEl.hidden = true;
+      shareBtn.hidden = true;
+      histEl.innerHTML = '';
+      numEl.innerHTML = `Attempt <b>1</b> of <b>${MAX_GUESSES}</b>`;
+      hintEl.innerHTML = PUZZLE.hint;
+
+      // Slots
+      slotsEl.innerHTML = '';
+      ROLES.forEach(r => {
+        const btn = document.createElement('button');
+        btn.className = 'tp-slot' + (r === activeRole ? ' active' : '');
+        btn.dataset.role = r;
+        btn.innerHTML = `<span class="role-lbl">${r}</span><span class="creature empty"></span><span class="sname"></span>`;
+        btn.addEventListener('click', () => { activeRole = r; renderSlots(); });
+        slotsEl.appendChild(btn);
+      });
+      renderSlots();
+
+      // Library
+      libEl.innerHTML = '';
+      Object.entries(SPECIES).forEach(([id, sp]) => {
+        const card = document.createElement('button');
+        card.className = 'tp-card';
+        card.dataset.id = id;
+        card.innerHTML = `<span class="ill">${sp.ill}</span><span class="cname">${sp.name}</span><span class="crole">${sp.role.toLowerCase()}</span>`;
+        card.addEventListener('click', () => {
+          if (done) return;
+          for (const r of ROLES) if (slots[r] === id) slots[r] = null;
+          slots[activeRole] = id;
+          let next = activeRole;
+          for (let k = 1; k <= 4; k++) {
+            const j = ROLES[(ROLES.indexOf(activeRole) + k) % 4];
+            if (slots[j] === null) { next = j; break; }
+            if (k === 4) next = activeRole;
+          }
+          activeRole = next;
+          renderSlots();
+          submitBtn.disabled = !ROLES.every(r => slots[r] !== null);
+        });
+        libEl.appendChild(card);
+      });
+
+      renderPool(null);
+    }
+
+    function renderSlots() {
+      [...slotsEl.children].forEach(el => {
+        const r = el.dataset.role;
+        const id = slots[r];
+        el.classList.toggle('active', r === activeRole && !done);
+        el.classList.toggle('filled', id !== null);
+        const ph = el.querySelector('.creature');
+        const nm = el.querySelector('.sname');
+        if (id) {
+          ph.classList.remove('empty');
+          ph.innerHTML = illOf(id);
+          nm.textContent = SPECIES[id].name.toLowerCase();
+        } else {
+          ph.classList.add('empty');
+          ph.innerHTML = '';
+          nm.textContent = '';
+        }
+      });
+      [...libEl.children].forEach(el => {
+        el.classList.toggle('used', Object.values(slots).includes(el.dataset.id));
+      });
+    }
+
+    function renderPool(fb) {
+      // Place 4 creatures around the pool. If fb provided, color/animate based on result.
+      const positions = [[30,30],[70,30],[30,70],[70,70]];
+      let inner = '';
+      // Floor texture
+      inner += `<ellipse cx="50" cy="78" rx="40" ry="10" fill="#5a7060" opacity="0.5"/>`;
+      inner += `<circle cx="22" cy="74" r="3" fill="#3a4030" opacity="0.5"/>`;
+      inner += `<circle cx="78" cy="80" r="2" fill="#3a4030" opacity="0.5"/>`;
+      inner += `<circle cx="62" cy="84" r="2.5" fill="#3a4030" opacity="0.5"/>`;
+      // Surface highlight
+      inner += `<ellipse cx="38" cy="22" rx="22" ry="6" fill="#fff" opacity="0.16"/>`;
+
+      ROLES.forEach((r, i) => {
+        const id = slots[r];
+        if (!id) return;
+        const [x, y] = positions[i];
+        const f = fb ? fb[r] : null;
+        let cls = 'swimmer';
+        let opacity = 1;
+        if (f === 'exact')   cls = 'pulse';
+        if (f === 'partial') cls = 'swimmer';
+        if (f === 'absent')  { cls = ''; opacity = 0.32; }
+        const raw = SPECIES[id].ill;
+        const innerSvg = raw.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+        inner += `<g class="${cls}" transform="translate(${x-8},${y-8})" opacity="${opacity}"><svg viewBox="0 0 48 48" width="16" height="16">${innerSvg}</svg></g>`;
+        // Verdict marker
+        if (f === 'exact')   inner += `<circle cx="${x}" cy="${y-10}" r="1.4" fill="#2E7080"/>`;
+        if (f === 'partial') inner += `<circle cx="${x}" cy="${y-10}" r="1.4" fill="#D4A536"/>`;
+        if (f === 'absent')  inner += `<path d="M${x-2} ${y-12} L${x+2} ${y-8} M${x+2} ${y-12} L${x-2} ${y-8}" stroke="#d96f4e" stroke-width="0.6"/>`;
+      });
+
+      poolSvg.innerHTML = inner;
+    }
+
+    function renderHistory() {
+      histEl.innerHTML = '';
+      guesses.forEach((g, gi) => {
+        const row = document.createElement('div');
+        row.className = 'tp-history-row';
+        const crew = ROLES.map(r => `<span class="mini">${g.slots[r] ? illOf(g.slots[r], 16) : ''}</span>`).join('');
+        const fbHtml = ROLES.map(r => {
+          const f = g.fb[r];
+          const sym = f === 'exact' ? '✓' : f === 'partial' ? '~' : '✗';
+          return `<span class="fb-dot ${f}">${sym}</span>`;
+        }).join('');
+        row.innerHTML = `<span class="gn">${gi+1}</span><span class="crew">${crew}</span><span class="fb-row">${fbHtml}</span>`;
+        histEl.appendChild(row);
+      });
+    }
+
+    function submit() {
+      if (done) return;
+      if (!ROLES.every(r => slots[r] !== null)) return;
+      const fb = feedback(slots, PUZZLE.pool);
+      guesses.push({ slots: { ...slots }, fb });
+      renderPool(fb);
+      renderHistory();
+      const won = ROLES.every(r => fb[r] === 'exact');
+      if (won) {
+        solved = true; done = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl); haptic(20);
+        shareBtn.hidden = false;
+        revealEl.innerHTML = `<em>${PUZZLE.canonical}</em>`;
+        revealEl.hidden = false;
+      } else if (guesses.length >= MAX_GUESSES) {
+        done = true;
+        solvedEl.classList.add('show', 'is-revealed');
+        solvedEl.querySelector('.solved-text').textContent = 'Pool collapsed';
+        const right = ROLES.map(r => `${r.toLowerCase()}: ${SPECIES[PUZZLE.pool[r]].name.toLowerCase()}`).join(' · ');
+        revealEl.innerHTML = `<em>${right}</em>`;
+        revealEl.hidden = false;
+        shareBtn.hidden = false;
+      } else {
+        shake(stageEl); haptic(8);
+        numEl.innerHTML = `Attempt <b>${guesses.length+1}</b> of <b>${MAX_GUESSES}</b>`;
+      }
+    }
+
+    submitBtn.addEventListener('click', submit);
+
+    GAMES.tidepool = {
+      reset() { build(); },
+      reveal() {
+        if (done) return;
+        done = true;
+        solvedEl.classList.add('show', 'is-revealed');
+        solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+        for (const r of ROLES) slots[r] = PUZZLE.pool[r];
+        renderSlots();
+        renderPool({ PRODUCER:'exact', GRAZER:'exact', PREDATOR:'exact', SCAVENGER:'exact' });
+        revealEl.innerHTML = `<em>${PUZZLE.canonical}</em>`;
+        revealEl.hidden = false;
+        flashReveal(stageEl); shareBtn.hidden = false;
+      },
+      share() {
+        const lines = guesses.map(g => ROLES.map(r => g.fb[r] === 'exact' ? '🟦' : g.fb[r] === 'partial' ? '🟨' : '⬜').join('')).join('\n');
+        const head = `Tidepool · ${guesses.length}/${MAX_GUESSES}${solved?' ✓':''}\n`;
+        copyShare(head + lines + '\ninternet.house/game/tidepool');
+      },
+      load(i) {
+        pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+        PUZZLE = PUZZLES[pIdx];
+        build();
+      },
+    };
+
+    build();
+  })();
+  </script>
+</body>
+</html>

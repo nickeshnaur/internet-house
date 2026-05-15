@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Palette · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .pal-hint {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    text-align: center;
+    margin: 0;
+  }
+  .pal-hint b { color: var(--accent); font-style: normal; font-weight: 500; }
+
+  .pal-comp {
+    width: clamp(260px, 86vw, 360px);
+    aspect-ratio: 16 / 9;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .pal-comp .pane {
+    position: relative;
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--paper-soft);
+  }
+  .pal-comp .pane .label {
+    position: absolute;
+    top: 6px; left: 8px;
+    font: 500 0.56rem 'Inter', sans-serif;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    background: var(--paper);
+    padding: 2px 6px;
+    border-radius: 3px;
+    z-index: 2;
+  }
+  .pal-comp svg { display: block; width: 100%; height: 100%; }
+
+  .pal-slots {
+    display: flex; gap: 10px; justify-content: center;
+  }
+  .pal-slot {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    border: 1.5px dashed var(--hairline-strong);
+    background: var(--paper-soft);
+    position: relative;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .pal-slot.filled { border-style: solid; border-color: var(--ink-soft); }
+  .pal-slot.active { border-color: var(--accent); border-style: solid; transform: scale(1.04); }
+  .pal-slot .swatch {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--c, transparent);
+  }
+  .pal-slot .num {
+    position: absolute;
+    top: -6px; right: -6px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1px solid var(--hairline-strong);
+    font: 600 0.62rem 'Inter', sans-serif;
+    color: var(--ink-faint);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+
+  .pal-wheel {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 8px;
+    width: clamp(260px, 88vw, 380px);
+  }
+  .pal-chip {
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    border: 1px solid var(--hairline);
+    background: var(--c, #ccc);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: transform var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+    position: relative;
+  }
+  @media (hover: hover) {
+    .pal-chip:hover { transform: scale(1.08); border-color: var(--ink-soft); }
+  }
+  .pal-chip.used { opacity: 0.45; cursor: default; }
+  .pal-chip.used:hover { transform: none; }
+
+  .pal-submit {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+  }
+  .pal-submit[disabled] { opacity: 0.32; pointer-events: none; }
+
+  .pal-history {
+    width: clamp(260px, 90vw, 400px);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .pal-history-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .pal-history-row .colors {
+    display: flex; gap: 4px;
+  }
+  .pal-history-row .colors .c {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1px solid var(--hairline);
+  }
+  .pal-history-row .fb-row { gap: 4px; }
+  .pal-history-row .fb-dot { width: 14px; height: 14px; font-size: 0.56rem; }
+  .pal-history-row .gnum {
+    font: 500 0.6rem 'Inter', sans-serif;
+    color: var(--ink-faint);
+    width: 14px;
+  }
+  .pal-history-row .thumb {
+    width: 32px; height: 18px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .pal-reveal {
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1rem;
+    margin-top: 8px;
+  }
+  .pal-reveal em { color: var(--accent); font-style: normal; font-weight: 500; }
+
+  .pal-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .pal-status b { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body data-game="palette" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="palette">
+      <div class="game-head">
+        <div class="eyebrow">No. 033 · Palette</div>
+        <h1 class="title">Palette</h1>
+        <p class="rule">Guess today's four colors. Five tries.</p>
+        <p class="howto"><b>How to play.</b> Tap a slot, then tap a color. Submit four. Per slot you'll see ✓ exact, ~ in the palette but wrong slot, or ✗ not in the palette. The composition on the left renders in your colors; the target outline is on the right.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="palette">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="palette">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="palette" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="palette" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="palette" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="palette" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="palette" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="palette" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="palette" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-palette">
+        <p class="pal-hint" id="pal-hint"></p>
+
+        <div class="pal-comp">
+          <div class="pane"><span class="label">Yours</span><svg id="pal-you" viewBox="0 0 160 90" preserveAspectRatio="xMidYMid slice"></svg></div>
+          <div class="pane"><span class="label">Target</span><svg id="pal-tgt" viewBox="0 0 160 90" preserveAspectRatio="xMidYMid slice"></svg></div>
+        </div>
+
+        <div class="pal-slots" id="pal-slots"></div>
+
+        <div class="pal-wheel" id="pal-wheel"></div>
+
+        <div class="pal-status"><span id="pal-guess-num">Guess <b>1</b> of <b>5</b></span></div>
+
+        <button class="pal-submit" id="pal-submit" disabled>Submit</button>
+
+        <div class="pal-history" id="pal-history"></div>
+
+        <div class="solved" id="solved-palette"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+        <p class="pal-reveal" id="pal-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Palette() {
+    // Each puzzle: hint + 16 candidate colors (first 4 are the true palette) + composition seed
+    const PUZZLES = [
+      {
+        id: 'palette-001',
+        hint: 'From <b>The Grand Budapest Hotel</b>',
+        canonical: 'Wes Anderson · The Grand Budapest Hotel',
+        target: ['#D8A0A0','#D9B85A','#3B6B4A','#F1E6C8'],   // dusty rose, mustard, forest green, cream
+        names:  ['Dusty Rose','Mustard','Forest','Cream'],
+        decoys: ['#8E2A2A','#E4C9A8','#7A5BB8','#3A6BAA','#9C5B3E','#B0A99A','#F4D29A','#C7B5D9','#4A6FA5','#6B4F2A','#8A8579','#E8B14C'],
+        comp: 'arch',
+      },
+      {
+        id: 'palette-002',
+        hint: 'From <b>Moonrise Kingdom</b>',
+        canonical: 'Wes Anderson · Moonrise Kingdom',
+        target: ['#C2A35C','#EFE0B5','#7E5A35','#6F7A4A'],   // khaki, bone, scout brown, olive
+        names:  ['Khaki','Bone','Scout Brown','Olive'],
+        decoys: ['#B33A3A','#E8A0C8','#1F3A5F','#2E7D5F','#F1E6C8','#9C5B3E','#3066BE','#A78BFA','#C25E3A','#5C3A1E','#D4A536','#B0A99A'],
+        comp: 'triangle',
+      },
+      {
+        id: 'palette-003',
+        hint: 'From <b>The Mona Lisa</b>',
+        canonical: 'Leonardo da Vinci · La Gioconda · c. 1503',
+        target: ['#3D3221','#85603A','#C9A572','#1F2A1E'],   // umber, sepia, ochre-gold, deep green-black
+        names:  ['Umber','Sepia','Gold','Forest Black'],
+        decoys: ['#E8DBC4','#B33A3A','#D8A0A0','#3066BE','#8E2A2A','#E8A0C8','#3B6B4A','#5C3A1E','#A78BFA','#F1E6C8','#7A5BB8','#4A6FA5'],
+        comp: 'portrait',
+      },
+      {
+        id: 'palette-004',
+        hint: 'From <b>The Starry Night</b>',
+        canonical: 'Vincent van Gogh · The Starry Night · 1889',
+        target: ['#1F3A5F','#3066BE','#D4A536','#E8DBC4'],   // navy, cobalt, gold, cream
+        names:  ['Navy','Cobalt','Gold','Cream'],
+        decoys: ['#B33A3A','#E8A0C8','#2E7D5F','#9C5B3E','#5C3A1E','#3B6B4A','#1A1A1A','#7A5BB8','#C25E3A','#D8A0A0','#A78BFA','#B0A99A'],
+        comp: 'sky',
+      },
+      {
+        id: 'palette-005',
+        hint: 'Pantone — <b>Spring 2024</b>',
+        canonical: 'Pantone · Spring/Summer 2024 highlight',
+        target: ['#F5A6A0','#A8C56B','#F0D254','#7DB3D9'],   // peach, lime, butter, sky
+        names:  ['Peach Fuzz','Lime','Butter','Sky'],
+        decoys: ['#B33A3A','#3B6B4A','#1F3A5F','#9C5B3E','#5C3A1E','#7A5BB8','#1A1A1A','#A78BFA','#C25E3A','#8E2A2A','#3066BE','#2E4A3B'],
+        comp: 'bands',
+      },
+    ];
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let candidates = []; // shuffled, deterministic per puzzle
+    let slots = [null, null, null, null];
+    let activeSlot = 0;
+    let guesses = []; // [{colors:[4], fb:[4]}]
+    let solved = false, done = false;
+    const MAX_GUESSES = 5;
+
+    const stageEl   = $('#stage-palette');
+    const hintEl    = $('#pal-hint');
+    const slotsEl   = $('#pal-slots');
+    const wheelEl   = $('#pal-wheel');
+    const youSvg    = $('#pal-you');
+    const tgtSvg    = $('#pal-tgt');
+    const submitBtn = $('#pal-submit');
+    const histEl    = $('#pal-history');
+    const numEl     = $('#pal-guess-num');
+    const solvedEl  = $('#solved-palette');
+    const revealEl  = $('#pal-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="palette"][data-action="share"]');
+
+    function seedShuffle(arr, seed) {
+      const a = arr.slice();
+      let s = seed | 0;
+      for (let i = a.length - 1; i > 0; i--) {
+        s = (s * 9301 + 49297) % 233280;
+        const j = Math.floor((s / 233280) * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function colorEq(a, b) { return a && b && a.toLowerCase() === b.toLowerCase(); }
+
+    function feedback(guess, target) {
+      const fb = new Array(4).fill('absent');
+      const used = new Array(4).fill(false);
+      // Exact pass
+      for (let i = 0; i < 4; i++) {
+        if (colorEq(guess[i], target[i])) { fb[i] = 'exact'; used[i] = true; }
+      }
+      // Partial pass
+      for (let i = 0; i < 4; i++) {
+        if (fb[i] === 'exact') continue;
+        for (let j = 0; j < 4; j++) {
+          if (used[j]) continue;
+          if (colorEq(guess[i], target[j])) { fb[i] = 'partial'; used[j] = true; break; }
+        }
+      }
+      return fb;
+    }
+
+    function build() {
+      slots = [null, null, null, null];
+      activeSlot = 0;
+      guesses = [];
+      solved = false; done = false;
+      submitBtn.disabled = true;
+      solvedEl.classList.remove('show', 'is-revealed');
+      revealEl.hidden = true;
+      shareBtn.hidden = true;
+      hintEl.innerHTML = PUZZLE.hint;
+      histEl.innerHTML = '';
+      numEl.innerHTML = `Guess <b>1</b> of <b>${MAX_GUESSES}</b>`;
+
+      // Build candidate wheel (deterministic shuffle per puzzle)
+      const seed = PUZZLE.id.split('-').pop().split('').reduce((s,c)=>s+c.charCodeAt(0), 0);
+      candidates = seedShuffle(PUZZLE.target.concat(PUZZLE.decoys), seed);
+
+      // Slots
+      slotsEl.innerHTML = '';
+      for (let i = 0; i < 4; i++) {
+        const s = document.createElement('button');
+        s.className = 'pal-slot' + (i === activeSlot ? ' active' : '');
+        s.innerHTML = `<span class="num">${i+1}</span><span class="swatch"></span>`;
+        s.addEventListener('click', () => {
+          activeSlot = i;
+          renderSlots();
+        });
+        slotsEl.appendChild(s);
+      }
+      renderSlots();
+
+      // Wheel
+      wheelEl.innerHTML = '';
+      candidates.forEach((hex, i) => {
+        const c = document.createElement('button');
+        c.className = 'pal-chip';
+        c.style.setProperty('--c', hex);
+        c.addEventListener('click', () => {
+          if (done) return;
+          slots[activeSlot] = hex;
+          // Advance to next empty slot
+          let next = activeSlot;
+          for (let k = 1; k <= 4; k++) {
+            const j = (activeSlot + k) % 4;
+            if (slots[j] === null) { next = j; break; }
+            if (k === 4) next = activeSlot;
+          }
+          activeSlot = next;
+          renderSlots();
+          renderYou();
+          submitBtn.disabled = slots.some(s => s === null);
+        });
+        wheelEl.appendChild(c);
+      });
+
+      renderYou();
+      renderTarget();
+    }
+
+    function renderSlots() {
+      [...slotsEl.children].forEach((el, i) => {
+        el.classList.toggle('active', i === activeSlot && !done);
+        el.classList.toggle('filled', slots[i] !== null);
+        el.querySelector('.swatch').style.setProperty('--c', slots[i] || 'transparent');
+      });
+    }
+
+    function comp(svg, colors) {
+      const c = colors.map(x => x || '#E0DCD0');
+      const kind = PUZZLE.comp;
+      let body = '';
+      if (kind === 'arch') {
+        // Wes-ish symmetric architectural strip
+        body = `
+          <rect x="0" y="0" width="160" height="90" fill="${c[3]}"/>
+          <rect x="14" y="18" width="132" height="72" fill="${c[0]}"/>
+          <rect x="36" y="34" width="88" height="56" fill="${c[2]}"/>
+          <rect x="58" y="50" width="44" height="40" fill="${c[1]}"/>
+          <circle cx="80" cy="34" r="8" fill="${c[1]}"/>
+        `;
+      } else if (kind === 'triangle') {
+        body = `
+          <rect x="0" y="0" width="160" height="90" fill="${c[1]}"/>
+          <polygon points="80,12 132,78 28,78" fill="${c[0]}"/>
+          <rect x="0" y="74" width="160" height="16" fill="${c[3]}"/>
+          <circle cx="118" cy="26" r="7" fill="${c[2]}"/>
+        `;
+      } else if (kind === 'portrait') {
+        body = `
+          <rect x="0" y="0" width="160" height="90" fill="${c[3]}"/>
+          <rect x="10" y="6" width="140" height="78" fill="${c[1]}"/>
+          <ellipse cx="80" cy="40" rx="22" ry="26" fill="${c[2]}"/>
+          <path d="M40 90 Q80 50 120 90 Z" fill="${c[0]}"/>
+        `;
+      } else if (kind === 'sky') {
+        body = `
+          <rect x="0" y="0" width="160" height="90" fill="${c[0]}"/>
+          <path d="M0 60 Q40 40 80 60 T160 60 V90 H0 Z" fill="${c[1]}" opacity="0.85"/>
+          <circle cx="120" cy="22" r="8" fill="${c[2]}"/>
+          <circle cx="40" cy="30" r="3" fill="${c[3]}"/>
+          <circle cx="60" cy="18" r="2.5" fill="${c[3]}"/>
+          <circle cx="90" cy="34" r="2" fill="${c[3]}"/>
+          <circle cx="140" cy="44" r="2.5" fill="${c[3]}"/>
+        `;
+      } else if (kind === 'bands') {
+        body = `
+          <rect x="0"  y="0"  width="160" height="22" fill="${c[0]}"/>
+          <rect x="0"  y="22" width="160" height="22" fill="${c[1]}"/>
+          <rect x="0"  y="44" width="160" height="22" fill="${c[2]}"/>
+          <rect x="0"  y="66" width="160" height="24" fill="${c[3]}"/>
+        `;
+      }
+      svg.innerHTML = body;
+    }
+
+    function renderYou() { comp(youSvg, slots); }
+    function renderTarget() { comp(tgtSvg, [null,null,null,null]); /* outline only — same shapes in neutral fill */ }
+
+    function renderTargetReveal() { comp(tgtSvg, PUZZLE.target); }
+
+    function renderHistory() {
+      histEl.innerHTML = '';
+      guesses.forEach((g, gi) => {
+        const row = document.createElement('div');
+        row.className = 'pal-history-row';
+        const colors = g.colors.map(h => `<span class="c" style="background:${h}"></span>`).join('');
+        const fbHtml = g.fb.map(f => {
+          const sym = f === 'exact' ? '✓' : f === 'partial' ? '~' : '✗';
+          return `<span class="fb-dot ${f}">${sym}</span>`;
+        }).join('');
+        row.innerHTML = `
+          <span class="gnum">${gi+1}</span>
+          <span class="colors">${colors}</span>
+          <span class="fb-row">${fbHtml}</span>
+        `;
+        histEl.appendChild(row);
+      });
+    }
+
+    function submit() {
+      if (done || slots.some(s => s === null)) return;
+      const fb = feedback(slots, PUZZLE.target);
+      guesses.push({ colors: slots.slice(), fb });
+      const allExact = fb.every(f => f === 'exact');
+      renderHistory();
+      if (allExact) {
+        solved = true; done = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+        shareBtn.hidden = false;
+        revealEl.innerHTML = `<em>${PUZZLE.canonical}</em>`;
+        revealEl.hidden = false;
+        renderTargetReveal();
+      } else if (guesses.length >= MAX_GUESSES) {
+        done = true;
+        solvedEl.classList.add('show', 'is-revealed');
+        solvedEl.querySelector('.solved-text').textContent = 'Out of guesses';
+        revealEl.innerHTML = `Today's palette · <em>${PUZZLE.canonical}</em>`;
+        revealEl.hidden = false;
+        shareBtn.hidden = false;
+        renderTargetReveal();
+      } else {
+        shake(stageEl);
+        haptic(8);
+        numEl.innerHTML = `Guess <b>${guesses.length+1}</b> of <b>${MAX_GUESSES}</b>`;
+      }
+    }
+
+    submitBtn.addEventListener('click', submit);
+
+    GAMES.palette = {
+      reset() { build(); },
+      reveal() {
+        if (done) return;
+        done = true;
+        solvedEl.classList.add('show', 'is-revealed');
+        solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+        revealEl.innerHTML = `Today's palette · <em>${PUZZLE.canonical}</em>`;
+        revealEl.hidden = false;
+        renderTargetReveal();
+        flashReveal(stageEl);
+        shareBtn.hidden = false;
+      },
+      share() {
+        const lines = guesses.map(g => g.fb.map(f => f === 'exact' ? '🟪' : f === 'partial' ? '🟨' : '⬜').join('')).join('\n');
+        const head = `Palette · ${guesses.length}/${MAX_GUESSES}${solved?' ✓':''}\n`;
+        copyShare(head + lines + '\ninternet.house/game/palette');
+      },
+      load(i) {
+        pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+        PUZZLE = PUZZLES[pIdx];
+        build();
+      },
+    };
+
+    build();
+  })();
+  </script>
+</body>
+</html>

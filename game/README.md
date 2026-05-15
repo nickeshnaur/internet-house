@@ -1,6 +1,6 @@
 # /game
 
-Thirty-two daily-puzzle prototypes, one per folder, served straight
+Thirty-six daily-puzzle prototypes, one per folder, served straight
 out of `game/`. No build step.
 
 ```
@@ -40,6 +40,10 @@ game/
   shadows/index.html     ← Game 30    Hunt
   magnets/index.html     ← Game 31    Hunt
   alchemy/index.html     ← Game 32    Hunt
+  palette/index.html        ← Game 33    Crew
+  heist/index.html          ← Game 34    Crew
+  constellation/index.html  ← Game 35    Crew
+  tidepool/index.html       ← Game 36    Crew
 ```
 
 Each game lives in its own folder; visiting `/game/<slug>/` loads only
@@ -80,6 +84,11 @@ The hub clusters the thirty-two games:
 - **Hunt** — Fossil, Shadows, Magnets, Alchemy. Themed worlds.
   Each is a probe-and-learn loop dressed in its own setting:
   paleontology, architecture, physics, alchemy.
+- **Crew** — Palette, Heist, Constellation, Tidepool. Mastermind-DNA:
+  every guess is a compound object with multiple components,
+  feedback is component-wise (✓ exact / ~ in set / ✗ absent), and a
+  second-layer visualization renders alongside the abstract dots
+  (composition / comic strip / drawn star map / mini tidepool sim).
 
 The hub itself (`game/index.html`) is a card grid — each card has a
 glyph, name, one-line description, and a tinted accent border.
@@ -734,7 +743,114 @@ Quiet Resolve, Dusk Embers.
 
 ---
 
-## Adding a thirty-third game
+## The Crew group
+
+Compound-guess Mastermind. Each game asks for a 4- or 5-piece guess
+where every piece carries information. Feedback grammar is shared:
+✓ exact, ~ in the answer set but wrong slot, ✗ absent. A second-layer
+visualization (composition, comic strip, drawn constellation, tidepool
+sim) renders alongside the abstract dots — the visual is feedback,
+not decoration.
+
+The shared `.fb-dot` styles live in `shared.css` so all four games
+draw their feedback indicators identically. Five guesses each.
+
+### Palette · guess today's four colors · `game/palette/`
+
+A hint at the top names today's source ("From The Grand Budapest
+Hotel"). 16 candidate colors are shown as a wheel; the player taps a
+slot then a color to fill it. Submit four. Two-layer feedback: per-slot
+dots plus a small abstract composition rendered in the player's four
+colors next to the target outline.
+
+```js
+{
+  id: 'palette-NNN',
+  hint: 'From <b>The Grand Budapest Hotel</b>',
+  canonical: 'Wes Anderson · The Grand Budapest Hotel',
+  target: ['#D8A0A0','#D9B85A','#3B6B4A','#F1E6C8'],
+  decoys: ['#8E2A2A',...,'#E8B14C'],   // 12 plausible distractors
+  comp:   'arch',   // composition kind: arch | triangle | portrait | sky | bands
+}
+```
+
+The 16 candidate slots are a deterministic shuffle of `target ∪ decoys`
+keyed off the puzzle id. Five puzzles ship: Budapest, Moonrise Kingdom,
+Mona Lisa, Starry Night, Pantone Spring 2024.
+
+### Heist · build today's crew · `game/heist/`
+
+A scenario line at the top ("Hit a Swiss bank with biometric locks").
+A shared roster of 10 specialist portraits is shown — name, tagline,
+hand-authored SVG. Four role slots: LEADER · HACKER · MUSCLE · DRIVER.
+Submit four. Per-role feedback plus a four-panel comic strip — one
+panel per role with a ✓/✗ verdict over a thematic scene (the plan,
+the terminal, the vault, the getaway).
+
+```js
+{
+  id: 'heist-NNN',
+  scenario: 'Hit a Swiss bank with biometric locks.',
+  canonical: 'Geneva, 03:14 — vault opens to a fingerprint.',
+  crew: { LEADER:'solo', HACKER:'kai', MUSCLE:'niko', DRIVER:'vex' },
+}
+```
+
+The 10-specialist roster (`SPECIALISTS`) is shared across all puzzles;
+only the crew assignment shifts. Each specialist's SVG portrait is
+built from a common head + shoulder silhouette plus one distinguishing
+detail (beret, glasses, helmet, goggles, kerchief, etc.). Five
+scenarios ship: Swiss bank, painting heist, casino vault, train,
+crypto office.
+
+### Constellation · place five stars · `game/constellation/`
+
+Hidden constellation abstracted to 5 stars on a 5×5 grid. The player
+taps cells in order; lines auto-draw 1→2→3→4→5. Submit. Per-star
+feedback: ✓ exact cell, ~ within one cell (chebyshev ≤ 1), ✗ far. The
+target shape is rendered faintly behind the grid as a ghost guide
+from the start. Dark mood — luminous starfield, navy gradient,
+glow filters.
+
+```js
+{
+  id: 'constellation-NNN',
+  name: 'Cassiopeia',
+  hint: 'Visible in the Northern Hemisphere year-round.',
+  myth: 'The vain queen, set among the stars forever upside-down.',
+  stars: [[1,0],[3,1],[1,2],[3,3],[1,4]],   // [r,c] in canonical drawing order
+}
+```
+
+Feedback matching uses an exact-first then chebyshev-1 partial pass
+with consume-once semantics (each target star is matched to at most
+one placed star). Five constellations ship: Cassiopeia, the Big
+Dipper, Orion, Cygnus, Crux.
+
+### Tidepool · compose the ecosystem · `game/tidepool/`
+
+A 10-species illustrated library: kelp, eelgrass, surfgrass, urchin,
+periwinkle, chiton, sea star, anemone, hermit crab, rock crab. Each
+has a canonical ecological role. Four role slots: PRODUCER · GRAZER ·
+PREDATOR · SCAVENGER. Submit four. Per-role dots plus a circular
+tidepool that animates the result — survivors gently pulse, partials
+drift, absents fade and scatter.
+
+```js
+{
+  id: 'tidepool-NNN',
+  hint: 'A <b>kelp-forest edge</b> at low tide.',
+  canonical: 'Kelp forest, central California.',
+  pool: { PRODUCER:'kelp', GRAZER:'urchin', PREDATOR:'seastar', SCAVENGER:'hermit' },
+}
+```
+
+Five ecosystems ship: kelp-forest edge, sheltered lagoon, rocky shore,
+warm tide pool, upwelling basin.
+
+---
+
+## Adding a thirty-seventh game
 
 1. Create `/game/<slug>/index.html` modeled on any existing game.
 2. Add an accent color in `shared.css`:

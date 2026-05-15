@@ -174,6 +174,10 @@
   .card[data-game="shadows"]    { --card-accent: var(--shadows); }
   .card[data-game="magnets"]    { --card-accent: var(--magnets); }
   .card[data-game="alchemy"]    { --card-accent: var(--alchemy); }
+  .card[data-game="palette"]    { --card-accent: var(--palette); }
+  .card[data-game="heist"]      { --card-accent: var(--heist); }
+  .card[data-game="constellation"] { --card-accent: var(--constellation); }
+  .card[data-game="tidepool"]   { --card-accent: var(--tidepool); }
 
   @media (max-width: 480px) {
     .grid { grid-template-columns: 1fr; gap: 10px; }
@@ -558,6 +562,52 @@
           </div>
           <h3 class="card-name">Alchemy</h3>
           <p class="card-desc">Brew pairs in the cauldron. Deduce the recipe.</p>
+        </a>
+
+      </div>
+    </section>
+
+    <section class="group" aria-labelledby="grp-crew">
+      <div class="group-head">
+        <h2 class="group-name" id="grp-crew">Crew</h2>
+        <span class="group-tagline">Compound guesses. Per-piece feedback.</span>
+      </div>
+      <div class="grid">
+
+        <a class="card" data-game="palette" href="palette/">
+          <span class="card-tag">No. 033</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><circle cx="18" cy="20" r="10" fill="#D8A0A0"/><circle cx="36" cy="20" r="10" fill="#D9B85A"/><circle cx="54" cy="20" r="10" fill="#3B6B4A"/><circle cx="72" cy="20" r="10" fill="#F1E6C8" stroke="currentColor" stroke-opacity="0.25"/><rect x="6" y="40" width="72" height="8" rx="2" fill="currentColor" fill-opacity="0.18"/></svg>
+          </div>
+          <h3 class="card-name">Palette</h3>
+          <p class="card-desc">Guess today's four colors from a wheel.</p>
+        </a>
+
+        <a class="card" data-game="heist" href="heist/">
+          <span class="card-tag">No. 034</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><g><circle cx="18" cy="22" r="9" fill="currentColor" fill-opacity="0.7"/><circle cx="36" cy="22" r="9" fill="currentColor" fill-opacity="0.45"/><circle cx="54" cy="22" r="9" fill="currentColor" fill-opacity="0.7"/><circle cx="72" cy="22" r="9" fill="currentColor" fill-opacity="0.45"/></g><g fill="currentColor" fill-opacity="0.85"><rect x="14" y="42" width="8"  height="8"/><rect x="32" y="42" width="8"  height="8"/><rect x="50" y="42" width="8"  height="8"/><rect x="68" y="42" width="8"  height="8"/></g></svg>
+          </div>
+          <h3 class="card-name">Heist</h3>
+          <p class="card-desc">Cast the right four into LEADER · HACKER · MUSCLE · DRIVER.</p>
+        </a>
+
+        <a class="card" data-game="constellation" href="constellation/">
+          <span class="card-tag">No. 035</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><rect width="84" height="56" fill="#0a0d14"/><circle cx="14" cy="20" r="2" fill="#BFC9E0"/><circle cx="30" cy="36" r="2" fill="#BFC9E0"/><circle cx="42" cy="20" r="2.4" fill="#BFC9E0"/><circle cx="56" cy="36" r="2" fill="#BFC9E0"/><circle cx="70" cy="20" r="2" fill="#BFC9E0"/><path d="M14 20 L30 36 L42 20 L56 36 L70 20" stroke="#BFC9E0" stroke-width="0.5" fill="none" opacity="0.4"/></svg>
+          </div>
+          <h3 class="card-name">Constellation</h3>
+          <p class="card-desc">Place five stars where the sky says.</p>
+        </a>
+
+        <a class="card" data-game="tidepool" href="tidepool/">
+          <span class="card-tag">No. 036</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><circle cx="42" cy="30" r="22" fill="#6a9090"/><circle cx="42" cy="30" r="22" fill="url(#tpg)"/><defs><radialGradient id="tpg" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#b8d8d8"/><stop offset="1" stop-color="#406070" stop-opacity="0.4"/></radialGradient></defs><path d="M34 36 Q38 26 42 24 Q46 26 50 36" stroke="#3B6B4A" stroke-width="1.6" fill="none"/><polygon points="56,26 58,30 62,30 59,33 60,37 56,35 52,37 53,33 50,30 54,30" fill="#C25E6F"/><circle cx="34" cy="40" r="3" fill="#8B6F3F"/></svg>
+          </div>
+          <h3 class="card-name">Tidepool</h3>
+          <p class="card-desc">Compose today's pool — four species, four roles.</p>
         </a>
 
       </div>

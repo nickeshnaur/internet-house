@@ -42,6 +42,10 @@
   --shadows:    #2A2823;
   --magnets:    #4A7AAD;
   --alchemy:    #7C2D4D;
+  --palette:    #C25E6F;
+  --heist:      #8B6F3F;
+  --constellation: #BFC9E0;
+  --tidepool:   #2E7080;
 
   --accent: var(--ink);
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -118,6 +122,28 @@ body[data-game="fossil"]     { --accent: var(--fossil); }
 body[data-game="shadows"]    { --accent: var(--shadows); }
 body[data-game="magnets"]    { --accent: var(--magnets); }
 body[data-game="alchemy"]    { --accent: var(--alchemy); }
+body[data-game="palette"]    { --accent: var(--palette); }
+body[data-game="heist"]      { --accent: var(--heist); }
+body[data-game="constellation"] { --accent: var(--constellation); }
+body[data-game="tidepool"]   { --accent: var(--tidepool); }
+
+/* ───────── Crew-group shared component feedback (Palette / Heist / Constellation / Tidepool) ───────── */
+.fb-row {
+  display: flex; gap: 6px; justify-content: center;
+}
+.fb-dot {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--hairline-strong);
+  background: var(--paper-soft);
+  display: inline-flex; align-items: center; justify-content: center;
+  font: 600 0.66rem 'Inter', sans-serif;
+  color: var(--ink-faint);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.fb-dot.exact   { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+.fb-dot.partial { background: color-mix(in srgb, var(--accent) 25%, transparent); border-color: var(--accent); color: var(--accent); }
+.fb-dot.absent  { background: transparent; color: var(--hairline-strong); border-color: var(--hairline); }
 
 /* ───────── chrome ───────── */
 .masthead {
