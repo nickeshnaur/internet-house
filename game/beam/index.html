@@ -205,6 +205,31 @@
         walls:  [[2,3]],
         inv:    { '/': 1, '\\': 2 },
       },
+      {
+        id: 'beam-004',
+        // Single-mirror puzzle: ╲ at (4,0) deflects beam right across row 4 to target.
+        source: { r: 0, c: 0, dir: 'down' },
+        target: { r: 4, c: 4 },
+        walls:  [[2,3]],
+        inv:    { '/': 0, '\\': 2 },
+      },
+      {
+        id: 'beam-005',
+        // Two-mirror dogleg: beam from top col 4 down to (2,4), ╱ deflects left to row 2,
+        // ╲ at (2,0) sends it up to target (0,0).
+        source: { r: 0, c: 4, dir: 'down' },
+        target: { r: 0, c: 0 },
+        walls:  [[3,4]],
+        inv:    { '/': 1, '\\': 1 },
+      },
+      {
+        id: 'beam-006',
+        // Single ╲ at (0,2) deflects vertical beam left to corner target.
+        source: { r: 4, c: 2, dir: 'up' },
+        target: { r: 0, c: 0 },
+        walls:  [[2,4]],
+        inv:    { '/': 1, '\\': 1 },
+      },
     ];
     let pIdx = 0, PUZZLE = PUZZLES[pIdx];
 

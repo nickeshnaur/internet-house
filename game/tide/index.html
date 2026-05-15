@@ -218,6 +218,48 @@
         drys:    [],
         maxSources: 3,
       },
+      {
+        id: 'tide-004',
+        // L-shaped channel — water source in one corner fills the L
+        heights: [
+          [1,1,1,1,1],
+          [1,3,3,3,3],
+          [1,3,3,3,3],
+          [1,1,1,1,1],
+          [1,3,3,3,1],
+        ],
+        targets: [],
+        drys:    [],
+        maxSources: 1,
+      },
+      {
+        id: 'tide-005',
+        // Cross-shaped low region surrounded by ridge
+        heights: [
+          [3,3,1,3,3],
+          [3,1,1,1,3],
+          [1,1,1,1,1],
+          [3,1,1,1,3],
+          [3,3,1,3,3],
+        ],
+        targets: [],
+        drys:    [],
+        maxSources: 1,
+      },
+      {
+        id: 'tide-006',
+        // Four corner basins separated by a plus-shaped ridge
+        heights: [
+          [1,1,3,1,1],
+          [1,1,3,1,1],
+          [3,3,3,3,3],
+          [1,1,3,1,1],
+          [1,1,3,1,1],
+        ],
+        targets: [],
+        drys:    [],
+        maxSources: 4,
+      },
     ];
     let pIdx = 0, PUZZLE = PUZZLES[pIdx];
 
