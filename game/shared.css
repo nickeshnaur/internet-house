@@ -34,6 +34,10 @@
   --tide:       #3066BE;
   --weft:       #2E5A3E;
   --splice:     #8B2E2E;
+  --pinhole:    #C8C0B0;
+  --spectrum:   #8B5CF6;
+  --switch:     #B47D3A;
+  --doubt:      #6B2C5F;
 
   --accent: var(--ink);
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -102,6 +106,10 @@ body[data-game="beam"]       { --accent: var(--beam); }
 body[data-game="tide"]       { --accent: var(--tide); }
 body[data-game="weft"]       { --accent: var(--weft); }
 body[data-game="splice"]     { --accent: var(--splice); }
+body[data-game="pinhole"]    { --accent: var(--pinhole); }
+body[data-game="spectrum"]   { --accent: var(--spectrum); }
+body[data-game="switch"]     { --accent: var(--switch); }
+body[data-game="doubt"]      { --accent: var(--doubt); }
 
 /* ───────── chrome ───────── */
 .masthead {

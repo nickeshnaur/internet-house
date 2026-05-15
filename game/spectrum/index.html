@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Spectrum · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .sp-hint {
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--ink-soft);
+    max-width: 22em;
+    margin: 0 auto 18px;
+  }
+  .sp-swatch-row {
+    display: flex; gap: 14px; align-items: stretch; width: 100%; max-width: 460px;
+  }
+  .sp-swatch {
+    flex: 1;
+    aspect-ratio: 1 / 1;
+    border-radius: 6px;
+    border: 1px solid var(--hairline);
+    background: rgb(128,128,128);
+    transition: background 320ms var(--ease);
+  }
+  .sp-swatch.target { display: none; }
+  body.revealed .sp-swatch.target { display: block; }
+  .sp-swatch-label {
+    text-align: center;
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 4px;
+  }
+
+  .sp-sliders {
+    width: 100%; max-width: 460px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .sp-row { display: grid; grid-template-columns: 22px 1fr 44px; gap: 12px; align-items: center; }
+  .sp-row .ch {
+    font: 500 0.74rem 'Inter', sans-serif;
+    text-align: center;
+    color: var(--ink-faint);
+  }
+  .sp-row .val {
+    font-family: 'Fraunces', serif;
+    font-size: 1rem;
+    text-align: right;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .sp-row input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #000, var(--track-color, #fff));
+    outline: none;
+  }
+  .sp-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .sp-row input[type=range]::-moz-range-thumb {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    cursor: pointer;
+  }
+  .sp-row[data-ch="r"] input { --track-color: #ff0000; }
+  .sp-row[data-ch="g"] input { --track-color: #00ff00; }
+  .sp-row[data-ch="b"] input { --track-color: #0066ff; }
+
+  .sp-submit {
+    margin-top: 4px;
+    padding: 10px 22px;
+    font: 500 0.74rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+    border-radius: 999px;
+  }
+  .sp-submit[disabled] { opacity: 0.4; pointer-events: none; }
+
+  .sp-meta {
+    display: flex; justify-content: space-between;
+    width: 100%; max-width: 460px;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .sp-meta .num { color: var(--ink); font-family: 'Fraunces', serif; font-size: 0.86rem; }
+
+  .sp-history {
+    width: 100%; max-width: 460px;
+    list-style: none; padding: 0; margin: 0;
+  }
+  .sp-history li {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 14px; align-items: center;
+    padding: 10px 4px;
+    border-top: 1px solid var(--hairline);
+  }
+  .sp-history li:last-child { border-bottom: 1px solid var(--hairline); }
+  .sp-history .chip {
+    width: 28px; height: 28px;
+    border-radius: 4px;
+    border: 1px solid var(--hairline-strong);
+  }
+  .sp-bars { display: flex; flex-direction: column; gap: 4px; }
+  .sp-bar { display: grid; grid-template-columns: 14px 1fr 36px; gap: 8px; align-items: center; }
+  .sp-bar .ch {
+    font: 500 0.6rem 'Inter', sans-serif;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .sp-bar .pct {
+    font: 500 0.66rem 'Inter', sans-serif;
+    color: var(--ink-soft);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .sp-bar .track {
+    height: 6px; background: var(--paper-deep);
+    border-radius: 3px; overflow: hidden;
+  }
+  .sp-bar .fill {
+    height: 100%;
+    background: var(--ink-faint);
+    transition: width 480ms var(--ease);
+  }
+  .sp-bar.r .fill { background: #C25E3A; }
+  .sp-bar.g .fill { background: #2E7D5F; }
+  .sp-bar.b .fill { background: #3066BE; }
+  .sp-bar.close .fill { background: var(--accent); }
+</style>
+</head>
+<body data-game="spectrum" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="spectrum">
+      <div class="game-head">
+        <div class="eyebrow">No. 026 · Spectrum</div>
+        <h1 class="title">Spectrum</h1>
+        <p class="rule">Triangulate a hidden color from three channels.</p>
+        <p class="howto"><b>How to play.</b> Read the hint. Set the R, G, B sliders to your guess and submit. You'll see how close each channel is. Five guesses. Get within ±15 on every channel to solve.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="spectrum">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="spectrum" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="spectrum" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="spectrum" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="spectrum" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="spectrum" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-spectrum">
+        <p class="sp-hint" id="sp-hint"></p>
+
+        <div class="sp-meta"><span><span class="num" id="sp-attempts">0</span> / 5 attempts</span><span>tolerance ±15</span></div>
+
+        <div>
+          <div class="sp-swatch-row">
+            <div style="flex:1"><div class="sp-swatch" id="sp-current"></div><div class="sp-swatch-label">your guess</div></div>
+            <div style="flex:1"><div class="sp-swatch target" id="sp-target"></div><div class="sp-swatch-label" id="sp-target-label" style="display:none">target</div></div>
+          </div>
+        </div>
+
+        <div class="sp-sliders" id="sp-sliders">
+          <div class="sp-row" data-ch="r"><span class="ch">R</span><input type="range" min="0" max="255" value="128" id="sp-r"><span class="val" id="sp-r-val">128</span></div>
+          <div class="sp-row" data-ch="g"><span class="ch">G</span><input type="range" min="0" max="255" value="128" id="sp-g"><span class="val" id="sp-g-val">128</span></div>
+          <div class="sp-row" data-ch="b"><span class="ch">B</span><input type="range" min="0" max="255" value="128" id="sp-b"><span class="val" id="sp-b-val">128</span></div>
+        </div>
+
+        <button class="sp-submit" id="sp-submit">Submit</button>
+
+        <ul class="sp-history" id="sp-history"></ul>
+
+        <div class="solved" id="solved-spectrum"><span class="check">✓</span><span class="solved-text">Found</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Spectrum() {
+    const PUZZLES = [
+      { id:'spectrum-001', hint:'The sky during a Mediterranean afternoon.',  target:[120,175,220], desc:'cerulean' },
+      { id:'spectrum-002', hint:'Espresso crema in a porcelain cup.',          target:[140, 90, 50], desc:'caramel brown' },
+      { id:'spectrum-003', hint:'Old-money envelope, faintly ribbed.',         target:[180,200,175], desc:'sage green' },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    const TOL = 15;
+
+    const hintEl   = $('#sp-hint');
+    const currEl   = $('#sp-current');
+    const tgtEl    = $('#sp-target');
+    const tgtLab   = $('#sp-target-label');
+    const rEl = $('#sp-r'), gEl = $('#sp-g'), bEl = $('#sp-b');
+    const rVal = $('#sp-r-val'), gVal = $('#sp-g-val'), bVal = $('#sp-b-val');
+    const submitBtn = $('#sp-submit');
+    const stageEl   = $('#stage-spectrum');
+    const solvedEl  = $('#solved-spectrum');
+    const attemptsEl= $('#sp-attempts');
+    const historyEl = $('#sp-history');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="spectrum"][data-action="share"]');
+
+    let attempts = []; // [{rgb, deltas, ok}]
+    let solved = false;
+
+    function build() {
+      attempts = []; solved = false;
+      hintEl.textContent = PUZZLE.hint;
+      attemptsEl.textContent = '0';
+      historyEl.innerHTML = '';
+      solvedEl.classList.remove('show', 'is-revealed');
+      shareBtn.hidden = true;
+      submitBtn.hidden = false; submitBtn.disabled = false; submitBtn.textContent = 'Submit';
+      document.body.classList.remove('revealed');
+      tgtLab.style.display = 'none';
+      rEl.value = 128; gEl.value = 128; bEl.value = 128;
+      updateSwatch();
+    }
+
+    function updateSwatch() {
+      const r = +rEl.value, g = +gEl.value, b = +bEl.value;
+      currEl.style.background = `rgb(${r},${g},${b})`;
+      rVal.textContent = r; gVal.textContent = g; bVal.textContent = b;
+    }
+    [rEl, gEl, bEl].forEach(el => el.addEventListener('input', updateSwatch));
+
+    submitBtn.addEventListener('click', () => {
+      if (solved) return;
+      const guess = [+rEl.value, +gEl.value, +bEl.value];
+      const deltas = guess.map((v, i) => Math.abs(v - PUZZLE.target[i]));
+      const ok = deltas.every(d => d <= TOL);
+      attempts.push({ rgb: guess, deltas, ok });
+      attemptsEl.textContent = String(attempts.length);
+      // Render history row
+      const li = document.createElement('li');
+      const chip = `<div class="chip" style="background:rgb(${guess[0]},${guess[1]},${guess[2]})"></div>`;
+      const channels = ['r','g','b'];
+      const pct = i => Math.max(0, 100 - Math.round((deltas[i] / 255) * 100));
+      const close = i => deltas[i] <= TOL ? 'close' : '';
+      const bars = channels.map((ch, i) => `
+        <div class="sp-bar ${ch} ${close(i)}">
+          <span class="ch">${ch.toUpperCase()}</span>
+          <div class="track"><div class="fill" style="width:${pct(i)}%"></div></div>
+          <span class="pct">${pct(i)}%</span>
+        </div>`).join('');
+      li.innerHTML = `${chip}<div class="sp-bars">${bars}</div>`;
+      historyEl.appendChild(li);
+      haptic(ok ? 22 : 8);
+      if (ok) win();
+      else if (attempts.length >= 5) lose();
+    });
+
+    function win() {
+      solved = true;
+      submitBtn.hidden = true;
+      document.body.classList.add('revealed');
+      tgtEl.style.background = `rgb(${PUZZLE.target.join(',')})`;
+      tgtLab.style.display = 'block';
+      solvedEl.querySelector('.solved-text').textContent = `Found in ${attempts.length}`;
+      solvedEl.classList.add('show');
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+    function lose() {
+      solved = true;
+      submitBtn.hidden = true;
+      document.body.classList.add('revealed');
+      tgtEl.style.background = `rgb(${PUZZLE.target.join(',')})`;
+      tgtLab.style.display = 'block';
+      solvedEl.querySelector('.solved-text').textContent = `Out · target was ${PUZZLE.desc}`;
+      solvedEl.classList.add('show', 'is-revealed');
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      const grid = attempts.map(a => a.deltas.map(d =>
+        d <= TOL ? '🟩' : d <= 40 ? '🟨' : '🟥'
+      ).join('')).join('\n');
+      const won = attempts.some(a => a.ok);
+      copyShare(`Spectrum · ${won ? attempts.length+'/5' : 'X/5'}\n${grid}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.spectrum = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

@@ -166,6 +166,10 @@
   .card[data-game="tide"]       { --card-accent: var(--tide); }
   .card[data-game="weft"]       { --card-accent: var(--weft); }
   .card[data-game="splice"]     { --card-accent: var(--splice); }
+  .card[data-game="pinhole"]    { --card-accent: var(--pinhole); }
+  .card[data-game="spectrum"]   { --card-accent: var(--spectrum); }
+  .card[data-game="switch"]     { --card-accent: var(--switch); }
+  .card[data-game="doubt"]      { --card-accent: var(--doubt); }
 
   @media (max-width: 480px) {
     .grid { grid-template-columns: 1fr; gap: 10px; }
@@ -458,6 +462,52 @@
           </div>
           <h3 class="card-name">Splice</h3>
           <p class="card-desc">Re-arrange the same letters into a new phrase.</p>
+        </a>
+
+      </div>
+    </section>
+
+    <section class="group" aria-labelledby="grp-probe">
+      <div class="group-head">
+        <h2 class="group-name" id="grp-probe">Probe</h2>
+        <span class="group-tagline">Every guess pays back. Every probe matters.</span>
+      </div>
+      <div class="grid">
+
+        <a class="card" data-game="pinhole" href="pinhole/">
+          <span class="card-tag">No. 025</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><rect x="0" y="0" width="84" height="56" fill="#1a1410"/><circle cx="22" cy="18" r="6"  fill="#C8C0B0" fill-opacity="0.85"/><circle cx="46" cy="34" r="8"  fill="#C8C0B0" fill-opacity="0.85"/><circle cx="64" cy="14" r="5"  fill="#C8C0B0" fill-opacity="0.85"/><circle cx="38" cy="46" r="4"  fill="#C8C0B0" fill-opacity="0.85"/></svg>
+          </div>
+          <h3 class="card-name">Pinhole</h3>
+          <p class="card-desc">Probe a black field. Reveal just enough to name it.</p>
+        </a>
+
+        <a class="card" data-game="spectrum" href="spectrum/">
+          <span class="card-tag">No. 026</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><rect x="6"  y="6"  width="36" height="36" rx="3" fill="#8B5CF6"/><rect x="46" y="10" width="32" height="6" rx="3" fill="#C25E3A"/><rect x="46" y="24" width="22" height="6" rx="3" fill="#D4A536"/><rect x="46" y="38" width="30" height="6" rx="3" fill="#3066BE"/></svg>
+          </div>
+          <h3 class="card-name">Spectrum</h3>
+          <p class="card-desc">Triangulate a hidden color from three channels.</p>
+        </a>
+
+        <a class="card" data-game="switch" href="switch/">
+          <span class="card-tag">No. 027</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><circle cx="14" cy="14" r="6" fill="currentColor"/><circle cx="34" cy="14" r="6" fill="currentColor" fill-opacity="0.25"/><circle cx="54" cy="14" r="6" fill="currentColor"/><circle cx="74" cy="14" r="6" fill="currentColor" fill-opacity="0.25"/><rect x="10" y="36" width="8" height="14" rx="2" fill="currentColor"/><rect x="30" y="36" width="8" height="14" rx="2" fill="currentColor" fill-opacity="0.4"/><rect x="50" y="36" width="8" height="14" rx="2" fill="currentColor"/><rect x="70" y="36" width="8" height="14" rx="2" fill="currentColor" fill-opacity="0.4"/></svg>
+          </div>
+          <h3 class="card-name">Switch</h3>
+          <p class="card-desc">Test configurations. Deduce the hidden wiring.</p>
+        </a>
+
+        <a class="card" data-game="doubt" href="doubt/">
+          <span class="card-tag">No. 028</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><g><rect x="4"  y="6"  width="14" height="14" rx="2" fill="#2E7D5F"/><rect x="20" y="6"  width="14" height="14" rx="2" fill="#C68A1E"/><rect x="36" y="6"  width="14" height="14" rx="2" fill="#5a5a5a"/><rect x="52" y="6"  width="14" height="14" rx="2" fill="#5a5a5a"/><rect x="68" y="6"  width="14" height="14" rx="2" fill="#2E7D5F" stroke="#6B2C5F" stroke-width="2" stroke-dasharray="2 2"/><rect x="4"  y="22" width="14" height="14" rx="2" fill="#5a5a5a"/><rect x="20" y="22" width="14" height="14" rx="2" fill="#2E7D5F"/><rect x="36" y="22" width="14" height="14" rx="2" fill="#C68A1E"/><rect x="52" y="22" width="14" height="14" rx="2" fill="#5a5a5a"/><rect x="68" y="22" width="14" height="14" rx="2" fill="#5a5a5a"/></g><text x="68" y="51" font-family="serif" font-size="11" fill="#6B2C5F">🎭</text></svg>
+          </div>
+          <h3 class="card-name">Doubt</h3>
+          <p class="card-desc">Wordle, plus a single tile that lies.</p>
         </a>
 
       </div>

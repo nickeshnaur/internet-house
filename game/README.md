@@ -1,6 +1,6 @@
 # /game
 
-Twenty-four daily-puzzle prototypes, one per folder, served straight
+Twenty-eight daily-puzzle prototypes, one per folder, served straight
 out of `game/`. No build step.
 
 ```
@@ -32,6 +32,10 @@ game/
   tide/index.html        ← Game 22    Field
   weft/index.html        ← Game 23    Field
   splice/index.html      ← Game 24    Field
+  pinhole/index.html     ← Game 25    Probe
+  spectrum/index.html    ← Game 26    Probe
+  switch/index.html      ← Game 27    Probe
+  doubt/index.html       ← Game 28    Probe
 ```
 
 Each game lives in its own folder; visiting `/game/<slug>/` loads only
@@ -50,9 +54,9 @@ with three puzzles selectable from a `1 · 2 · 3` picker in the toolbar.
   `.toolbar`, `.stage`. CSS for game-specific surfaces is inlined in
   that game's file.
 
-## Six groups
+## Seven groups
 
-The hub clusters the twenty-four games:
+The hub clusters the twenty-eight games:
 
 - **Logic** — Tableau, Filament, Beat Sheet. Editorial paper.
 - **Feeling** — Knot, Bloom. Dark, gestural, atmospheric.
@@ -66,6 +70,9 @@ The hub clusters the twenty-four games:
 - **Field** — Beam, Tide, Weft, Splice. Place pieces, run the
   simulation, see what happened. Mix of spatial reasoning (Beam,
   Tide) and lexical pairing (Weft, Splice).
+- **Probe** — Pinhole, Spectrum, Switch, Doubt. Engineered around
+  the probe-and-learn loop. Every guess pays back regardless of
+  whether it's correct.
 
 The hub itself (`game/index.html`) is a card grid — each card has a
 glyph, name, one-line description, and a tinted accent border.
@@ -522,7 +529,103 @@ the answer.
 
 ---
 
-## Adding a twenty-fifth game
+## The Probe group
+
+Engineered specifically around the probe-and-learn loop. Five or six
+well-chosen probes can crack each puzzle; every probe pays back
+regardless of whether it's correct.
+
+### Pinhole · probe to reveal · `game/pinhole/`
+
+A famous image is hidden behind a black overlay. Tap anywhere to
+punch a circular pinhole that reveals the underlying image at full
+resolution within that circle. Pinholes accumulate. When you think
+you know the image, type a guess. Score is the number of probes used
+before correct.
+
+```js
+{
+  id: 'pinhole-NNN',
+  title: 'Mona Lisa',
+  url:   'https://upload.wikimedia.org/wikipedia/commons/.../600px-Mona_Lisa.jpg',
+  accept: ['mona lisa','la gioconda',…],
+  canonical: 'Mona Lisa · Leonardo da Vinci · c. 1503',
+}
+```
+
+The reveal uses an SVG mask: a white rect (overlay visible)
+everywhere, with black circles (overlay hidden) at each probe
+location. Three puzzles ship: Mona Lisa, The Great Wave off
+Kanagawa, The Starry Night — all license-free Wikimedia URLs.
+
+### Spectrum · triangulate the color · `game/spectrum/`
+
+A hidden RGB color is the answer, with a thematic hint ("the sky
+during a Mediterranean afternoon"). RGB sliders 0–255. Submit a
+guess; per-channel proximity bars show how close each channel is.
+Five guesses. Solve when within ±15 on every channel.
+
+```js
+{
+  id:'spectrum-NNN',
+  hint:'The sky during a Mediterranean afternoon.',
+  target:[120,175,220],
+  desc:'cerulean',
+}
+```
+
+The history rail shows previous guesses as a colored chip + their
+three proximity bars, so the player can read the trace. On solve, a
+target swatch slides in beside the player's final guess.
+
+### Switch · deduce the wiring · `game/switch/`
+
+A panel of 4 switches and 4 lights with hidden wiring. A light is on
+when ANY of its wired switches is on. Player toggles switches and
+taps Test to see the response. After enough tests, tap "Submit
+wiring" to mark each connection on a 4×4 grid. Score is the number
+of tests used.
+
+```js
+{
+  id: 'switch-NNN',
+  // wiring[s][l] = true if switch s is connected to light l
+  wiring: [
+    [true,false,false,false],     // A → W
+    [true,true, false,false],     // B → W, X
+    [false,false,true, true],     // C → Y, Z
+    [false,false,false,true],     // D → Z
+  ],
+}
+```
+
+The wiring submission UI is a 4×4 grid (rows = switches, cols =
+lights). On submit, correct connections render green, wrong
+connections render orange.
+
+### Doubt · Wordle, where one feedback lies · `game/doubt/`
+
+Standard 5-letter Wordle, six guesses. The twist: one tile across
+the entire 6×5 grid lies — its color is wrong. Lie position is
+deterministic per puzzle (so today's puzzle has the same lie for
+every player). Cycle: gray → yellow → green → gray.
+
+```js
+{
+  id: 'doubt-NNN',
+  answer: 'BREAD',
+  lie: { row: 1, col: 1 },   // 0-indexed
+}
+```
+
+Players cross-reference rows for inconsistencies. On solve, the
+lying tile is theatrically flipped to its true color with a 🎭
+flourish. Share artifact is a standard Wordle emoji grid plus a 🎭
+on the lying row.
+
+---
+
+## Adding a twenty-ninth game
 
 1. Create `/game/<slug>/index.html` modeled on any existing game.
 2. Add an accent color in `shared.css`:

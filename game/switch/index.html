@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Switch · internet.house</title>
+<meta name="theme-color" content="#0E1218">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .sw-stage { gap: 22px; }
+
+  .sw-bulbs, .sw-switches {
+    display: flex; gap: 14px; justify-content: center;
+  }
+  .sw-bulb {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .bulb {
+    width: 56px; height: 70px;
+    background: var(--paper-deep);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 12px 12px 24px 24px / 12px 12px 38px 38px;
+    position: relative;
+    transition: background 320ms var(--ease), box-shadow 320ms var(--ease), border-color 320ms var(--ease);
+  }
+  .bulb.on {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 28px color-mix(in srgb, var(--accent) 60%, transparent), inset 0 -8px 18px rgba(255,255,255,0.18);
+  }
+  .bulb::after {
+    content: '';
+    position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+    width: 28px; height: 4px;
+    background: var(--ink-faint);
+    border-radius: 2px;
+  }
+  .sw-bulb .label {
+    font: 500 0.7rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 8px;
+  }
+
+  .sw-switch {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .sw-toggle {
+    width: 44px; height: 76px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 8px;
+    position: relative;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+  }
+  .sw-toggle .knob {
+    position: absolute;
+    left: 4px; right: 4px;
+    height: 32px;
+    background: var(--ink-soft);
+    border-radius: 6px;
+    bottom: 4px;
+    transition: bottom 220ms cubic-bezier(0.5, 1.6, 0.4, 1);
+  }
+  .sw-toggle.on .knob { bottom: calc(100% - 36px); background: var(--accent); }
+  .sw-toggle.on { border-color: var(--accent); }
+  .sw-switch .label {
+    font: 500 0.7rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .sw-actions { display: flex; gap: 14px; justify-content: center; align-items: center; }
+  .sw-test, .sw-submit-btn {
+    padding: 10px 22px;
+    font: 500 0.74rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+    border-radius: 999px;
+  }
+  .sw-submit-btn { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+  .sw-clear { font: 500 0.66rem 'Inter', sans-serif; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); padding: 8px 12px; }
+
+  .sw-meta {
+    display: flex; justify-content: space-between;
+    width: 100%; max-width: 460px;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .sw-meta .num { color: var(--ink); font-family: 'Fraunces', serif; font-size: 0.86rem; }
+
+  .sw-history {
+    width: 100%; max-width: 460px;
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    padding: 8px 0;
+    font-family: 'Inter', sans-serif;
+  }
+  .sw-test-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 14px 1fr 1fr 1fr 1fr;
+    gap: 6px;
+    padding: 6px 0;
+    font: 500 0.66rem 'Inter', sans-serif;
+    align-items: center;
+    text-align: center;
+    border-bottom: 1px dotted var(--hairline);
+  }
+  .sw-test-row:last-child { border-bottom: none; }
+  .sw-test-row .cell {
+    height: 14px; border-radius: 3px;
+    background: var(--hairline-strong);
+  }
+  .sw-test-row .cell.on { background: var(--accent); }
+  .sw-test-row .arrow { color: var(--ink-faint); }
+  .sw-test-row .label { color: var(--ink-faint); padding: 0 4px; }
+
+  .sw-wiring {
+    display: none;
+    width: 100%; max-width: 460px;
+  }
+  .sw-wiring.show { display: block; }
+  .sw-wiring h3 {
+    text-align: center;
+    font: 500 0.68rem 'Inter', sans-serif;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 12px;
+  }
+  .sw-grid {
+    display: grid;
+    grid-template-columns: 30px repeat(4, 1fr);
+    gap: 4px;
+    margin: 0 auto;
+    max-width: 320px;
+  }
+  .sw-grid .h, .sw-grid .v {
+    font: 500 0.7rem 'Inter', sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+    padding: 4px 0;
+  }
+  .sw-grid .v { text-align: right; padding-right: 4px; }
+  .sw-grid .conn {
+    aspect-ratio: 1 / 1;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    color: transparent;
+    font-family: 'Fraunces', serif;
+    font-size: 1.2rem;
+  }
+  .sw-grid .conn.on {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .sw-grid .conn.right { background: color-mix(in srgb, #2E7D5F 30%, transparent); border-color: #2E7D5F; color: #2E7D5F; }
+  .sw-grid .conn.wrong { background: color-mix(in srgb, #C25E3A 24%, transparent); border-color: #C25E3A; color: #C25E3A; }
+
+  .sw-final-actions { display: flex; gap: 14px; justify-content: center; margin-top: 12px; }
+</style>
+</head>
+<body data-game="switch" data-mood="dark">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="switch">
+      <div class="game-head">
+        <div class="eyebrow">No. 027 · Switch</div>
+        <h1 class="title">Switch</h1>
+        <p class="rule">Test configurations. Deduce the wiring.</p>
+        <p class="howto"><b>How to play.</b> Toggle the switches, then tap Test to see which lights respond. A light is on when ANY of its wired switches is on. When you've deduced the wiring, tap Submit to mark each connection.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="switch">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="switch" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="switch" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="switch" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="switch" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="switch" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage sw-stage" id="stage-switch">
+        <div class="sw-meta"><span><span class="num" id="sw-tests">0</span> tests</span><span id="sw-status">testing</span></div>
+
+        <div class="sw-bulbs" id="sw-bulbs"></div>
+        <div class="sw-switches" id="sw-switches"></div>
+
+        <div class="sw-actions">
+          <button class="sw-clear" id="sw-clear">All off</button>
+          <button class="sw-test" id="sw-test">Test</button>
+          <button class="sw-submit-btn" id="sw-go-submit">Submit wiring</button>
+        </div>
+
+        <div class="sw-history" id="sw-history" hidden></div>
+
+        <div class="sw-wiring" id="sw-wiring">
+          <h3>Mark each switch's connections</h3>
+          <div class="sw-grid" id="sw-grid"></div>
+          <div class="sw-final-actions">
+            <button class="sw-clear" id="sw-back">Back to testing</button>
+            <button class="sw-test" id="sw-submit-final">Submit</button>
+          </div>
+        </div>
+
+        <div class="solved" id="solved-switch"><span class="check">✓</span><span class="solved-text">Wired</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Switch() {
+    // wiring[s][l] = true if switch s is connected to light l
+    const PUZZLES = [
+      {
+        id: 'switch-001',
+        // A→W, B→W,X, C→Y,Z, D→Z
+        wiring: [
+          [true,false,false,false],
+          [true,true, false,false],
+          [false,false,true, true],
+          [false,false,false,true],
+        ],
+      },
+      {
+        id: 'switch-002',
+        // A→X,Y, B→Y, C→W,Z, D→W,X
+        wiring: [
+          [false,true, true, false],
+          [false,false,true, false],
+          [true, false,false,true],
+          [true, true, false,false],
+        ],
+      },
+      {
+        id: 'switch-003',
+        // A→W, B→X, C→Y, D→Z (one-to-one trivial)... let's mix
+        // A→W,Y, B→X, C→W,Z, D→X,Y
+        wiring: [
+          [true, false,true, false],
+          [false,true, false,false],
+          [true, false,false,true],
+          [false,true, true, false],
+        ],
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const SW = ['A','B','C','D'];
+    const LT = ['W','X','Y','Z'];
+
+    const bulbsEl = $('#sw-bulbs');
+    const swEl    = $('#sw-switches');
+    const clearBtn= $('#sw-clear');
+    const testBtn = $('#sw-test');
+    const goSubBtn= $('#sw-go-submit');
+    const histEl  = $('#sw-history');
+    const wiringEl= $('#sw-wiring');
+    const gridEl  = $('#sw-grid');
+    const backBtn = $('#sw-back');
+    const finalBtn= $('#sw-submit-final');
+    const stageEl = $('#stage-switch');
+    const solvedEl= $('#solved-switch');
+    const testsEl = $('#sw-tests');
+    const statusEl= $('#sw-status');
+    const shareBtn= document.querySelector('.tool-btn[data-game="switch"][data-action="share"]');
+
+    let switches = [false, false, false, false];
+    let lights   = [false, false, false, false];
+    let tests    = 0;
+    let phase    = 'test';   // 'test' | 'wiring' | 'done'
+    let solved   = false;
+    let guessWiring = [
+      [false,false,false,false],
+      [false,false,false,false],
+      [false,false,false,false],
+      [false,false,false,false],
+    ];
+
+    function build() {
+      switches = [false,false,false,false];
+      lights   = [false,false,false,false];
+      tests = 0; phase = 'test'; solved = false;
+      guessWiring = guessWiring.map(r => r.map(_ => false));
+      testsEl.textContent = '0';
+      statusEl.textContent = 'testing';
+      bulbsEl.innerHTML = '';
+      swEl.innerHTML = '';
+      histEl.innerHTML = ''; histEl.hidden = true;
+      wiringEl.classList.remove('show');
+      solvedEl.classList.remove('show', 'is-revealed');
+      shareBtn.hidden = true;
+      goSubBtn.hidden = false;
+      testBtn.hidden = false;
+      clearBtn.hidden = false;
+
+      // Bulbs
+      LT.forEach((l, i) => {
+        const wrap = document.createElement('div'); wrap.className = 'sw-bulb';
+        wrap.innerHTML = `<div class="bulb" data-i="${i}"></div><span class="label">${l}</span>`;
+        bulbsEl.appendChild(wrap);
+      });
+      // Switches
+      SW.forEach((s, i) => {
+        const wrap = document.createElement('div'); wrap.className = 'sw-switch';
+        wrap.innerHTML = `<div class="sw-toggle" data-i="${i}"><div class="knob"></div></div><span class="label">${s}</span>`;
+        wrap.querySelector('.sw-toggle').addEventListener('click', () => toggleSwitch(i));
+        swEl.appendChild(wrap);
+      });
+    }
+
+    function toggleSwitch(i) {
+      if (phase !== 'test') return;
+      switches[i] = !switches[i];
+      swEl.querySelectorAll('.sw-toggle')[i].classList.toggle('on', switches[i]);
+      haptic(4);
+    }
+
+    clearBtn.addEventListener('click', () => {
+      if (phase !== 'test') return;
+      switches = [false,false,false,false];
+      swEl.querySelectorAll('.sw-toggle').forEach(t => t.classList.remove('on'));
+      lights = [false,false,false,false];
+      bulbsEl.querySelectorAll('.bulb').forEach(b => b.classList.remove('on'));
+    });
+
+    testBtn.addEventListener('click', () => {
+      if (phase !== 'test') return;
+      // Compute lights: l is on iff any switch s with wiring[s][l]=true is on
+      lights = LT.map((_, l) => SW.some((_, s) => switches[s] && PUZZLE.wiring[s][l]));
+      bulbsEl.querySelectorAll('.bulb').forEach((b, i) => b.classList.toggle('on', lights[i]));
+      tests++;
+      testsEl.textContent = String(tests);
+      // Add to history
+      histEl.hidden = false;
+      const row = document.createElement('div');
+      row.className = 'sw-test-row';
+      const sCells = SW.map((_, i) => `<div class="cell ${switches[i]?'on':''}"></div>`).join('');
+      const lCells = LT.map((_, i) => `<div class="cell ${lights[i]?'on':''}"></div>`).join('');
+      row.innerHTML = sCells + '<span class="arrow">→</span>' + lCells;
+      histEl.prepend(row);
+      haptic(8);
+    });
+
+    goSubBtn.addEventListener('click', () => {
+      if (phase !== 'test') return;
+      phase = 'wiring';
+      statusEl.textContent = 'submit wiring';
+      testBtn.hidden = true;
+      goSubBtn.hidden = true;
+      clearBtn.hidden = true;
+      wiringEl.classList.add('show');
+      renderGrid();
+    });
+
+    backBtn.addEventListener('click', () => {
+      if (solved) return;
+      phase = 'test';
+      statusEl.textContent = 'testing';
+      testBtn.hidden = false;
+      goSubBtn.hidden = false;
+      clearBtn.hidden = false;
+      wiringEl.classList.remove('show');
+    });
+
+    function renderGrid() {
+      gridEl.innerHTML = '';
+      // header row: empty + lights
+      gridEl.appendChild(headerCell(''));
+      LT.forEach(l => gridEl.appendChild(headerCell(l, 'h')));
+      SW.forEach((s, si) => {
+        gridEl.appendChild(headerCell(s, 'v'));
+        LT.forEach((_, li) => {
+          const c = document.createElement('button');
+          c.className = 'conn' + (guessWiring[si][li] ? ' on' : '');
+          c.textContent = '✓';
+          c.addEventListener('click', () => {
+            if (solved) return;
+            guessWiring[si][li] = !guessWiring[si][li];
+            c.classList.toggle('on', guessWiring[si][li]);
+            haptic(4);
+          });
+          gridEl.appendChild(c);
+        });
+      });
+    }
+    function headerCell(text, cls = '') {
+      const el = document.createElement('div');
+      el.className = cls; el.textContent = text;
+      return el;
+    }
+
+    finalBtn.addEventListener('click', () => {
+      if (solved) return;
+      // Compare guessWiring to PUZZLE.wiring
+      let allRight = true;
+      const conns = gridEl.querySelectorAll('.conn');
+      let cIdx = 0;
+      for (let s = 0; s < 4; s++) {
+        for (let l = 0; l < 4; l++) {
+          const c = conns[cIdx++];
+          c.classList.remove('on');
+          const right = guessWiring[s][l] === PUZZLE.wiring[s][l];
+          if (guessWiring[s][l]) {
+            c.classList.add(right ? 'right' : 'wrong');
+          } else if (PUZZLE.wiring[s][l]) {
+            // Should be on but isn't → mark wrong
+            c.classList.add('wrong');
+            c.textContent = '·';
+          }
+          if (!right) allRight = false;
+        }
+      }
+      solved = true;
+      statusEl.textContent = allRight ? 'wired' : 'mismatched';
+      backBtn.hidden = true;
+      finalBtn.hidden = true;
+      solvedEl.querySelector('.solved-text').textContent = allRight ? `Wired in ${tests} test${tests===1?'':'s'}` : 'Wiring incorrect';
+      solvedEl.classList.add('show');
+      if (!allRight) solvedEl.classList.add('is-revealed');
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    });
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      // 4×4 emoji wiring grid
+      const grid = PUZZLE.wiring.map((row, s) => row.map((cell, l) => {
+        const right = cell === guessWiring[s][l];
+        if (cell) return right ? '🟫' : '⬛';   // expected on: brown if got it, black if missed
+        return right ? '·' : '✕';                 // expected off: dot if right, ✕ if wrongly marked
+      }).join('')).join('\n');
+      copyShare(`Switch · ${tests} test${tests===1?'':'s'}\n${grid}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.switch = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

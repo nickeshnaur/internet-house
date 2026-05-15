@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Pinhole · internet.house</title>
+<meta name="theme-color" content="#0a0808">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  body[data-game="pinhole"] { --paper: #0a0808; --paper-soft: #15110e; --ink: #E8E3D8; --ink-soft: #B0A99A; --ink-faint: #6B6557; --hairline: #2A2520; --hairline-strong: #3F3833; --accent: var(--pinhole); }
+
+  .pinhole-frame {
+    width: clamp(280px, 92vw, 540px);
+    aspect-ratio: 1 / 1;
+    background: #0a0808;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  .pinhole-svg { width: 100%; height: 100%; display: block; }
+  .pinhole-frame.solved .overlay-rect { transition: opacity 1200ms var(--ease); opacity: 0; }
+  .probe-circle {
+    transition: r 320ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  .pin-meta {
+    width: 100%; max-width: 540px;
+    display: flex; justify-content: space-between;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .pin-meta .num { color: var(--ink); font-family: 'Fraunces', serif; font-size: 0.9rem; }
+
+  .pin-actions {
+    display: flex; gap: 14px; align-items: center; justify-content: center;
+  }
+  .pin-guess-btn {
+    padding: 10px 22px;
+    font: 500 0.74rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+    border-radius: 999px;
+  }
+  .pin-clear {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 8px 12px;
+  }
+
+  .pin-guess-row {
+    width: 100%; max-width: 380px;
+    display: flex; gap: 10px;
+    border-bottom: 1px solid var(--ink-soft);
+    padding: 0 4px 8px;
+  }
+  .pin-guess-input {
+    flex: 1;
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+    color: var(--ink);
+    text-align: center;
+    padding: 4px 0;
+  }
+  .pin-guess-input::placeholder { color: var(--ink-faint); font-style: italic; }
+  .pin-guess-submit {
+    padding: 6px 14px;
+    font: 500 0.7rem 'Inter', sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+  }
+  .pin-guess-submit[disabled] { opacity: 0.4; pointer-events: none; }
+
+  .pin-history {
+    width: 100%; max-width: 380px;
+    list-style: none; padding: 0;
+  }
+  .pin-history li {
+    padding: 6px 4px;
+    border-top: 1px dotted var(--hairline);
+    font-family: 'Fraunces', serif;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-size: 0.92rem;
+    display: flex; justify-content: space-between;
+  }
+  .pin-history li .mark { color: #C25E3A; font-style: normal; }
+  .pin-history li.right .mark { color: var(--accent); }
+
+  .pin-reveal {
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.06rem;
+  }
+  .pin-reveal em { color: var(--accent); font-style: normal; font-weight: 500; }
+</style>
+</head>
+<body data-game="pinhole" data-mood="dark">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="pinhole">
+      <div class="game-head">
+        <div class="eyebrow">No. 025 · Pinhole</div>
+        <h1 class="title">Pinhole</h1>
+        <p class="rule">Probe the black field. Reveal just enough to name it.</p>
+        <p class="howto"><b>How to play.</b> Tap anywhere on the black field to open a pinhole onto the hidden image. Pinholes accumulate. When you think you know what you're looking at, tap Guess. Lower probe count is better.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="pinhole">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="pinhole" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="pinhole" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="pinhole" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="pinhole" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="pinhole" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-pinhole">
+        <div class="pin-meta"><span><span class="num" id="pin-probes">0</span> probes</span><span><span class="num" id="pin-guesses">0</span> guesses</span></div>
+
+        <div class="pinhole-frame" id="pinhole-frame">
+          <svg class="pinhole-svg" id="pinhole-svg" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <mask id="ph-mask">
+                <rect width="600" height="600" fill="white"/>
+                <g id="ph-probes"></g>
+              </mask>
+            </defs>
+            <image id="ph-img" href="" width="600" height="600" preserveAspectRatio="xMidYMid slice"/>
+            <rect class="overlay-rect" width="600" height="600" fill="#0a0808" mask="url(#ph-mask)"/>
+          </svg>
+        </div>
+
+        <div class="pin-actions">
+          <button class="pin-clear" id="pin-clear">Clear pinholes</button>
+        </div>
+
+        <div class="pin-guess-row" id="pin-guess-row">
+          <input class="pin-guess-input" id="pin-guess-input" type="text" autocomplete="off" placeholder="what is it?" maxlength="40">
+          <button class="pin-guess-submit" id="pin-guess-submit" disabled>Guess</button>
+        </div>
+
+        <ul class="pin-history" id="pin-history"></ul>
+
+        <div class="solved" id="solved-pinhole"><span class="check">✓</span><span class="solved-text">Seen</span></div>
+        <p class="pin-reveal" id="pin-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Pinhole() {
+    const PUZZLES = [
+      {
+        id: 'pinhole-001',
+        title: 'Mona Lisa',
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/600px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg',
+        accept: ['mona lisa','la gioconda','gioconda','da vinci mona lisa','the mona lisa'],
+        canonical: 'Mona Lisa · Leonardo da Vinci · c. 1503',
+      },
+      {
+        id: 'pinhole-002',
+        title: 'The Great Wave off Kanagawa',
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/The_Great_Wave_off_Kanagawa.jpg/800px-The_Great_Wave_off_Kanagawa.jpg',
+        accept: ['great wave','the great wave','great wave off kanagawa','kanagawa','hokusai','the wave','great wave hokusai'],
+        canonical: 'The Great Wave off Kanagawa · Hokusai · c. 1831',
+      },
+      {
+        id: 'pinhole-003',
+        title: 'The Starry Night',
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/800px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg',
+        accept: ['starry night','the starry night','van gogh starry night','van gogh','starrynight'],
+        canonical: 'The Starry Night · Vincent van Gogh · 1889',
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const frameEl    = $('#pinhole-frame');
+    const svgEl      = $('#pinhole-svg');
+    const imgEl      = $('#ph-img');
+    const probesEl   = $('#ph-probes');
+    const probesNum  = $('#pin-probes');
+    const guessesNum = $('#pin-guesses');
+    const clearBtn   = $('#pin-clear');
+    const inputEl    = $('#pin-guess-input');
+    const submitBtn  = $('#pin-guess-submit');
+    const historyEl  = $('#pin-history');
+    const solvedEl   = $('#solved-pinhole');
+    const stageEl    = $('#stage-pinhole');
+    const revealEl   = $('#pin-reveal');
+    const guessRow   = $('#pin-guess-row');
+    const shareBtn   = document.querySelector('.tool-btn[data-game="pinhole"][data-action="share"]');
+
+    const NS = 'http://www.w3.org/2000/svg';
+    const RADIUS = 50;
+    let probes = []; // [[x,y]]
+    let guesses = []; // [{text, right}]
+    let solved = false;
+
+    function build() {
+      probes = []; guesses = []; solved = false;
+      probesNum.textContent = '0';
+      guessesNum.textContent = '0';
+      probesEl.innerHTML = '';
+      historyEl.innerHTML = '';
+      inputEl.value = ''; inputEl.disabled = false;
+      submitBtn.disabled = true;
+      guessRow.style.display = '';
+      clearBtn.hidden = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      shareBtn.hidden = true;
+      frameEl.classList.remove('solved');
+      imgEl.setAttribute('href', PUZZLE.url);
+    }
+
+    function clientToView(cx, cy) {
+      const r = svgEl.getBoundingClientRect();
+      return [((cx - r.left) / r.width) * 600, ((cy - r.top) / r.height) * 600];
+    }
+
+    frameEl.addEventListener('click', e => {
+      if (solved) return;
+      const [x, y] = clientToView(e.clientX, e.clientY);
+      probes.push([x, y]);
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('class', 'probe-circle');
+      c.setAttribute('cx', x.toFixed(1));
+      c.setAttribute('cy', y.toFixed(1));
+      c.setAttribute('r', '0');
+      c.setAttribute('fill', 'black');
+      probesEl.appendChild(c);
+      requestAnimationFrame(() => c.setAttribute('r', String(RADIUS)));
+      probesNum.textContent = String(probes.length);
+      haptic(6);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      if (solved) return;
+      probes = [];
+      probesEl.innerHTML = '';
+      probesNum.textContent = '0';
+    });
+
+    function canon(s) { return s.toLowerCase().trim().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' '); }
+
+    inputEl.addEventListener('input', () => {
+      submitBtn.disabled = inputEl.value.trim().length < 2 || solved;
+    });
+    inputEl.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); if (!submitBtn.disabled) submit(); }
+    });
+    submitBtn.addEventListener('click', submit);
+
+    function submit() {
+      if (solved) return;
+      const raw = inputEl.value.trim();
+      if (!raw) return;
+      const guess = canon(raw);
+      const right = PUZZLE.accept.some(a => canon(a) === guess);
+      guesses.push({ text: raw, right });
+      guessesNum.textContent = String(guesses.length);
+      const li = document.createElement('li');
+      li.className = right ? 'right' : '';
+      li.innerHTML = `<span>${raw}</span> <span class="mark">${right ? '✓' : '✗'}</span>`;
+      historyEl.appendChild(li);
+      inputEl.value = '';
+      submitBtn.disabled = true;
+      haptic(right ? 22 : 8);
+      if (right) win();
+    }
+
+    function win() {
+      solved = true;
+      frameEl.classList.add('solved');
+      guessRow.style.display = 'none';
+      clearBtn.hidden = true;
+      solvedEl.querySelector('.solved-text').textContent = `Named in ${probes.length} probe${probes.length===1?'':'s'}`;
+      solvedEl.classList.add('show');
+      revealEl.innerHTML = `<em>${PUZZLE.canonical}</em>`;
+      revealEl.hidden = false;
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      // 5×5 emoji map of where probes landed
+      const grid = Array.from({length:5}, () => Array(5).fill('⬛'));
+      probes.forEach(([x, y]) => {
+        const r = Math.min(4, Math.floor(y / 120));
+        const c = Math.min(4, Math.floor(x / 120));
+        grid[r][c] = '🟨';
+      });
+      const map = grid.map(r => r.join('')).join('\n');
+      copyShare(`Pinhole · ${probes.length} probe${probes.length===1?'':'s'}\n${map}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.pinhole = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>
