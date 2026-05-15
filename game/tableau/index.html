@@ -136,6 +136,33 @@
           'Every cell diagonally adjacent to the center is filled.',
           'Exactly 13 cells are filled in total.',
         ] },
+      { id: 'tableau-004',
+        target: [[1,1,1,1,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,1]],
+        clues: [
+          'Every cell on the perimeter is filled.',
+          'The interior 3×3 block is entirely empty.',
+          'Symmetric across all four axes.',
+          'Exactly 16 cells are filled in total.',
+          'No filled cell is fully surrounded by filled cells.',
+        ] },
+      { id: 'tableau-005',
+        target: [[1,0,0,0,0],[0,1,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,0,0,1]],
+        clues: [
+          'No row contains more than one filled cell.',
+          'No column contains more than one filled cell.',
+          'The pattern is symmetric across the main diagonal (top-left to bottom-right).',
+          'Both ends of that diagonal are filled.',
+          'Exactly 5 cells are filled in total.',
+        ] },
+      { id: 'tableau-006',
+        target: [[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],[1,1,1,1,1]],
+        clues: [
+          'Column 1 is entirely filled.',
+          'Row 5 is entirely filled.',
+          'No filled cell sits in rows 1–4 outside column 1.',
+          'The pattern is asymmetric (no axis of symmetry).',
+          'Exactly 9 cells are filled in total.',
+        ] },
     ];
     let pIdx = 0, PUZZLE = PUZZLES[pIdx];
     const gridEl   = $('#tableau-grid');
