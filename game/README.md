@@ -1,6 +1,6 @@
 # /game
 
-Twenty-eight daily-puzzle prototypes, one per folder, served straight
+Thirty-two daily-puzzle prototypes, one per folder, served straight
 out of `game/`. No build step.
 
 ```
@@ -36,6 +36,10 @@ game/
   spectrum/index.html    ← Game 26    Probe
   switch/index.html      ← Game 27    Probe
   doubt/index.html       ← Game 28    Probe
+  fossil/index.html      ← Game 29    Hunt
+  shadows/index.html     ← Game 30    Hunt
+  magnets/index.html     ← Game 31    Hunt
+  alchemy/index.html     ← Game 32    Hunt
 ```
 
 Each game lives in its own folder; visiting `/game/<slug>/` loads only
@@ -54,9 +58,9 @@ with three puzzles selectable from a `1 · 2 · 3` picker in the toolbar.
   `.toolbar`, `.stage`. CSS for game-specific surfaces is inlined in
   that game's file.
 
-## Seven groups
+## Eight groups
 
-The hub clusters the twenty-eight games:
+The hub clusters the thirty-two games:
 
 - **Logic** — Tableau, Filament, Beat Sheet. Editorial paper.
 - **Feeling** — Knot, Bloom. Dark, gestural, atmospheric.
@@ -73,6 +77,9 @@ The hub clusters the twenty-eight games:
 - **Probe** — Pinhole, Spectrum, Switch, Doubt. Engineered around
   the probe-and-learn loop. Every guess pays back regardless of
   whether it's correct.
+- **Hunt** — Fossil, Shadows, Magnets, Alchemy. Themed worlds.
+  Each is a probe-and-learn loop dressed in its own setting:
+  paleontology, architecture, physics, alchemy.
 
 The hub itself (`game/index.html`) is a card grid — each card has a
 glyph, name, one-line description, and a tinted accent border.
@@ -625,7 +632,109 @@ on the lying row.
 
 ---
 
-## Adding a twenty-ninth game
+## The Hunt group
+
+Same probe-and-learn loop as the Probe group, dressed in themed
+worlds. Each game has its own visual vocabulary and metaphor.
+
+### Fossil · excavate to identify · `game/fossil/`
+
+A 6×6 dig site with a hidden dinosaur skeleton. Tap any cell to
+dig: empty soil or a specific bone (skull, rib, vertebra, claw,
+leg, hip, tail, plate, horn). The bones' spatial pattern is
+diagnostic. Submit a species guess any time. Score is digs used.
+
+```js
+{
+  id: 'fossil-NNN',
+  species: 'Tyrannosaurus rex',
+  accept: ['t-rex','trex','tyrannosaurus',…],
+  canonical: 'Tyrannosaurus rex · Late Cretaceous',
+  bones: gridify([[0,1,'skull'], [1,1,'vertebra'], …]),
+}
+```
+
+Three species ship: T-Rex, Triceratops, Stegosaurus. Bone icons
+are small inline SVGs in `BONE_ICONS`. The species options are
+shown as tappable chips under the input for easy reference.
+
+### Shadows · cast to identify · `game/shadows/`
+
+A circular compass of 8 cardinal directions (N · NE · E · SE · S
+· SW · W · NW). Tap a direction to cast light from that angle and
+see the silhouette of the hidden 3D object from that side.
+Silhouettes accumulate in a small horizontal strip below. Submit a
+guess any time. Score is shadows cast.
+
+```js
+{
+  id: 'shadows-NNN',
+  title: 'Eiffel Tower',
+  accept: ['eiffel','eiffel tower','tour eiffel',…],
+  canonical: 'Eiffel Tower · Paris · 1889',
+  sil: { N:'M…Z', NE:'M…Z', …, NW:'M…Z' },
+}
+```
+
+Each silhouette is a single SVG `path d` string drawn within a
+100×100 viewBox. Three objects ship: Eiffel Tower (4-fold
+symmetric), Grand Piano (asymmetric, profile-rich), Stonehenge
+(top vs side reveal different counts).
+
+### Magnets · drop to triangulate · `game/magnets/`
+
+A 5×5 grid with hidden magnets. Each has a position and strength
+(1–3). Drop a paperclip on any cell — it rolls toward the
+strongest sufficiently-close magnet via a step-by-step path,
+leaving a faint trail. After up to 5 drops, switch to the commit
+phase and tap cells where you believe the magnets sit. Solve =
+all positions correct.
+
+```js
+{
+  id: 'magnets-NNN',
+  magnets: [{ r: 1, c: 1, s: 3 }, { r: 3, c: 3, s: 2 }],
+}
+```
+
+The roll uses a simple physics model: each tick, find the magnet
+with highest pull (strength / (manhattan + 1)); if above threshold
+0.4, step one cell toward it (prefer larger axis delta). Three
+puzzles: 2-magnet center/corner, 2-magnet diagonal corners,
+3-magnet variable strength.
+
+### Alchemy · brew to deduce · `game/alchemy/`
+
+A pantry of 6 fantasy ingredients. Today's hidden recipe uses 3 of
+them. Tap two ingredients then Brew — the cauldron reacts:
+- Both in recipe → bright accent burst
+- One in recipe → muted shimmer
+- Neither → gray smoke
+
+Use brew history to deduce the recipe set; switch to submit phase
+and pick three ingredients as your final guess.
+
+```js
+{
+  id: 'alchemy-NNN',
+  ingredients: [
+    { id:'moon', name:'Moonleaf',         color:'#5DBE94' },
+    // …six total
+  ],
+  recipe: ['moon','crys','phoe'],
+  title: 'Sunrise Tonic',
+  effect: 'Sharpens the morning.',
+}
+```
+
+The validation is set comparison: 3 correct of 3 = solve. The
+deduction strategy is fundamentally combinatorial (set-theoretic
+reasoning over pair probes). Three potions ship: Sunrise Tonic,
+Quiet Resolve, Dusk Embers.
+
+---
+
+## Adding a thirty-third game
 
 1. Create `/game/<slug>/index.html` modeled on any existing game.
 2. Add an accent color in `shared.css`:

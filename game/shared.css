@@ -38,6 +38,10 @@
   --spectrum:   #8B5CF6;
   --switch:     #B47D3A;
   --doubt:      #6B2C5F;
+  --fossil:     #B07642;
+  --shadows:    #2A2823;
+  --magnets:    #4A7AAD;
+  --alchemy:    #7C2D4D;
 
   --accent: var(--ink);
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -110,6 +114,10 @@ body[data-game="pinhole"]    { --accent: var(--pinhole); }
 body[data-game="spectrum"]   { --accent: var(--spectrum); }
 body[data-game="switch"]     { --accent: var(--switch); }
 body[data-game="doubt"]      { --accent: var(--doubt); }
+body[data-game="fossil"]     { --accent: var(--fossil); }
+body[data-game="shadows"]    { --accent: var(--shadows); }
+body[data-game="magnets"]    { --accent: var(--magnets); }
+body[data-game="alchemy"]    { --accent: var(--alchemy); }
 
 /* ───────── chrome ───────── */
 .masthead {

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Alchemy · internet.house</title>
+<meta name="theme-color" content="#1a0e15">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  body[data-game="alchemy"] {
+    --paper: #1a0e15; --paper-soft: #261720; --paper-deep: #321e2c;
+    --ink: #F2E5D2; --ink-soft: #C9B49A; --ink-faint: #7A6755;
+    --hairline: #3A2433; --hairline-strong: #5A3A4D;
+  }
+
+  .al-cauldron-wrap {
+    width: clamp(220px, 70vw, 320px);
+    aspect-ratio: 1 / 1;
+    position: relative;
+    margin: 8px 0;
+  }
+  .al-cauldron {
+    position: absolute; inset: 8% 4% 4% 4%;
+  }
+  .al-pantry {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    justify-content: center;
+    width: 100%; max-width: 480px;
+    padding: 8px;
+  }
+  .al-bottle {
+    width: 70px; height: 90px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 12px 12px 8px 8px;
+    position: relative;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: transform var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    padding: 6px 4px 4px;
+  }
+  .al-bottle::before {
+    content: '';
+    position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+    width: 26px; height: 12px;
+    background: var(--paper-deep);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 4px 4px 2px 2px;
+  }
+  .al-bottle .liquid {
+    width: 100%;
+    height: 50px;
+    border-radius: 8px 8px 4px 4px;
+    margin-bottom: 4px;
+  }
+  .al-bottle .label {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.66rem;
+    line-height: 1.1;
+    color: var(--ink-soft);
+    text-align: center;
+    max-width: 64px;
+  }
+  .al-bottle.selected {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px -4px color-mix(in srgb, var(--accent) 50%, transparent);
+  }
+  .al-bottle.spent { opacity: 0.4; pointer-events: none; }
+  .al-bottle.in-recipe.revealed { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--paper-soft)); }
+
+  .al-cauldron svg { width: 100%; height: 100%; display: block; }
+
+  .al-brew-state {
+    text-align: center;
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 6px;
+  }
+  .al-brew-state .num { color: var(--accent); }
+
+  .al-actions {
+    display: flex; gap: 14px; justify-content: center;
+  }
+  .al-brew-btn {
+    padding: 10px 22px;
+    font: 500 0.74rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+    border-radius: 999px;
+  }
+  .al-brew-btn[disabled] { opacity: 0.4; pointer-events: none; }
+  .al-go-submit {
+    padding: 10px 16px;
+    font: 500 0.7rem 'Inter', sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: transparent;
+  }
+
+  .al-history {
+    width: 100%; max-width: 380px;
+    list-style: none; padding: 0; margin: 4px 0;
+  }
+  .al-history li {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 4px;
+    border-top: 1px dotted var(--hairline);
+    font-family: 'Fraunces', serif;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+  }
+  .al-history li .fire {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    flex: 0 0 18px;
+  }
+  .al-history li .fire.f0 { background: linear-gradient(135deg, #6a6a6a, #444); }
+  .al-history li .fire.f1 { background: linear-gradient(135deg, #B47D3A, #6a4a20); box-shadow: 0 0 10px #B47D3A66; }
+  .al-history li .fire.f2 { background: radial-gradient(circle, var(--accent), color-mix(in srgb, var(--accent) 30%, transparent)); box-shadow: 0 0 16px var(--accent); }
+  .al-history li .pair { flex: 1; }
+  .al-history li .score {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .al-recipe-picker {
+    text-align: center;
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 8px;
+  }
+
+  .al-reveal {
+    margin-top: 10px;
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 1.05rem;
+  }
+  .al-reveal em { color: var(--accent); font-style: normal; font-weight: 500; }
+</style>
+</head>
+<body data-game="alchemy" data-mood="dark">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="alchemy">
+      <div class="game-head">
+        <div class="eyebrow">No. 032 · Alchemy</div>
+        <h1 class="title">Alchemy</h1>
+        <p class="rule">Brew pairs in the cauldron. Deduce the recipe.</p>
+        <p class="howto"><b>How to play.</b> Today's master potion uses three of these six ingredients. Tap two ingredients then Brew. The reaction tells you how many of your two are in the recipe — bright (two), shimmer (one), or smoke (zero). Submit your three-ingredient guess.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="alchemy">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="alchemy" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="alchemy" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="alchemy" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="alchemy" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="alchemy" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-alchemy">
+        <div class="al-brew-state" id="al-state"></div>
+
+        <div class="al-cauldron-wrap">
+          <div class="al-cauldron">
+            <svg viewBox="0 0 200 200">
+              <defs>
+                <radialGradient id="brew-grad" cx="50%" cy="48%" r="40%">
+                  <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0"/>
+                  <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <ellipse cx="100" cy="60" rx="74" ry="14" fill="#3A2433"/>
+              <path d="M30 60 Q30 170 100 175 Q170 170 170 60 Z" fill="#26161E" stroke="#5A3A4D" stroke-width="2"/>
+              <ellipse cx="100" cy="60" rx="62" ry="10" fill="url(#brew-grad)" id="al-brew-fill"/>
+              <text x="100" y="195" text-anchor="middle" font-family="Fraunces, serif" font-style="italic" fill="#7A6755" font-size="9" letter-spacing="3">CAULDRON</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="al-pantry" id="al-pantry"></div>
+
+        <div class="al-actions">
+          <button class="al-brew-btn" id="al-brew" disabled>Brew</button>
+          <button class="al-go-submit" id="al-go-submit">Submit recipe</button>
+        </div>
+
+        <ul class="al-history" id="al-history"></ul>
+
+        <div class="solved" id="solved-alchemy"><span class="check">✓</span><span class="solved-text">Brewed</span></div>
+        <p class="al-reveal" id="al-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Alchemy() {
+    const PUZZLES = [
+      {
+        id: 'alchemy-001',
+        ingredients: [
+          { id:'moon',  name:'Moonleaf',         color:'#5DBE94' },
+          { id:'sala',  name:'Salamander Scale', color:'#C25E3A' },
+          { id:'crys',  name:'Crystal Dust',     color:'#A8C3DE' },
+          { id:'witc',  name:"Witch's Tongue",   color:'#7C2D4D' },
+          { id:'phoe',  name:'Phoenix Tear',     color:'#D4A536' },
+          { id:'frog',  name:'Frog Wart',        color:'#5C7A3A' },
+        ],
+        recipe: ['moon','crys','phoe'],
+        title: 'Sunrise Tonic',
+        effect: 'Sharpens the morning.',
+      },
+      {
+        id: 'alchemy-002',
+        ingredients: [
+          { id:'drag', name:'Dragon Bone',  color:'#8E7355' },
+          { id:'merm', name:'Mermaid Hair', color:'#3FA3B0' },
+          { id:'star', name:'Star Iron',    color:'#9CA8B4' },
+          { id:'owl',  name:'Owl Feather',  color:'#7A6442' },
+          { id:'bog',  name:'Bog Mushroom', color:'#7C5BB8' },
+          { id:'dew',  name:'Dew Drop',     color:'#B0E0E6' },
+        ],
+        recipe: ['drag','star','dew'],
+        title: 'Quiet Resolve',
+        effect: 'Steadies the hand.',
+      },
+      {
+        id: 'alchemy-003',
+        ingredients: [
+          { id:'bee',  name:'Bee Honey',     color:'#D4A536' },
+          { id:'spid', name:'Spider Silk',   color:'#E0DAC8' },
+          { id:'mtn',  name:'Mountain Ash',  color:'#6B5238' },
+          { id:'sea',  name:'Sea Glass',     color:'#7BB59A' },
+          { id:'fire', name:'Fire Blossom',  color:'#B8362D' },
+          { id:'wolf', name:'Wolf Fang',     color:'#9CA8B4' },
+        ],
+        recipe: ['bee','sea','fire'],
+        title: 'Dusk Embers',
+        effect: 'Holds back the cold.',
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const stateEl  = $('#al-state');
+    const pantryEl = $('#al-pantry');
+    const brewBtn  = $('#al-brew');
+    const goSubBtn = $('#al-go-submit');
+    const histEl   = $('#al-history');
+    const stageEl  = $('#stage-alchemy');
+    const solvedEl = $('#solved-alchemy');
+    const revealEl = $('#al-reveal');
+    const brewFill = $('#al-brew-fill');
+    const shareBtn = document.querySelector('.tool-btn[data-game="alchemy"][data-action="share"]');
+
+    let selected = []; // ids
+    let brews = [];    // [{pair: [ids], score: 0|1|2}]
+    let phase = 'brew'; // 'brew' | 'submit' | 'done'
+    let solved = false;
+
+    function build() {
+      selected = []; brews = []; phase = 'brew'; solved = false;
+      brewBtn.textContent = 'Brew';
+      brewBtn.disabled = true;
+      brewBtn.hidden = false;
+      goSubBtn.hidden = false;
+      goSubBtn.textContent = 'Submit recipe';
+      stateEl.innerHTML = `Brew phase · <span class="num">${brews.length}</span> tried`;
+      histEl.innerHTML = '';
+      solvedEl.classList.remove('show', 'is-revealed');
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      shareBtn.hidden = true;
+      brewFill.parentNode.querySelector('#brew-grad stop').setAttribute('stop-opacity', '0');
+      brewFill.parentNode.querySelector('#brew-grad stop:last-child').setAttribute('stop-opacity', '0');
+      pantryEl.innerHTML = PUZZLE.ingredients.map(ing => `
+        <button class="al-bottle" data-id="${ing.id}">
+          <div class="liquid" style="background: linear-gradient(180deg, ${ing.color}, color-mix(in srgb, ${ing.color} 70%, black))"></div>
+          <span class="label">${ing.name}</span>
+        </button>`).join('');
+      pantryEl.querySelectorAll('.al-bottle').forEach(b => {
+        b.addEventListener('click', () => onBottle(b.dataset.id));
+      });
+    }
+
+    function onBottle(id) {
+      if (solved) return;
+      if (phase === 'brew') {
+        const ix = selected.indexOf(id);
+        if (ix >= 0) selected.splice(ix, 1);
+        else if (selected.length < 2) selected.push(id);
+        else return;
+        updateSelections();
+        brewBtn.disabled = selected.length !== 2;
+        haptic(4);
+      } else if (phase === 'submit') {
+        const ix = selected.indexOf(id);
+        if (ix >= 0) selected.splice(ix, 1);
+        else if (selected.length < 3) selected.push(id);
+        else return;
+        updateSelections();
+        brewBtn.disabled = selected.length !== 3;
+        brewBtn.textContent = `Submit · ${selected.length} / 3`;
+        haptic(4);
+      }
+    }
+
+    function updateSelections() {
+      pantryEl.querySelectorAll('.al-bottle').forEach(b => {
+        b.classList.toggle('selected', selected.includes(b.dataset.id));
+      });
+    }
+
+    brewBtn.addEventListener('click', () => {
+      if (solved) return;
+      if (phase === 'brew' && selected.length === 2) {
+        const score = selected.filter(id => PUZZLE.recipe.includes(id)).length;
+        brews.push({ pair: selected.slice(), score });
+        renderHistory();
+        animateBrew(score);
+        selected = [];
+        updateSelections();
+        brewBtn.disabled = true;
+        stateEl.innerHTML = `Brew phase · <span class="num">${brews.length}</span> tried`;
+        haptic(score === 2 ? 22 : score === 1 ? 14 : 6);
+      } else if (phase === 'submit' && selected.length === 3) {
+        const correct = selected.filter(id => PUZZLE.recipe.includes(id)).length;
+        if (correct === 3) win();
+        else lose(correct);
+      }
+    });
+
+    function animateBrew(score) {
+      const col = score === 2 ? '#8B5CF6' : score === 1 ? '#B47D3A' : '#6a6a6a';
+      const op  = score === 2 ? 0.85 : score === 1 ? 0.55 : 0.3;
+      const grad = brewFill.parentNode.querySelector('#brew-grad');
+      grad.querySelector('stop:first-child').setAttribute('stop-color', col);
+      grad.querySelector('stop:first-child').setAttribute('stop-opacity', String(op));
+      grad.querySelector('stop:last-child').setAttribute('stop-color', col);
+      grad.querySelector('stop:last-child').setAttribute('stop-opacity', '0');
+      // ease back out over time
+      setTimeout(() => {
+        grad.querySelector('stop:first-child').setAttribute('stop-opacity', '0');
+      }, 1400);
+    }
+
+    function renderHistory() {
+      const last = brews[brews.length - 1];
+      const li = document.createElement('li');
+      const names = last.pair.map(id => PUZZLE.ingredients.find(x => x.id === id).name).join(' + ');
+      const label = last.score === 2 ? 'bright burst (2/2)' : last.score === 1 ? 'shimmer (1/2)' : 'gray smoke (0/2)';
+      li.innerHTML = `<span class="fire f${last.score}"></span><span class="pair">${names}</span><span class="score">${label}</span>`;
+      histEl.prepend(li);
+    }
+
+    goSubBtn.addEventListener('click', () => {
+      if (solved) return;
+      if (phase === 'brew') {
+        phase = 'submit';
+        selected = [];
+        updateSelections();
+        brewBtn.textContent = 'Submit · 0 / 3';
+        brewBtn.disabled = true;
+        goSubBtn.textContent = 'Back to brewing';
+        stateEl.innerHTML = 'Submit phase · pick three ingredients';
+      } else if (phase === 'submit') {
+        phase = 'brew';
+        selected = [];
+        updateSelections();
+        brewBtn.textContent = 'Brew';
+        brewBtn.disabled = true;
+        goSubBtn.textContent = 'Submit recipe';
+        stateEl.innerHTML = `Brew phase · <span class="num">${brews.length}</span> tried`;
+      }
+    });
+
+    function win() {
+      solved = true; phase = 'done';
+      brewBtn.hidden = true; goSubBtn.hidden = true;
+      // Reveal recipe ingredients
+      pantryEl.querySelectorAll('.al-bottle').forEach(b => {
+        if (PUZZLE.recipe.includes(b.dataset.id)) b.classList.add('in-recipe', 'revealed');
+        else b.classList.add('spent');
+      });
+      solvedEl.querySelector('.solved-text').textContent = `Brewed · ${brews.length} brew${brews.length===1?'':'s'}`;
+      solvedEl.classList.add('show');
+      revealEl.innerHTML = `<em>${PUZZLE.title}</em> · ${PUZZLE.effect}`;
+      revealEl.hidden = false;
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+    function lose(correct) {
+      // Allow another attempt unless brews >= 5
+      if (brews.length < 5) {
+        // Just feedback
+        const li = document.createElement('li');
+        const names = selected.map(id => PUZZLE.ingredients.find(x => x.id === id).name).join(' + ');
+        li.innerHTML = `<span class="fire f${Math.min(correct, 2)}"></span><span class="pair">guessed: ${names}</span><span class="score">${correct} / 3 right</span>`;
+        histEl.prepend(li);
+        haptic(8);
+        // Stay in submit phase
+      } else {
+        solved = true; phase = 'done';
+        brewBtn.hidden = true; goSubBtn.hidden = true;
+        pantryEl.querySelectorAll('.al-bottle').forEach(b => {
+          if (PUZZLE.recipe.includes(b.dataset.id)) b.classList.add('in-recipe', 'revealed');
+        });
+        solvedEl.querySelector('.solved-text').textContent = `Out of brews`;
+        solvedEl.classList.add('show', 'is-revealed');
+        revealEl.innerHTML = `Recipe was <em>${PUZZLE.recipe.map(id => PUZZLE.ingredients.find(x=>x.id===id).name).join(' + ')}</em> · ${PUZZLE.title}`;
+        revealEl.hidden = false;
+        shareBtn.hidden = false;
+        flashReveal(stageEl);
+      }
+    }
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      const grid = brews.map(b => b.score === 2 ? '🟪🟪' : b.score === 1 ? '🟧·' : '··').join('\n');
+      copyShare(`Alchemy · ${brews.length} brew${brews.length===1?'':'s'}\n${grid}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.alchemy = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

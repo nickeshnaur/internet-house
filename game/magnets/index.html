@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Magnets · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .mg-board {
+    width: clamp(280px, 86vw, 460px);
+    aspect-ratio: 1 / 1;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 6px;
+    position: relative;
+    padding: 8px;
+    touch-action: manipulation;
+  }
+  .mg-svg { width: 100%; height: 100%; display: block; }
+  .mg-grid-line { stroke: var(--hairline); stroke-width: 0.4; }
+  .mg-cell-bg { fill: transparent; cursor: pointer; }
+  .mg-cell-bg.guess { fill: color-mix(in srgb, var(--accent) 14%, transparent); }
+  .mg-trail {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.6;
+    stroke-opacity: 0.4;
+    stroke-dasharray: 2 3;
+  }
+  .mg-clip {
+    fill: var(--accent);
+    transition: cx 280ms var(--ease), cy 280ms var(--ease);
+  }
+  .mg-magnet {
+    fill: var(--accent);
+    filter: drop-shadow(0 0 8px var(--accent));
+  }
+  .mg-magnet-label {
+    fill: var(--paper);
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+  .mg-meta {
+    width: 100%; max-width: 460px;
+    display: flex; justify-content: space-between;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .mg-meta .num { color: var(--ink); font-family: 'Fraunces', serif; font-size: 0.86rem; }
+
+  .mg-actions { display: flex; gap: 14px; justify-content: center; align-items: center; }
+  .mg-submit {
+    padding: 10px 22px;
+    font: 500 0.74rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+    border-radius: 999px;
+  }
+  .mg-submit[disabled] { opacity: 0.4; pointer-events: none; }
+  .mg-clear { font: 500 0.66rem 'Inter', sans-serif; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); padding: 8px 12px; }
+
+  .mg-phase-label {
+    text-align: center;
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .mg-reveal { text-align: center; color: var(--ink-soft); font-family: 'Fraunces', serif; font-style: italic; }
+  .mg-reveal em { color: var(--accent); font-style: normal; font-weight: 500; }
+</style>
+</head>
+<body data-game="magnets" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="magnets">
+      <div class="game-head">
+        <div class="eyebrow">No. 031 · Magnets</div>
+        <h1 class="title">Magnets</h1>
+        <p class="rule">Drop paperclips. Triangulate the hidden magnets.</p>
+        <p class="howto"><b>How to play.</b> Tap any cell to drop a paperclip — it rolls toward the strongest magnet within range, leaving a faint trail. After five drops, submit where you think each magnet sits.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="magnets">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="magnets" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="magnets" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="magnets" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="magnets" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="magnets" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-magnets">
+        <p class="mg-phase-label" id="mg-phase">Drop phase · 0 / 5 paperclips</p>
+
+        <div class="mg-board">
+          <svg class="mg-svg" id="mg-svg" viewBox="0 0 500 500" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+
+        <div class="mg-actions">
+          <button class="mg-clear" id="mg-clear">Clear board</button>
+          <button class="mg-submit" id="mg-submit">Submit positions</button>
+        </div>
+
+        <div class="solved" id="solved-magnets"><span class="check">✓</span><span class="solved-text">Located</span></div>
+        <p class="mg-reveal" id="mg-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Magnets() {
+    const N = 5;
+    const PUZZLES = [
+      {
+        id: 'magnets-001',
+        magnets: [{ r: 1, c: 1, s: 3 }, { r: 3, c: 3, s: 2 }],
+      },
+      {
+        id: 'magnets-002',
+        magnets: [{ r: 0, c: 4, s: 3 }, { r: 4, c: 0, s: 3 }],
+      },
+      {
+        id: 'magnets-003',
+        magnets: [{ r: 2, c: 0, s: 2 }, { r: 0, c: 3, s: 2 }, { r: 4, c: 4, s: 3 }],
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const NS = 'http://www.w3.org/2000/svg';
+    const VB = 500;
+    const PAD = 24;
+    const CELL = (VB - 2 * PAD) / N;
+    const cx = c => PAD + (c + 0.5) * CELL;
+    const cy = r => PAD + (r + 0.5) * CELL;
+
+    const svgEl     = $('#mg-svg');
+    const clearBtn  = $('#mg-clear');
+    const submitBtn = $('#mg-submit');
+    const phaseEl   = $('#mg-phase');
+    const stageEl   = $('#stage-magnets');
+    const solvedEl  = $('#solved-magnets');
+    const revealEl  = $('#mg-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="magnets"][data-action="share"]');
+
+    let drops = [];     // [{drop:[r,c], path:[[r,c],...]}]
+    let phase = 'drop'; // 'drop' | 'commit' | 'done'
+    let guesses = new Set(); // "r,c" for player-marked magnet positions
+    let solved = false;
+
+    function build() {
+      drops = []; guesses = new Set(); phase = 'drop'; solved = false;
+      drawBoard();
+      updatePhaseLabel();
+      submitBtn.textContent = 'Submit positions';
+      submitBtn.disabled = true;
+      clearBtn.hidden = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      shareBtn.hidden = true;
+    }
+
+    function updatePhaseLabel() {
+      if (phase === 'drop') {
+        phaseEl.textContent = `Drop phase · ${drops.length} / 5 paperclips`;
+        submitBtn.disabled = drops.length === 0;
+        if (drops.length >= 5) phaseEl.textContent += ' · ready to commit';
+      } else if (phase === 'commit') {
+        phaseEl.textContent = `Commit · mark ${PUZZLE.magnets.length} magnet positions · ${guesses.size} / ${PUZZLE.magnets.length}`;
+        submitBtn.disabled = guesses.size !== PUZZLE.magnets.length;
+        submitBtn.textContent = 'Submit answer';
+      } else {
+        phaseEl.textContent = 'Solved';
+      }
+    }
+
+    function drawBoard() {
+      svgEl.innerHTML = '';
+      // grid lines
+      for (let i = 0; i <= N; i++) {
+        const ln1 = document.createElementNS(NS, 'line');
+        ln1.setAttribute('class', 'mg-grid-line');
+        ln1.setAttribute('x1', PAD); ln1.setAttribute('x2', PAD + N * CELL);
+        ln1.setAttribute('y1', PAD + i * CELL); ln1.setAttribute('y2', PAD + i * CELL);
+        svgEl.appendChild(ln1);
+        const ln2 = document.createElementNS(NS, 'line');
+        ln2.setAttribute('class', 'mg-grid-line');
+        ln2.setAttribute('y1', PAD); ln2.setAttribute('y2', PAD + N * CELL);
+        ln2.setAttribute('x1', PAD + i * CELL); ln2.setAttribute('x2', PAD + i * CELL);
+        svgEl.appendChild(ln2);
+      }
+      // cell backgrounds (clickable)
+      for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+        const rect = document.createElementNS(NS, 'rect');
+        rect.setAttribute('class', 'mg-cell-bg');
+        if (phase === 'commit' && guesses.has(`${r},${c}`)) rect.classList.add('guess');
+        rect.setAttribute('x', PAD + c * CELL);
+        rect.setAttribute('y', PAD + r * CELL);
+        rect.setAttribute('width', CELL);
+        rect.setAttribute('height', CELL);
+        rect.dataset.r = r; rect.dataset.c = c;
+        rect.addEventListener('click', () => onCell(r, c));
+        svgEl.appendChild(rect);
+      }
+      // existing trails + final paperclip positions
+      drops.forEach((d, i) => {
+        const pts = d.path.map(([r,c]) => `${cx(c)},${cy(r)}`).join(' ');
+        const tr = document.createElementNS(NS, 'polyline');
+        tr.setAttribute('class', 'mg-trail');
+        tr.setAttribute('points', pts);
+        svgEl.appendChild(tr);
+        const last = d.path[d.path.length - 1];
+        const cl = document.createElementNS(NS, 'circle');
+        cl.setAttribute('class', 'mg-clip');
+        cl.setAttribute('cx', cx(last[1]));
+        cl.setAttribute('cy', cy(last[0]));
+        cl.setAttribute('r', CELL * 0.18);
+        cl.setAttribute('fill-opacity', '0.7');
+        svgEl.appendChild(cl);
+      });
+      // commit-phase guess markers
+      if (phase === 'commit') {
+        for (const k of guesses) {
+          const [r, c] = k.split(',').map(Number);
+          const m = document.createElementNS(NS, 'rect');
+          m.setAttribute('x', PAD + c * CELL + CELL * 0.2);
+          m.setAttribute('y', PAD + r * CELL + CELL * 0.2);
+          m.setAttribute('width', CELL * 0.6);
+          m.setAttribute('height', CELL * 0.6);
+          m.setAttribute('rx', 4);
+          m.setAttribute('class', 'mg-magnet');
+          svgEl.appendChild(m);
+          const t = document.createElementNS(NS, 'text');
+          t.setAttribute('x', cx(c));
+          t.setAttribute('y', cy(r));
+          t.setAttribute('font-size', CELL * 0.32);
+          t.setAttribute('class', 'mg-magnet-label');
+          t.textContent = '✦';
+          svgEl.appendChild(t);
+        }
+      }
+      // done phase: reveal true magnets too
+      if (phase === 'done') {
+        PUZZLE.magnets.forEach(m => {
+          const rect = document.createElementNS(NS, 'rect');
+          rect.setAttribute('x', PAD + m.c * CELL + CELL * 0.18);
+          rect.setAttribute('y', PAD + m.r * CELL + CELL * 0.18);
+          rect.setAttribute('width', CELL * 0.64);
+          rect.setAttribute('height', CELL * 0.64);
+          rect.setAttribute('rx', 4);
+          rect.setAttribute('class', 'mg-magnet');
+          svgEl.appendChild(rect);
+          const t = document.createElementNS(NS, 'text');
+          t.setAttribute('x', cx(m.c));
+          t.setAttribute('y', cy(m.r));
+          t.setAttribute('font-size', CELL * 0.36);
+          t.setAttribute('class', 'mg-magnet-label');
+          t.textContent = m.s;
+          svgEl.appendChild(t);
+        });
+      }
+    }
+
+    function rollPath(drop) {
+      const pos = drop.slice();
+      const path = [pos.slice()];
+      for (let step = 0; step < 20; step++) {
+        let best = null, bestPull = 0.4;
+        for (const m of PUZZLE.magnets) {
+          const d = Math.abs(m.r - pos[0]) + Math.abs(m.c - pos[1]);
+          if (d === 0) { best = m; bestPull = 999; break; }
+          const pull = m.s / (d + 1);
+          if (pull > bestPull) { bestPull = pull; best = m; }
+        }
+        if (!best || (pos[0] === best.r && pos[1] === best.c)) break;
+        const dr = best.r - pos[0], dc = best.c - pos[1];
+        if (Math.abs(dr) >= Math.abs(dc) && dr !== 0) pos[0] += Math.sign(dr);
+        else if (dc !== 0) pos[1] += Math.sign(dc);
+        else break;
+        path.push(pos.slice());
+      }
+      return path;
+    }
+
+    function onCell(r, c) {
+      if (solved) return;
+      if (phase === 'drop') {
+        if (drops.length >= 5) return;
+        const path = rollPath([r, c]);
+        drops.push({ drop: [r,c], path });
+        drawBoard();
+        updatePhaseLabel();
+        haptic(8);
+      } else if (phase === 'commit') {
+        const k = `${r},${c}`;
+        if (guesses.has(k)) guesses.delete(k);
+        else if (guesses.size < PUZZLE.magnets.length) guesses.add(k);
+        else return;
+        drawBoard();
+        updatePhaseLabel();
+      }
+    }
+
+    submitBtn.addEventListener('click', () => {
+      if (solved) return;
+      if (phase === 'drop') {
+        phase = 'commit';
+        drawBoard();
+        updatePhaseLabel();
+      } else if (phase === 'commit' && guesses.size === PUZZLE.magnets.length) {
+        // Compare guesses to truth
+        const truth = new Set(PUZZLE.magnets.map(m => `${m.r},${m.c}`));
+        let allRight = true;
+        for (const k of guesses) if (!truth.has(k)) allRight = false;
+        for (const k of truth)   if (!guesses.has(k)) allRight = false;
+        phase = 'done'; solved = true;
+        drawBoard();
+        if (allRight) {
+          solvedEl.querySelector('.solved-text').textContent = `Located in ${drops.length} drop${drops.length===1?'':'s'}`;
+          solvedEl.classList.add('show');
+        } else {
+          solvedEl.querySelector('.solved-text').textContent = 'Mismatched';
+          solvedEl.classList.add('show', 'is-revealed');
+          revealEl.innerHTML = `Magnets were at: <em>${PUZZLE.magnets.map(m => `(${m.r+1},${m.c+1})·s${m.s}`).join(' · ')}</em>`;
+          revealEl.hidden = false;
+        }
+        clearBtn.hidden = true;
+        submitBtn.hidden = true;
+        shareBtn.hidden = false;
+        flashReveal(stageEl);
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      if (solved) return;
+      drops = []; guesses = new Set();
+      phase = 'drop';
+      drawBoard();
+      updatePhaseLabel();
+      submitBtn.textContent = 'Submit positions';
+    });
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      // 5×5 grid: where drops landed, where magnets actually were
+      const grid = Array.from({length:5}, () => Array(5).fill('·'));
+      drops.forEach(d => {
+        const last = d.path[d.path.length - 1];
+        grid[last[0]][last[1]] = '◉';
+      });
+      PUZZLE.magnets.forEach(m => { if (grid[m.r][m.c] === '·') grid[m.r][m.c] = '✦'; });
+      const map = grid.map(row => row.join(' ')).join('\n');
+      copyShare(`Magnets · ${drops.length} drop${drops.length===1?'':'s'}\n${map}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.magnets = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>

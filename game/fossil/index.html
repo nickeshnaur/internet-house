@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Fossil · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .fossil-board {
+    width: clamp(280px, 90vw, 480px);
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(180deg, #E8D8B8, #C9A872);
+    border: 1px solid #8C6A40;
+    border-radius: 6px;
+    padding: 6px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    gap: 3px;
+    box-shadow: inset 0 0 12px rgba(92,58,30,0.2);
+  }
+  .fossil-cell {
+    background: #B8945E;
+    border-radius: 3px;
+    position: relative;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    overflow: hidden;
+    transition: background var(--t-fast) var(--ease);
+  }
+  @media (hover: hover) {
+    .fossil-cell:hover { background: #C9A572; }
+  }
+  .fossil-cell.dug { background: #8C6A40; }
+  .fossil-cell.dug.bone { background: #6B4F2A; box-shadow: inset 0 0 6px rgba(0,0,0,0.3); }
+  .fossil-cell .bone {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #E8DBC4;
+    opacity: 0; transform: scale(0.5);
+    transition: opacity 360ms var(--ease), transform 360ms var(--ease);
+  }
+  .fossil-cell.bone .bone { opacity: 1; transform: scale(1); }
+  .fossil-cell .bone svg { width: 70%; height: 70%; display: block; }
+
+  .fossil-meta {
+    width: 100%; max-width: 480px;
+    display: flex; justify-content: space-between;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .fossil-meta .num { color: var(--ink); font-family: 'Fraunces', serif; font-size: 0.86rem; }
+
+  .fossil-guess-row {
+    width: 100%; max-width: 380px;
+    display: flex; gap: 10px;
+    border-bottom: 1px solid var(--ink-soft);
+    padding: 0 4px 8px;
+  }
+  .fossil-input {
+    flex: 1;
+    font-family: 'Fraunces', serif;
+    font-size: 1.2rem;
+    color: var(--ink);
+    text-align: center;
+    padding: 4px 0;
+  }
+  .fossil-input::placeholder { color: var(--ink-faint); font-style: italic; }
+  .fossil-go {
+    padding: 6px 14px;
+    font: 500 0.7rem 'Inter', sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+  }
+  .fossil-go[disabled] { opacity: 0.4; pointer-events: none; }
+
+  .fossil-options {
+    display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+    width: 100%; max-width: 480px;
+  }
+  .fossil-option {
+    padding: 6px 12px;
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 999px;
+    transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+  }
+  .fossil-option:hover { color: var(--ink); border-color: var(--ink-soft); }
+
+  .fossil-history {
+    width: 100%; max-width: 380px;
+    list-style: none; padding: 0;
+  }
+  .fossil-history li {
+    padding: 6px 4px;
+    border-top: 1px dotted var(--hairline);
+    font-family: 'Fraunces', serif;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-size: 0.92rem;
+    display: flex; justify-content: space-between;
+  }
+  .fossil-history li.right { color: var(--accent); font-style: normal; }
+  .fossil-history li .mark { font-style: normal; color: #C25E3A; }
+  .fossil-history li.right .mark { color: var(--accent); }
+
+  .fossil-reveal {
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.04rem;
+  }
+  .fossil-reveal em { color: var(--accent); font-style: normal; font-weight: 500; }
+</style>
+</head>
+<body data-game="fossil" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="fossil">
+      <div class="game-head">
+        <div class="eyebrow">No. 029 · Fossil</div>
+        <h1 class="title">Fossil</h1>
+        <p class="rule">Excavate the dig site. Identify the species.</p>
+        <p class="howto"><b>How to play.</b> Tap any cell to dig. Empty pit or a bone — skull, vertebra, rib, claw, leg, hip, tail. The pattern tells you what you're looking at. Submit a species name when you're sure.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="fossil">Reset</button>
+        <button class="tool-btn" data-action="share" data-game="fossil" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="fossil" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="fossil" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="fossil" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="fossil" data-idx="2">3</button>
+        </span>
+      </div>
+
+      <div class="stage" id="stage-fossil">
+        <div class="fossil-meta"><span><span class="num" id="fos-digs">0</span> digs</span><span><span class="num" id="fos-bones">0</span> bones</span></div>
+
+        <div class="fossil-board" id="fos-board"></div>
+
+        <div class="fossil-options" id="fos-options"></div>
+
+        <div class="fossil-guess-row">
+          <input class="fossil-input" id="fos-input" type="text" autocomplete="off" placeholder="species name" maxlength="40">
+          <button class="fossil-go" id="fos-go" disabled>Identify</button>
+        </div>
+
+        <ul class="fossil-history" id="fos-history"></ul>
+
+        <div class="solved" id="solved-fossil"><span class="check">✓</span><span class="solved-text">Identified</span></div>
+        <p class="fossil-reveal" id="fos-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Fossil() {
+    // Bone icons (SVG inner content — drawn at 24×24 viewBox)
+    const BONE_ICONS = {
+      skull: '<svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="7" fill="currentColor"/><circle cx="9" cy="10" r="1.6" fill="#3a2a14"/><circle cx="15" cy="10" r="1.6" fill="#3a2a14"/><rect x="9" y="16" width="6" height="3" fill="currentColor"/></svg>',
+      vertebra: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="#3a2a14"/></svg>',
+      rib: '<svg viewBox="0 0 24 24"><path d="M3 12 Q12 4 21 12" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>',
+      claw: '<svg viewBox="0 0 24 24"><path d="M4 20 Q8 6 20 6 L20 10 Q12 12 8 20 Z" fill="currentColor"/></svg>',
+      leg: '<svg viewBox="0 0 24 24"><rect x="9" y="4" width="6" height="16" rx="3" fill="currentColor"/></svg>',
+      hip: '<svg viewBox="0 0 24 24"><path d="M4 14 Q4 6 12 6 Q20 6 20 14 L20 20 L4 20 Z" fill="currentColor"/></svg>',
+      tail: '<svg viewBox="0 0 24 24"><path d="M2 18 Q12 16 16 8 L20 4 L18 8 Q18 14 6 22 Z" fill="currentColor"/></svg>',
+      plate: '<svg viewBox="0 0 24 24"><path d="M4 20 L12 4 L20 20 Z" fill="currentColor"/></svg>',
+      horn: '<svg viewBox="0 0 24 24"><path d="M6 22 L12 4 L18 22 Z" fill="currentColor"/></svg>',
+    };
+
+    // Each puzzle: 6×6 cell map with bone types or null. Coords [r][c].
+    function gridify(spec) {
+      const g = Array.from({length:6}, () => Array(6).fill(null));
+      for (const [r, c, b] of spec) g[r][c] = b;
+      return g;
+    }
+
+    const PUZZLES = [
+      {
+        id: 'fossil-001',
+        species: 'Tyrannosaurus rex',
+        accept: ['t-rex','trex','t rex','tyrannosaurus','tyrannosaurus rex','tyrannosaur'],
+        canonical: 'Tyrannosaurus rex · Late Cretaceous',
+        bones: gridify([
+          [0,1,'skull'],
+          [1,1,'vertebra'],[1,2,'vertebra'],[1,3,'vertebra'],[1,4,'vertebra'],[1,5,'tail'],
+          [2,2,'rib'],[2,3,'rib'],
+          [3,1,'claw'],
+          [3,4,'hip'],
+          [4,4,'leg'],
+          [5,4,'leg'],
+        ]),
+      },
+      {
+        id: 'fossil-002',
+        species: 'Triceratops',
+        accept: ['triceratops','three horn'],
+        canonical: 'Triceratops · Late Cretaceous',
+        bones: gridify([
+          [0,0,'horn'],[0,1,'skull'],[0,2,'horn'],
+          [1,0,'horn'],
+          [2,1,'vertebra'],[2,2,'vertebra'],[2,3,'vertebra'],[2,4,'hip'],
+          [3,0,'leg'],[3,4,'leg'],
+          [4,0,'leg'],[4,4,'leg'],
+          [3,5,'tail'],
+        ]),
+      },
+      {
+        id: 'fossil-003',
+        species: 'Stegosaurus',
+        accept: ['stegosaurus','stego'],
+        canonical: 'Stegosaurus · Late Jurassic',
+        bones: gridify([
+          [0,1,'plate'],[0,2,'plate'],[0,3,'plate'],[0,4,'plate'],
+          [1,0,'skull'],
+          [2,1,'vertebra'],[2,2,'vertebra'],[2,3,'vertebra'],[2,4,'vertebra'],
+          [3,1,'leg'],[3,4,'leg'],
+          [4,1,'leg'],[4,4,'leg'],
+          [2,5,'tail'],[3,5,'claw'],
+        ]),
+      },
+    ];
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+
+    const boardEl    = $('#fos-board');
+    const digsEl     = $('#fos-digs');
+    const bonesEl    = $('#fos-bones');
+    const optionsEl  = $('#fos-options');
+    const inputEl    = $('#fos-input');
+    const goBtn      = $('#fos-go');
+    const historyEl  = $('#fos-history');
+    const stageEl    = $('#stage-fossil');
+    const solvedEl   = $('#solved-fossil');
+    const revealEl   = $('#fos-reveal');
+    const shareBtn   = document.querySelector('.tool-btn[data-game="fossil"][data-action="share"]');
+
+    let dug = new Set(); // "r,c"
+    let bonesFound = 0;
+    let guesses = [];
+    let solved = false;
+
+    function build() {
+      dug.clear(); bonesFound = 0; guesses = []; solved = false;
+      digsEl.textContent = '0'; bonesEl.textContent = '0';
+      historyEl.innerHTML = '';
+      inputEl.value = ''; inputEl.disabled = false;
+      goBtn.disabled = true;
+      solvedEl.classList.remove('show', 'is-revealed');
+      revealEl.hidden = true;
+      shareBtn.hidden = true;
+      // Show 5 species options
+      const allSpecies = ['T-Rex','Triceratops','Stegosaurus','Velociraptor','Brachiosaurus'];
+      optionsEl.innerHTML = allSpecies.map(s => `<button class="fossil-option" data-name="${s}">${s}</button>`).join('');
+      optionsEl.querySelectorAll('.fossil-option').forEach(b => b.addEventListener('click', () => {
+        if (solved) return;
+        inputEl.value = b.dataset.name;
+        goBtn.disabled = false;
+      }));
+      // Build grid
+      boardEl.innerHTML = '';
+      for (let r = 0; r < 6; r++) for (let c = 0; c < 6; c++) {
+        const cell = document.createElement('button');
+        cell.className = 'fossil-cell';
+        cell.dataset.r = r; cell.dataset.c = c;
+        cell.innerHTML = '<span class="bone"></span>';
+        cell.addEventListener('click', () => dig(r, c));
+        boardEl.appendChild(cell);
+      }
+    }
+
+    function dig(r, c) {
+      if (solved) return;
+      const k = `${r},${c}`;
+      if (dug.has(k)) return;
+      dug.add(k);
+      const cell = boardEl.children[r * 6 + c];
+      cell.classList.add('dug');
+      const bone = PUZZLE.bones[r][c];
+      if (bone) {
+        cell.classList.add('bone');
+        cell.querySelector('.bone').innerHTML = BONE_ICONS[bone] || '';
+        bonesFound++;
+        bonesEl.textContent = String(bonesFound);
+        haptic(8);
+      } else {
+        haptic(3);
+      }
+      digsEl.textContent = String(dug.size);
+    }
+
+    function canon(s) { return s.toLowerCase().trim().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' '); }
+
+    inputEl.addEventListener('input', () => { goBtn.disabled = inputEl.value.trim().length < 2 || solved; });
+    inputEl.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); if (!goBtn.disabled) submit(); }
+    });
+    goBtn.addEventListener('click', submit);
+
+    function submit() {
+      if (solved) return;
+      const raw = inputEl.value.trim();
+      const guess = canon(raw);
+      const right = PUZZLE.accept.some(a => canon(a) === guess);
+      guesses.push({ text: raw, right });
+      const li = document.createElement('li');
+      li.className = right ? 'right' : '';
+      li.innerHTML = `<span>${raw}</span><span class="mark">${right ? '✓' : '✗'}</span>`;
+      historyEl.appendChild(li);
+      inputEl.value = ''; goBtn.disabled = true;
+      haptic(right ? 22 : 6);
+      if (right) win();
+    }
+
+    function win() {
+      solved = true;
+      // Reveal all bones
+      for (let r = 0; r < 6; r++) for (let c = 0; c < 6; c++) {
+        const k = `${r},${c}`;
+        if (!dug.has(k) && PUZZLE.bones[r][c]) {
+          const cell = boardEl.children[r * 6 + c];
+          cell.classList.add('dug', 'bone');
+          cell.querySelector('.bone').innerHTML = BONE_ICONS[PUZZLE.bones[r][c]] || '';
+          cell.style.opacity = '0.65';
+        }
+      }
+      solvedEl.querySelector('.solved-text').textContent = `Identified in ${dug.size} dig${dug.size===1?'':'s'}`;
+      solvedEl.classList.add('show');
+      revealEl.innerHTML = `<em>${PUZZLE.canonical}</em>`;
+      revealEl.hidden = false;
+      shareBtn.hidden = false;
+      flashReveal(stageEl);
+    }
+
+    function reset() { build(); }
+    function load(i) {
+      pIdx = ((i % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+    function share() {
+      const grid = Array.from({length:6}, (_, r) =>
+        Array.from({length:6}, (_, c) => {
+          const k = `${r},${c}`;
+          if (!dug.has(k)) return '⬛';
+          return PUZZLE.bones[r][c] ? '🦴' : '🟫';
+        }).join('')
+      ).join('\n');
+      copyShare(`Fossil · ${dug.size} dig${dug.size===1?'':'s'}\n${grid}\ninternet.house/game`);
+    }
+
+    build();
+    GAMES.fossil = { reset, share, load };
+  })();
+  </script>
+</body>
+</html>
