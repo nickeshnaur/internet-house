@@ -409,10 +409,21 @@
       shareBtn.hidden = true;
       const revealBtn = document.querySelector('.tool-btn[data-game="shadows"][data-action="reveal"]');
       if (revealBtn) revealBtn.hidden = false;
-      // Swap object
+      // Swap object. Mesh stays in the scene as a shadow-caster but is
+      // invisible to the camera (colorWrite=false writes depth only, so the
+      // ground color shows through wherever the object sits). The cast shadow
+      // is still computed normally because Three.js's shadow pass runs
+      // independently of color writes.
       if (objectMesh) scene.remove(objectMesh);
       objectMesh = PUZZLE.build();
-      objectMesh.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = false; } });
+      objectMesh.traverse(c => {
+        if (c.isMesh) {
+          c.castShadow = true;
+          c.receiveShadow = false;
+          c.material.colorWrite = false;
+          c.material.needsUpdate = true;
+        }
+      });
       scene.add(objectMesh);
       // Default light position so a shadow is visible at start
       placeLightFromUV(0.78, 0.22);  // upper-right
