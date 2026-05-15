@@ -14,9 +14,9 @@
   .sh-stage { gap: 14px; }
 
   .sh-field {
-    width: clamp(300px, 92vw, 520px);
+    width: clamp(300px, 92vw, 540px);
     aspect-ratio: 1 / 1;
-    background: radial-gradient(ellipse at center, #FAF6EC 0%, #E8DEC8 100%);
+    background: #E8DEC8;
     border: 1px solid var(--hairline-strong);
     border-radius: 50%;
     position: relative;
@@ -26,39 +26,25 @@
     overflow: hidden;
     user-select: none;
   }
-  .sh-svg { width: 100%; height: 100%; display: block; }
+  .sh-field canvas { width: 100%; height: 100%; display: block; }
 
-  .ring-guide {
-    fill: none;
-    stroke: var(--hairline);
-    stroke-width: 0.4;
-    stroke-dasharray: 1 3;
-  }
-
-  .silhouette {
-    fill: #16110a;
-    fill-opacity: 0;
-    transition: fill-opacity 380ms var(--ease);
-  }
-  .silhouette.show { fill-opacity: 0.62; }
-
-  .sun-halo {
-    fill: #F5C84B;
-    fill-opacity: 0.18;
+  .light-overlay {
+    position: absolute; inset: 0;
+    pointer-events: none;
   }
   .light-pin {
-    fill: #FFD86B;
-    filter: drop-shadow(0 0 6px #F5C84B) drop-shadow(0 0 14px rgba(245,200,75,0.5));
+    position: absolute;
+    width: 14px; height: 14px;
+    margin-left: -7px; margin-top: -7px;
+    border-radius: 50%;
+    background: #FFD86B;
+    box-shadow: 0 0 8px #F5C84B, 0 0 18px rgba(245,200,75,0.5);
+    transition: opacity 220ms var(--ease);
   }
-  .light-ray {
-    stroke: #F5C84B;
-    stroke-width: 0.5;
-    stroke-dasharray: 1 2.5;
-    stroke-opacity: 0.35;
-  }
+  .light-pin.past { width: 6px; height: 6px; margin-left: -3px; margin-top: -3px; opacity: 0.4; box-shadow: 0 0 4px #F5C84B; }
 
   .sh-meta {
-    width: 100%; max-width: 520px;
+    width: 100%; max-width: 540px;
     display: flex; justify-content: space-between;
     font: 500 0.62rem 'Inter', sans-serif;
     letter-spacing: 0.22em;
@@ -129,8 +115,8 @@
       <div class="game-head">
         <div class="eyebrow">No. 030 · Shadows</div>
         <h1 class="title">Shadows</h1>
-        <p class="rule">Cast light from any angle. Identify the object.</p>
-        <p class="howto"><b>How to play.</b> An object sits in the center. Tap anywhere in the field to place a light source — a shadow falls opposite the light, in the silhouette of the object as seen from that angle. Submit a guess when you can name what's casting the shadow.</p>
+        <p class="rule">Move the light. Read the shadow. Name what's casting it.</p>
+        <p class="howto"><b>How to play.</b> A 3D object sits at the center of the field — viewed from straight above. Tap anywhere around it to place a directional light at that angle. The shadow is computed live from the model. Submit a guess when you can name what's casting it.</p>
       </div>
 
       <div class="toolbar">
@@ -149,12 +135,7 @@
         <div class="sh-meta"><span><span class="num" id="sh-shadows">0</span> shadows cast</span><span><span class="num" id="sh-guesses">0</span> guesses</span></div>
 
         <div class="sh-field" id="sh-field">
-          <svg class="sh-svg" id="sh-svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
-            <circle class="ring-guide" cx="200" cy="200" r="170"/>
-            <circle class="ring-guide" cx="200" cy="200" r="120"/>
-            <g id="shadows-layer"></g>
-            <g id="lights-layer"></g>
-          </svg>
+          <div class="light-overlay" id="light-overlay"></div>
         </div>
 
         <p class="sh-tip">tap anywhere in the field to place a light</p>
@@ -174,173 +155,253 @@
   <footer><a href="../">internet.house · daily</a></footer>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="../shared.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
   (function Shadows() {
-    // Each silhouette is a single SVG path string drawn within a 100×100 viewBox,
-    // designed to read as a "footprint shadow" — the object as seen from above
-    // by the light source's eye. Width centered around x=50, height extending up
-    // from y=90 (the base, sitting on the ground at the object's foot).
-    // Silhouettes are designed in a 100×100 viewBox with the silhouette base
-    // around y=90 and the figure extending UP from there. Each path captures
-    // the iconic profile of the object — curving legs, tapered tower, lintels,
-    // legs, raised piano lid, etc.
-    const SIL = {
-      // ==== Eiffel Tower ====
-      eiffel_side: [
-        // Splayed-leg base curving inward to first platform
-        'M6,90 Q22,82 34,66 L66,66 Q78,82 94,90 Z',
-        // First platform horizontal band
-        'M30,66 L70,66 L70,62 L30,62 Z',
-        // Tapered tower body from first platform to upper section
-        'M34,62 L40,38 L60,38 L66,62 Z',
-        // Second platform horizontal
-        'M38,38 L62,38 L62,35 L38,35 Z',
-        // Upper tapered section
-        'M40,35 L46,16 L54,16 L60,35 Z',
-        // Third platform
-        'M44,16 L56,16 L56,13 L44,13 Z',
-        // Antenna spike
-        'M48,13 L48,3 L52,3 L52,13 Z',
-      ].join(' '),
-      eiffel_corner: [
-        // Slightly narrower silhouette as seen from corner — the four legs
-        // foreshorten slightly
-        'M10,90 Q24,82 36,66 L64,66 Q76,82 90,90 Z',
-        'M32,66 L68,66 L68,62 L32,62 Z',
-        'M36,62 L41,38 L59,38 L64,62 Z',
-        'M40,38 L60,38 L60,35 L40,35 Z',
-        'M42,35 L47,16 L53,16 L58,35 Z',
-        'M45,16 L55,16 L55,13 L45,13 Z',
-        'M48,13 L48,3 L52,3 L52,13 Z',
-      ].join(' '),
+    // ─────── Build the three sample objects from primitives ───────
+    function buildEiffel() {
+      const g = new THREE.Group();
+      const mat = new THREE.MeshStandardMaterial({ color: 0x3a3028, roughness: 0.7, metalness: 0.1 });
+      // Four legs — splayed out from base, meeting at the first platform
+      const baseR = 8, topR = 0;
+      for (let i = 0; i < 4; i++) {
+        const ang = (i / 4) * Math.PI * 2 + Math.PI / 4;
+        const x0 = Math.cos(ang) * baseR;
+        const z0 = Math.sin(ang) * baseR;
+        const x1 = Math.cos(ang) * 1.6;
+        const z1 = Math.sin(ang) * 1.6;
+        const len = Math.hypot(x1 - x0, 12, z1 - z0);
+        const leg = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.5, 0.9, len, 6),
+          mat
+        );
+        // place center at midpoint, tilt to point upward-inward
+        leg.position.set((x0 + x1) / 2, 6, (z0 + z1) / 2);
+        leg.lookAt(x1, 12, z1);
+        leg.rotateX(Math.PI / 2);
+        leg.castShadow = true;
+        g.add(leg);
+      }
+      // First platform — wide thin disc at ~y=12
+      const plat1 = new THREE.Mesh(new THREE.BoxGeometry(7, 0.8, 7), mat);
+      plat1.position.y = 12; plat1.castShadow = true; g.add(plat1);
+      // Tapered middle — frustum from y=12 to y=22
+      const mid = new THREE.Mesh(
+        new THREE.CylinderGeometry(1.2, 3.0, 10, 4),
+        mat
+      );
+      mid.position.y = 17; mid.rotation.y = Math.PI / 4; mid.castShadow = true; g.add(mid);
+      // Second platform
+      const plat2 = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.5, 3.8), mat);
+      plat2.position.y = 22; plat2.castShadow = true; g.add(plat2);
+      // Upper tower — narrow tapered to spire base
+      const upper = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.5, 1.5, 7, 4),
+        mat
+      );
+      upper.position.y = 26; upper.rotation.y = Math.PI / 4; upper.castShadow = true; g.add(upper);
+      // Third platform
+      const plat3 = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.3, 1.6), mat);
+      plat3.position.y = 29.5; plat3.castShadow = true; g.add(plat3);
+      // Antenna
+      const ant = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.18, 0.32, 5, 6),
+        mat
+      );
+      ant.position.y = 32; ant.castShadow = true; g.add(ant);
+      return g;
+    }
 
-      // ==== Grand Piano (side profile) — raised lid + curved body + 3 legs ====
-      piano_side: [
-        // Body — long curved profile of the piano case
-        'M4,68 L4,80 Q50,86 96,80 L96,68 Q60,58 4,68 Z',
-        // Raised lid (triangular) hinged at left
-        'M4,68 L4,40 Q40,42 80,68 Z',
-        // Left leg
-        'M10,80 L8,90 L18,90 L20,80 Z',
-        // Middle leg
-        'M48,82 L46,90 L56,90 L54,82 Z',
-        // Right leg
-        'M82,80 L80,90 L92,90 L90,80 Z',
-        // Keyboard cantilever (small block extending left of body)
-        'M0,72 L4,72 L4,76 L0,76 Z',
-      ].join(' '),
-      piano_front: [
-        // Front view: keyboard line + body + 3 leg stubs visible
-        'M14,68 Q50,52 86,68 L86,84 L14,84 Z',
-        'M14,84 L86,84 L86,88 L14,88 Z',          // keyboard band
-        'M22,88 L24,90 L28,90 L30,88 Z',
-        'M48,88 L50,90 L54,90 L56,88 Z',
-        'M70,88 L72,90 L76,90 L78,88 Z',
-      ].join(' '),
-      piano_back: [
-        // Back view: just the curved body, no keyboard, two legs visible
-        'M14,68 Q50,52 86,68 L86,86 L14,86 Z',
-        'M22,86 L24,90 L28,90 L30,86 Z',
-        'M70,86 L72,90 L76,90 L78,86 Z',
-      ].join(' '),
+    function buildPiano() {
+      const g = new THREE.Group();
+      const mat = new THREE.MeshStandardMaterial({ color: 0x1a1410, roughness: 0.3, metalness: 0.05 });
+      // Body — extrude an outline that resembles a grand piano (long edge + curve)
+      const shape = new THREE.Shape();
+      shape.moveTo(-7,  -4);            // back-right corner of keyboard side
+      shape.lineTo( 7,  -4);            // straight long edge
+      shape.bezierCurveTo(11, -4, 11, 6, 4, 6);   // curved body-right
+      shape.bezierCurveTo(-3, 6, -7, 2, -7, -4);  // body-left curve back to start
+      const body = new THREE.Mesh(
+        new THREE.ExtrudeGeometry(shape, { depth: 2.5, bevelEnabled: false }),
+        mat
+      );
+      body.rotation.x = -Math.PI / 2;   // lay flat on XZ plane
+      body.position.y = 4;
+      body.castShadow = true; body.receiveShadow = true;
+      g.add(body);
+      // Raised lid (tilted thin slab above the body)
+      const lid = new THREE.Mesh(
+        new THREE.BoxGeometry(15, 0.3, 9),
+        mat
+      );
+      lid.position.set(0, 7, 1);
+      lid.rotation.z = -0.18;
+      lid.castShadow = true; g.add(lid);
+      // Lid prop stick
+      const prop = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 4, 6), mat);
+      prop.position.set(5, 5.6, -2.5);
+      prop.castShadow = true; g.add(prop);
+      // Three legs
+      const legGeo = new THREE.CylinderGeometry(0.32, 0.32, 4, 6);
+      [[-6, -3], [-6, 4], [6, 4]].forEach(([x, z]) => {
+        const leg = new THREE.Mesh(legGeo, mat);
+        leg.position.set(x, 2, z);
+        leg.castShadow = true;
+        g.add(leg);
+      });
+      // Keyboard — long thin block extending in front
+      const kb = new THREE.Mesh(
+        new THREE.BoxGeometry(13, 0.4, 1.6),
+        new THREE.MeshStandardMaterial({ color: 0xE8E3D0 })
+      );
+      kb.position.set(0, 4.2, -4.7);
+      kb.castShadow = true; g.add(kb);
+      return g;
+    }
 
-      // ==== Stonehenge (side view: row of trilithons + circle stones) ====
-      stones_side: [
-        // Trilithon 1 (two uprights + lintel)
-        'M10,90 L20,90 L20,40 L10,40 Z',
-        'M28,90 L38,90 L38,40 L28,40 Z',
-        'M6,40 L42,40 L42,32 L6,32 Z',     // lintel
-        // Toppled stone (lying on the ground between trilithons)
-        'M44,86 L60,86 L60,90 L44,90 Z',
-        // Trilithon 2 (smaller, behind)
-        'M64,90 L72,90 L72,52 L64,52 Z',
-        'M78,90 L86,90 L86,52 L78,52 Z',
-        'M60,52 L90,52 L90,46 L60,46 Z',   // lintel
-      ].join(' '),
-      stones_front: [
-        // Front view: more stones in the row spread wider
-        'M6,90 L14,90 L14,42 L6,42 Z',
-        'M20,90 L28,90 L28,42 L20,42 Z',
-        'M2,42 L32,42 L32,34 L2,34 Z',      // lintel
-        'M40,90 L48,90 L48,55 L40,55 Z',
-        'M54,90 L62,90 L62,55 L54,55 Z',
-        'M36,55 L66,55 L66,49 L36,49 Z',
-        'M70,90 L78,90 L78,60 L70,60 Z',
-        'M84,90 L92,90 L92,60 L84,60 Z',
-        'M68,60 L94,60 L94,54 L68,54 Z',
-      ].join(' '),
-    };
+    function buildStonehenge() {
+      const g = new THREE.Group();
+      const mat = new THREE.MeshStandardMaterial({ color: 0x5a5249, roughness: 0.9, metalness: 0 });
+      // Outer ring of standing stones — partial (more interesting silhouette)
+      const ringR = 10;
+      const stoneGeo = new THREE.BoxGeometry(2.5, 9, 1.4);
+      const lintelGeo = new THREE.BoxGeometry(5.5, 1.2, 1.6);
+      const positions = [
+        { ang:   0, lintel: true  },
+        { ang:  35 },
+        { ang:  70, lintel: true  },
+        { ang: 110 },
+        { ang: 145, lintel: true  },
+        { ang: 200 },
+        { ang: 245 },
+        { ang: 290 },
+        { ang: 325 },
+      ];
+      for (let i = 0; i < positions.length; i++) {
+        const a = positions[i].ang * Math.PI / 180;
+        const x = Math.cos(a) * ringR, z = Math.sin(a) * ringR;
+        const stone = new THREE.Mesh(stoneGeo, mat);
+        stone.position.set(x, 4.5, z);
+        stone.rotation.y = -a + Math.PI / 2;
+        stone.castShadow = true;
+        g.add(stone);
+      }
+      // Pair lintels (horizontal capstones across two adjacent uprights)
+      for (let i = 0; i < positions.length - 1; i++) {
+        if (!positions[i].lintel) continue;
+        const a1 = positions[i].ang * Math.PI / 180;
+        const a2 = positions[i + 1].ang * Math.PI / 180;
+        const x = (Math.cos(a1) + Math.cos(a2)) / 2 * ringR;
+        const z = (Math.sin(a1) + Math.sin(a2)) / 2 * ringR;
+        const angMid = (a1 + a2) / 2;
+        const lintel = new THREE.Mesh(lintelGeo, mat);
+        lintel.position.set(x, 9.5, z);
+        lintel.rotation.y = -angMid + Math.PI / 2;
+        lintel.castShadow = true;
+        g.add(lintel);
+      }
+      // A toppled stone in the center
+      const fallen = new THREE.Mesh(stoneGeo, mat);
+      fallen.position.set(2.5, 0.8, 2);
+      fallen.rotation.set(Math.PI / 2, 0.4, 0);
+      fallen.castShadow = true; g.add(fallen);
+      // Heel stone (smaller, off to one side)
+      const heel = new THREE.Mesh(new THREE.BoxGeometry(1.6, 6, 1), mat);
+      heel.position.set(0, 3, 18);
+      heel.rotation.y = 0.2;
+      heel.castShadow = true;
+      g.add(heel);
+      return g;
+    }
 
     const PUZZLES = [
-      {
-        id: 'shadows-001',
-        title: 'Eiffel Tower',
-        accept: ['eiffel','eiffel tower','tour eiffel','la tour eiffel'],
-        canonical: 'Eiffel Tower · Paris · 1889',
-        // 4-fold symmetric (cardinal sides) with slightly narrower diagonal views
-        sil: {
-          N: SIL.eiffel_side,  E: SIL.eiffel_side, S: SIL.eiffel_side,  W: SIL.eiffel_side,
-          NE:SIL.eiffel_corner,SE:SIL.eiffel_corner,SW:SIL.eiffel_corner,NW:SIL.eiffel_corner,
-        },
-      },
-      {
-        id: 'shadows-002',
-        title: 'Grand Piano',
-        accept: ['grand piano','piano','baby grand'],
-        canonical: 'Grand piano',
-        sil: {
-          N:  SIL.piano_front,
-          NE: SIL.piano_side, E: SIL.piano_side, SE: SIL.piano_side,
-          S:  SIL.piano_back,
-          SW: SIL.piano_side, W: SIL.piano_side, NW: SIL.piano_side,
-        },
-      },
-      {
-        id: 'shadows-003',
-        title: 'Stonehenge',
-        accept: ['stonehenge','stones'],
-        canonical: 'Stonehenge · Wiltshire · c. 3000 BC',
-        sil: {
-          N:  SIL.stones_front,
-          NE: SIL.stones_side, E: SIL.stones_side, SE: SIL.stones_side,
-          S:  SIL.stones_front,
-          SW: SIL.stones_side, W: SIL.stones_side, NW: SIL.stones_side,
-        },
-      },
+      { id:'shadows-001', title:'Eiffel Tower', accept:['eiffel','eiffel tower','tour eiffel','la tour eiffel'], canonical:'Eiffel Tower · Paris · 1889', build: buildEiffel },
+      { id:'shadows-002', title:'Grand Piano',  accept:['grand piano','piano','baby grand'],                    canonical:'Grand piano',                  build: buildPiano  },
+      { id:'shadows-003', title:'Stonehenge',   accept:['stonehenge','stones'],                                 canonical:'Stonehenge · Wiltshire · c. 3000 BC', build: buildStonehenge },
     ];
     let pIdx = 0, PUZZLE = PUZZLES[pIdx];
 
-    const NS = 'http://www.w3.org/2000/svg';
-    const fieldEl   = $('#sh-field');
-    const svgEl     = $('#sh-svg');
-    const shadowsLayer = $('#shadows-layer');
-    const lightsLayer  = $('#lights-layer');
-    const stageEl   = $('#stage-shadows');
-    const inputEl   = $('#sh-input');
-    const goBtn     = $('#sh-go');
-    const histEl    = $('#sh-history');
-    const solvedEl  = $('#solved-shadows');
-    const revealEl  = $('#sh-reveal');
-    const shadowsNum= $('#sh-shadows');
-    const guessesNum= $('#sh-guesses');
-    const shareBtn  = document.querySelector('.tool-btn[data-game="shadows"][data-action="share"]');
+    // ─────── Three.js scene setup ───────
+    const fieldEl = document.getElementById('sh-field');
+    const overlay = document.getElementById('light-overlay');
+    const inputEl = document.getElementById('sh-input');
+    const goBtn   = document.getElementById('sh-go');
+    const histEl  = document.getElementById('sh-history');
+    const solvedEl= document.getElementById('solved-shadows');
+    const stageEl = document.getElementById('stage-shadows');
+    const revealEl= document.getElementById('sh-reveal');
+    const shadowsNum = document.getElementById('sh-shadows');
+    const guessesNum = document.getElementById('sh-guesses');
+    const shareBtn = document.querySelector('.tool-btn[data-game="shadows"][data-action="share"]');
 
-    const CENTER = { x: 200, y: 200 };
-    const SHADOW_OFFSET = 110;     // distance from center to anchor of cast shadow
-    const SHADOW_SIZE = 110;       // bounding box for the silhouette as drawn
-    const DIRS = ['E','SE','S','SW','W','NW','N','NE'];
+    const VIEW_HALF = 36;    // orthographic half-width in world units
+    let scene, camera, renderer, light, ground, objectMesh;
 
-    let castShadows = [];   // [{ key, lightX, lightY }]
+    function initThree() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xE8DEC8);
+      // Orthographic camera straight down
+      camera = new THREE.OrthographicCamera(-VIEW_HALF, VIEW_HALF, VIEW_HALF, -VIEW_HALF, 0.1, 200);
+      camera.position.set(0, 100, 0);
+      camera.up.set(0, 0, -1);    // make north (-z) point up in screen
+      camera.lookAt(0, 0, 0);
+      // Renderer sized to field's actual pixel dims
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      const px = fieldEl.clientWidth || 480;
+      renderer.setPixelRatio(window.devicePixelRatio || 1);
+      renderer.setSize(px, px, false);
+      fieldEl.insertBefore(renderer.domElement, overlay);
+
+      // Ground plane (receives shadows)
+      ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(VIEW_HALF * 2.4, VIEW_HALF * 2.4),
+        new THREE.MeshStandardMaterial({ color: 0xE8DEC8, roughness: 1, metalness: 0 })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.receiveShadow = true;
+      scene.add(ground);
+
+      // Ambient (so the object isn't pure black)
+      scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+
+      // Directional light (the sun the player is moving)
+      light = new THREE.DirectionalLight(0xfff3d0, 1.2);
+      light.castShadow = true;
+      light.shadow.mapSize.set(1024, 1024);
+      light.shadow.camera.left = -40;
+      light.shadow.camera.right = 40;
+      light.shadow.camera.top = 40;
+      light.shadow.camera.bottom = -40;
+      light.shadow.camera.near = 0.5;
+      light.shadow.camera.far = 200;
+      light.shadow.bias = -0.0008;
+      light.position.set(20, 40, 20);
+      light.target.position.set(0, 0, 0);
+      scene.add(light);
+      scene.add(light.target);
+
+      window.addEventListener('resize', resize);
+    }
+
+    function resize() {
+      const px = fieldEl.clientWidth || 480;
+      renderer.setSize(px, px, false);
+      renderer.render(scene, camera);
+    }
+
+    // ─────── Game state ───────
+    let castPositions = [];   // [{ uvX, uvY, worldX, worldZ }]
     let guesses = [];
     let solved = false;
 
     function build() {
-      castShadows = []; guesses = []; solved = false;
+      castPositions = []; guesses = []; solved = false;
       shadowsNum.textContent = '0';
       guessesNum.textContent = '0';
-      shadowsLayer.innerHTML = '';
-      lightsLayer.innerHTML = '';
       histEl.innerHTML = '';
+      overlay.innerHTML = '';
       inputEl.value = ''; inputEl.disabled = false;
       goBtn.disabled = true;
       solvedEl.classList.remove('show', 'is-revealed');
@@ -348,131 +409,62 @@
       shareBtn.hidden = true;
       const revealBtn = document.querySelector('.tool-btn[data-game="shadows"][data-action="reveal"]');
       if (revealBtn) revealBtn.hidden = false;
+      // Swap object
+      if (objectMesh) scene.remove(objectMesh);
+      objectMesh = PUZZLE.build();
+      objectMesh.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = false; } });
+      scene.add(objectMesh);
+      // Default light position so a shadow is visible at start
+      placeLightFromUV(0.78, 0.22);  // upper-right
+      castPositions.pop(); shadowsNum.textContent = '0';   // don't count the default in score
+      overlay.innerHTML = '';
+      renderer.render(scene, camera);
     }
 
-    function clientToView(cx, cy) {
-      const r = svgEl.getBoundingClientRect();
-      return [
-        ((cx - r.left) / r.width) * 400,
-        ((cy - r.top) / r.height) * 400,
-      ];
+    function placeLightFromUV(u, v) {
+      // u, v in [0..1] across the field. Convert to world XZ.
+      const wx = (u - 0.5) * 2 * VIEW_HALF;
+      const wz = (v - 0.5) * 2 * VIEW_HALF;
+      // Light is positioned above that point; high enough to cast a long shadow
+      // but not so high it makes the shadow tiny. Tune by feel.
+      light.position.set(wx, 28, wz);
+      light.target.position.set(0, 0, 0);
+      light.target.updateMatrixWorld();
+      // Track for history
+      castPositions.push({ u, v, wx, wz });
+      shadowsNum.textContent = String(castPositions.length);
+      // Render and add an overlay pin
+      renderer.render(scene, camera);
+      renderOverlayPins();
+    }
+
+    function renderOverlayPins() {
+      overlay.innerHTML = '';
+      castPositions.forEach((p, i) => {
+        const isCurrent = i === castPositions.length - 1;
+        const pin = document.createElement('div');
+        pin.className = 'light-pin' + (isCurrent ? '' : ' past');
+        pin.style.left = `${(p.u * 100).toFixed(2)}%`;
+        pin.style.top  = `${(p.v * 100).toFixed(2)}%`;
+        overlay.appendChild(pin);
+      });
     }
 
     fieldEl.addEventListener('click', e => {
       if (solved) return;
-      const [x, y] = clientToView(e.clientX, e.clientY);
-      const dx = x - CENTER.x, dy = y - CENTER.y;
-      const dist = Math.hypot(dx, dy);
-      if (dist < 30) return;     // ignore clicks on / very near the object itself
-      // Compute angle in screen coords (0=east/right, 90=south/down, 180=west, 270=north)
-      let deg = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
-      // Snap to nearest 45° to pick a silhouette
-      const idx = Math.round(deg / 45) % 8;
-      const key = DIRS[idx];
-
-      // Light pin position (clamp to within ring)
-      const ringR = Math.min(dist, 175);
-      const ang = Math.atan2(dy, dx);
-      const lightX = CENTER.x + ringR * Math.cos(ang);
-      const lightY = CENTER.y + ringR * Math.sin(ang);
-
-      // Shadow anchor: opposite side of object
-      const shadowAnchorX = CENTER.x - Math.cos(ang) * SHADOW_OFFSET;
-      const shadowAnchorY = CENTER.y - Math.sin(ang) * SHADOW_OFFSET;
-
-      castShadows.push({ key, lightX, lightY, ang });
-      shadowsNum.textContent = String(castShadows.length);
-      renderShadows();
+      // Field is a circle — only count clicks within the inscribed circle
+      const r = fieldEl.getBoundingClientRect();
+      const u = (e.clientX - r.left) / r.width;
+      const v = (e.clientY - r.top) / r.height;
+      const du = u - 0.5, dv = v - 0.5;
+      if (Math.hypot(du, dv) > 0.5) return;     // outside circle
+      if (Math.hypot(du, dv) < 0.06) return;    // ignore very-center taps
+      placeLightFromUV(u, v);
       haptic(8);
     });
 
-    function renderShadows() {
-      shadowsLayer.innerHTML = '';
-      lightsLayer.innerHTML = '';
-      // Only the most recent shadow is visible — the prior light pins remain
-      // as small dim dots so the player can read their probing pattern.
-      const cur = castShadows[castShadows.length - 1];
-      castShadows.forEach((s, i) => {
-        const isCurrent = i === castShadows.length - 1;
-        // Old light pins as faint dots
-        if (!isCurrent) {
-          const pin = document.createElementNS(NS, 'circle');
-          pin.setAttribute('class', 'light-pin');
-          pin.setAttribute('cx', s.lightX);
-          pin.setAttribute('cy', s.lightY);
-          pin.setAttribute('r', 2.5);
-          pin.setAttribute('opacity', 0.32);
-          pin.style.filter = 'none';
-          lightsLayer.appendChild(pin);
-        }
-      });
-      if (!cur) return;
-
-      // Shadow direction = opposite of light direction
-      // Silhouette is drawn in a 100×100 viewBox with its base at (50,90) and
-      // extending UP to roughly (50,8). To make it lie on the ground extending
-      // AWAY from the light, we anchor its base at the object's foot and rotate
-      // it so its "up" axis points along the shadow direction.
-      const lightDist = Math.hypot(cur.lightX - CENTER.x, cur.lightY - CENTER.y);
-      // Long shadow when sun is low (far from object); short when overhead.
-      const stretch = 0.55 + (lightDist / 175) * 1.55;     // 0.55 .. 2.1
-      const widthSquash = 0.65;                             // shadow always squashed perpendicular
-      const baseLen = 90;                                   // base length unit
-      // shadow direction in degrees (0 = east, 90 = south in screen coords)
-      const shadowAngDeg = (cur.ang * 180 / Math.PI) + 180;
-      // Silhouette's natural "up" points at -90° in screen coords. We need to
-      // rotate by (shadowAngDeg - (-90)) = shadowAngDeg + 90 so the tip points
-      // along the shadow direction.
-      const rot = shadowAngDeg + 90;
-
-      const baseX = CENTER.x;
-      const baseY = CENTER.y + 6;   // anchor at the object's base ellipse
-
-      const g = document.createElementNS(NS, 'g');
-      // SVG transforms apply right-to-left.
-      // 1. translate(-50, -90)  — move silhouette so its base anchor is at origin
-      // 2. scale(widthSquash, stretch * baseLen/100)  — squash width, stretch length
-      // 3. rotate(rot)          — point "up" along shadow direction
-      // 4. translate(baseX, baseY) — place at object base
-      g.setAttribute(
-        'transform',
-        `translate(${baseX.toFixed(1)},${baseY.toFixed(1)}) ` +
-        `rotate(${rot.toFixed(1)}) ` +
-        `scale(${widthSquash.toFixed(3)},${(stretch * baseLen / 100).toFixed(3)}) ` +
-        `translate(-50,-90)`
-      );
-      const path = document.createElementNS(NS, 'path');
-      path.setAttribute('d', PUZZLE.sil[cur.key]);
-      path.setAttribute('class', 'silhouette');
-      g.appendChild(path);
-      shadowsLayer.appendChild(g);
-
-      // Light pin + halo + faint ray
-      const halo = document.createElementNS(NS, 'circle');
-      halo.setAttribute('class', 'sun-halo');
-      halo.setAttribute('cx', cur.lightX);
-      halo.setAttribute('cy', cur.lightY);
-      halo.setAttribute('r', 16);
-      lightsLayer.appendChild(halo);
-      const pin = document.createElementNS(NS, 'circle');
-      pin.setAttribute('class', 'light-pin');
-      pin.setAttribute('cx', cur.lightX);
-      pin.setAttribute('cy', cur.lightY);
-      pin.setAttribute('r', 6);
-      lightsLayer.appendChild(pin);
-      const ray = document.createElementNS(NS, 'line');
-      ray.setAttribute('class', 'light-ray');
-      ray.setAttribute('x1', cur.lightX); ray.setAttribute('y1', cur.lightY);
-      ray.setAttribute('x2', baseX); ray.setAttribute('y2', baseY);
-      lightsLayer.appendChild(ray);
-
-      requestAnimationFrame(() => {
-        path.classList.add('show');
-      });
-    }
-
+    // ─────── Guess handling ───────
     function canon(s) { return s.toLowerCase().trim().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' '); }
-
     inputEl.addEventListener('input', () => { goBtn.disabled = inputEl.value.trim().length < 2 || solved; });
     inputEl.addEventListener('keydown', e => {
       if (e.key === 'Enter') { e.preventDefault(); if (!goBtn.disabled) submit(); }
@@ -497,7 +489,7 @@
 
     function win() {
       solved = true;
-      solvedEl.querySelector('.solved-text').textContent = `Identified · ${castShadows.length} shadow${castShadows.length===1?'':'s'}`;
+      solvedEl.querySelector('.solved-text').textContent = `Identified · ${castPositions.length} shadow${castPositions.length===1?'':'s'}`;
       solvedEl.classList.add('show');
       revealEl.innerHTML = `<em>${PUZZLE.canonical}</em>`;
       revealEl.hidden = false;
@@ -526,14 +518,26 @@
       reset();
     }
     function share() {
-      // 8-direction emoji wheel showing which directions the player cast from
-      const used = new Set(castShadows.map(s => s.key));
-      const wheel = ['N','NE','E','SE','S','SW','W','NW'].map(d => used.has(d) ? '✦' : '·').join(' ');
-      copyShare(`Shadows · ${castShadows.length} cast\n${wheel}\ninternet.house/game`);
+      // 8-direction emoji wheel showing which sectors the player cast from
+      const SECTORS = 8;
+      const used = new Set();
+      castPositions.forEach(p => {
+        const a = (Math.atan2(p.v - 0.5, p.u - 0.5) * 180 / Math.PI + 360) % 360;
+        const idx = Math.round(a / (360 / SECTORS)) % SECTORS;
+        used.add(idx);
+      });
+      const wheel = Array.from({ length: SECTORS }, (_, i) => used.has(i) ? '✦' : '·').join(' ');
+      copyShare(`Shadows · ${castPositions.length} cast\n${wheel}\ninternet.house/game`);
     }
 
-    build();
-    GAMES.shadows = { reset, share, load, reveal };
+    // ─────── Init ───────
+    function start() {
+      if (typeof THREE === 'undefined') { setTimeout(start, 80); return; }
+      initThree();
+      build();
+      GAMES.shadows = { reset, share, load, reveal };
+    }
+    start();
   })();
   </script>
 </body>
