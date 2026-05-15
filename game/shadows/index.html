@@ -11,105 +11,77 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../shared.css">
 <style>
-  .sh-stage { gap: 18px; }
+  .sh-stage { gap: 14px; }
 
-  .sh-frame {
-    width: clamp(260px, 80vw, 380px);
+  .sh-field {
+    width: clamp(300px, 92vw, 520px);
     aspect-ratio: 1 / 1;
-    background: #F2EBDC;
-    border: 1px solid var(--hairline-strong);
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .sh-frame svg.silhouette {
-    width: 80%; height: 80%;
-    fill: var(--accent);
-    transition: opacity 480ms var(--ease);
-  }
-  .sh-frame .placeholder {
-    color: var(--ink-faint);
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-size: 1rem;
-    text-align: center;
-    padding: 0 24px;
-  }
-  .sh-direction-label {
-    position: absolute;
-    top: 12px; left: 50%; transform: translateX(-50%);
-    font: 500 0.6rem 'Inter', sans-serif;
-    letter-spacing: 0.32em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-  }
-
-  .sh-strip {
-    display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
-    width: 100%; max-width: 380px;
-    min-height: 36px;
-  }
-  .sh-strip .thumb {
-    width: 36px; height: 36px;
-    background: #F2EBDC;
-    border: 1px solid var(--hairline);
-    border-radius: 4px;
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
-  }
-  .sh-strip .thumb svg { width: 70%; height: 70%; fill: var(--accent); }
-  .sh-strip .thumb .dir {
-    position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
-    font: 500 0.5rem 'Inter', sans-serif;
-    letter-spacing: 0.16em;
-    color: var(--ink-faint);
-  }
-
-  .sh-compass {
-    width: 200px; height: 200px;
-    position: relative;
-    margin: 4px 0;
-  }
-  .sh-compass .ring {
-    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, #FAF6EC 0%, #E8DEC8 100%);
     border: 1px solid var(--hairline-strong);
     border-radius: 50%;
-  }
-  .sh-compass .center {
-    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-    font: 500 0.55rem 'Inter', sans-serif;
-    letter-spacing: 0.22em;
-    color: var(--ink-faint);
-    text-transform: uppercase;
-  }
-  .sh-dir {
-    position: absolute;
-    width: 40px; height: 40px;
-    transform: translate(-50%, -50%);
-    border: 1px solid var(--hairline-strong);
-    border-radius: 50%;
-    background: var(--paper-soft);
-    display: flex; align-items: center; justify-content: center;
-    font: 500 0.7rem 'Inter', sans-serif;
-    color: var(--ink-soft);
-    cursor: pointer;
+    position: relative;
+    cursor: crosshair;
     -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+    touch-action: none;
+    overflow: hidden;
+    user-select: none;
   }
-  .sh-dir.cast { background: color-mix(in srgb, var(--accent) 20%, transparent); color: var(--accent); border-color: var(--accent); }
-  @media (hover: hover) { .sh-dir:hover { background: var(--paper-deep); } }
+  .sh-svg { width: 100%; height: 100%; display: block; }
+
+  .object-mark {
+    fill: var(--ink-faint);
+    stroke: var(--ink-soft);
+    stroke-width: 1;
+  }
+  .object-label {
+    font: 500 0.55rem 'Inter', sans-serif;
+    fill: var(--ink-faint);
+    text-anchor: middle;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .ring-guide {
+    fill: none;
+    stroke: var(--hairline);
+    stroke-width: 0.4;
+    stroke-dasharray: 1 3;
+  }
+
+  .silhouette {
+    fill: var(--accent);
+    opacity: 0;
+    transition: opacity 280ms var(--ease);
+  }
+  .silhouette.show { opacity: 0.92; }
+  .silhouette.past { opacity: 0.18; }
+
+  .light-pin {
+    fill: #F5C84B;
+    filter: drop-shadow(0 0 6px #F5C84B) drop-shadow(0 0 14px rgba(245,200,75,0.4));
+  }
+  .light-ray {
+    stroke: #F5C84B;
+    stroke-width: 0.6;
+    stroke-dasharray: 1.2 2;
+    stroke-opacity: 0.45;
+  }
 
   .sh-meta {
+    width: 100%; max-width: 520px;
     display: flex; justify-content: space-between;
-    width: 100%; max-width: 380px;
     font: 500 0.62rem 'Inter', sans-serif;
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--ink-faint);
   }
   .sh-meta .num { color: var(--ink); font-family: 'Fraunces', serif; font-size: 0.86rem; }
+  .sh-tip {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.84rem;
+    color: var(--ink-faint);
+    text-align: center;
+  }
 
   .sh-input-row {
     display: flex; gap: 10px;
@@ -167,7 +139,7 @@
         <div class="eyebrow">No. 030 · Shadows</div>
         <h1 class="title">Shadows</h1>
         <p class="rule">Cast light from any angle. Identify the object.</p>
-        <p class="howto"><b>How to play.</b> Tap a compass direction to cast light from that angle. Each cast reveals a silhouette of the hidden object as seen from that side. Submit a guess when you can name what you're looking at.</p>
+        <p class="howto"><b>How to play.</b> An object sits in the center. Tap anywhere in the field to place a light source — a shadow falls opposite the light, in the silhouette of the object as seen from that angle. Submit a guess when you can name what's casting the shadow.</p>
       </div>
 
       <div class="toolbar">
@@ -184,17 +156,20 @@
       <div class="stage sh-stage" id="stage-shadows">
         <div class="sh-meta"><span><span class="num" id="sh-shadows">0</span> shadows cast</span><span><span class="num" id="sh-guesses">0</span> guesses</span></div>
 
-        <div class="sh-frame" id="sh-frame">
-          <span class="sh-direction-label" id="sh-dir-label">choose a direction</span>
-          <div class="placeholder" id="sh-placeholder">tap a compass direction below</div>
+        <div class="sh-field" id="sh-field">
+          <svg class="sh-svg" id="sh-svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
+            <circle class="ring-guide" cx="200" cy="200" r="140"/>
+            <circle class="ring-guide" cx="200" cy="200" r="100"/>
+            <g id="shadows-layer"></g>
+            <g id="lights-layer"></g>
+            <g id="object-layer">
+              <circle class="object-mark" cx="200" cy="200" r="14"/>
+              <text class="object-label" x="200" y="230">object</text>
+            </g>
+          </svg>
         </div>
 
-        <div class="sh-strip" id="sh-strip"></div>
-
-        <div class="sh-compass" id="sh-compass">
-          <div class="ring"></div>
-          <span class="center">cast</span>
-        </div>
+        <p class="sh-tip">tap anywhere in the field to place a light</p>
 
         <div class="sh-input-row">
           <input class="sh-input" id="sh-input" type="text" autocomplete="off" placeholder="what is it?" maxlength="40">
@@ -213,24 +188,26 @@
   <script src="../shared.js"></script>
   <script>
   (function Shadows() {
-    // Each puzzle: object + silhouettes for 8 directions.
-    // Silhouette = SVG path d-attribute, drawn within 100×100 viewBox.
+    // Each silhouette is a single SVG path string drawn within a 100×100 viewBox,
+    // designed to read as a "footprint shadow" — the object as seen from above
+    // by the light source's eye. Width centered around x=50, height extending up
+    // from y=90 (the base, sitting on the ground at the object's foot).
     const PUZZLES = [
       {
         id: 'shadows-001',
         title: 'Eiffel Tower',
         accept: ['eiffel','eiffel tower','tour eiffel','la tour eiffel'],
         canonical: 'Eiffel Tower · Paris · 1889',
-        // 4-fold symmetric: cardinals all show A-frame; diagonals show same with slightly more interior detail
+        // 4-fold symmetric — cardinal and diagonal slightly different
         sil: {
-          N:  'M44,90 L44,52 L46,28 L47,12 L48,8 L49,12 L50,28 L52,52 L52,90 Z',
-          E:  'M44,90 L44,52 L46,28 L47,12 L48,8 L49,12 L50,28 L52,52 L52,90 Z',
-          S:  'M44,90 L44,52 L46,28 L47,12 L48,8 L49,12 L50,28 L52,52 L52,90 Z',
-          W:  'M44,90 L44,52 L46,28 L47,12 L48,8 L49,12 L50,28 L52,52 L52,90 Z',
-          NE: 'M40,90 L42,50 L46,26 L48,8 L50,26 L54,50 L56,90 Z',
-          SE: 'M40,90 L42,50 L46,26 L48,8 L50,26 L54,50 L56,90 Z',
-          SW: 'M40,90 L42,50 L46,26 L48,8 L50,26 L54,50 L56,90 Z',
-          NW: 'M40,90 L42,50 L46,26 L48,8 L50,26 L54,50 L56,90 Z',
+          E:  'M30,90 L34,52 L40,28 L46,12 L48,8 L50,12 L54,28 L60,52 L70,90 Z M44,40 Q50,38 56,40 L56,42 L44,42 Z',
+          SE: 'M28,90 L34,50 L40,26 L46,10 L48,6 L50,10 L56,26 L62,50 L72,90 Z',
+          S:  'M30,90 L34,52 L40,28 L46,12 L48,8 L50,12 L54,28 L60,52 L70,90 Z M44,40 Q50,38 56,40 L56,42 L44,42 Z',
+          SW: 'M28,90 L34,50 L40,26 L46,10 L48,6 L50,10 L56,26 L62,50 L72,90 Z',
+          W:  'M30,90 L34,52 L40,28 L46,12 L48,8 L50,12 L54,28 L60,52 L70,90 Z M44,40 Q50,38 56,40 L56,42 L44,42 Z',
+          NW: 'M28,90 L34,50 L40,26 L46,10 L48,6 L50,10 L56,26 L62,50 L72,90 Z',
+          N:  'M30,90 L34,52 L40,28 L46,12 L48,8 L50,12 L54,28 L60,52 L70,90 Z M44,40 Q50,38 56,40 L56,42 L44,42 Z',
+          NE: 'M28,90 L34,50 L40,26 L46,10 L48,6 L50,10 L56,26 L62,50 L72,90 Z',
         },
       },
       {
@@ -239,17 +216,17 @@
         accept: ['grand piano','piano','baby grand'],
         canonical: 'Grand piano',
         sil: {
-          N:  // front: keyboard + body
-              'M10,72 L90,72 L90,80 L10,80 Z M14,60 Q50,40 86,60 L86,72 L14,72 Z',
-          NE: 'M14,60 Q50,40 86,60 L80,80 L20,80 Z',
-          E:  // side: curved body + leg
-              'M16,52 Q50,30 84,52 L84,72 L16,72 Z M22,72 L26,90 L30,90 L30,72 Z M70,72 L74,90 L78,90 L78,72 Z',
-          SE: 'M16,52 Q50,30 84,52 L84,72 L16,72 Z M70,72 L74,90 L78,90 L78,72 Z',
-          S:  // back: curved body, no keyboard
-              'M14,60 Q50,40 86,60 L86,80 L14,80 Z',
-          SW: 'M16,52 Q50,30 84,52 L84,72 L16,72 Z M22,72 L26,90 L30,90 L30,72 Z',
-          W:  'M16,52 Q50,30 84,52 L84,72 L16,72 Z M22,72 L26,90 L30,90 L30,72 Z M70,72 L74,90 L78,90 L78,72 Z',
-          NW: 'M14,60 Q50,40 86,60 L80,80 L20,80 Z',
+          // From front: keyboard line + curved body silhouette
+          N:  'M14,82 L86,82 L86,90 L14,90 Z M18,72 Q50,52 82,72 L82,82 L18,82 Z',
+          NE: 'M18,72 Q50,52 82,72 L78,90 L22,90 Z',
+          // From side: leg silhouette + curved body profile
+          E:  'M16,68 Q50,46 84,68 L84,84 L16,84 Z M22,84 L26,90 L30,90 L30,84 Z M70,84 L74,90 L78,90 L78,84 Z',
+          SE: 'M16,68 Q50,46 84,68 L84,84 L16,84 Z M70,84 L74,90 L78,90 L78,84 Z',
+          // From back: body, no keyboard
+          S:  'M14,72 Q50,52 86,72 L86,90 L14,90 Z',
+          SW: 'M16,68 Q50,46 84,68 L84,84 L16,84 Z M22,84 L26,90 L30,90 L30,84 Z',
+          W:  'M16,68 Q50,46 84,68 L84,84 L16,84 Z M22,84 L26,90 L30,90 L30,84 Z M70,84 L74,90 L78,90 L78,84 Z',
+          NW: 'M18,72 Q50,52 82,72 L78,90 L22,90 Z',
         },
       },
       {
@@ -258,27 +235,24 @@
         accept: ['stonehenge','stones'],
         canonical: 'Stonehenge · Wiltshire · c. 3000 BC',
         sil: {
-          N:  // front: lintel on top of two upright stones
-              'M14,60 L26,60 L26,90 L14,90 Z M34,60 L46,60 L46,90 L34,90 Z M54,60 L66,60 L66,90 L54,90 Z M74,60 L86,60 L86,90 L74,90 Z M10,52 L90,52 L90,60 L10,60 Z',
-          NE: 'M18,62 L28,62 L28,90 L18,90 Z M38,62 L48,62 L48,90 L38,90 Z M58,62 L70,62 L70,90 L58,90 Z M14,54 L74,54 L74,62 L14,62 Z',
-          E:  // side profile: thinner stones in line
-              'M18,60 L24,60 L24,90 L18,90 Z M30,60 L36,60 L36,90 L30,90 Z M42,60 L48,60 L48,90 L42,90 Z M54,60 L60,60 L60,90 L54,90 Z M66,60 L72,60 L72,90 L66,90 Z M78,60 L84,60 L84,90 L78,90 Z',
-          SE: 'M18,62 L28,62 L28,90 L18,90 Z M38,62 L48,62 L48,90 L38,90 Z M58,62 L70,62 L70,90 L58,90 Z',
-          S:  'M14,60 L26,60 L26,90 L14,90 Z M34,60 L46,60 L46,90 L34,90 Z M54,60 L66,60 L66,90 L54,90 Z M74,60 L86,60 L86,90 L74,90 Z',
-          SW: 'M18,62 L28,62 L28,90 L18,90 Z M38,62 L48,62 L48,90 L38,90 Z M58,62 L70,62 L70,90 L58,90 Z',
-          W:  'M18,60 L24,60 L24,90 L18,90 Z M30,60 L36,60 L36,90 L30,90 Z M42,60 L48,60 L48,90 L42,90 Z M54,60 L60,60 L60,90 L54,90 Z M66,60 L72,60 L72,90 L66,90 Z M78,60 L84,60 L84,90 L78,90 Z',
-          NW: 'M18,62 L28,62 L28,90 L18,90 Z M38,62 L48,62 L48,90 L38,90 Z M58,62 L70,62 L70,90 L58,90 Z M14,54 L74,54 L74,62 L14,62 Z',
+          N:  'M14,68 L26,68 L26,90 L14,90 Z M34,68 L46,68 L46,90 L34,90 Z M54,68 L66,68 L66,90 L54,90 Z M74,68 L86,68 L86,90 L74,90 Z M10,60 L90,60 L90,68 L10,68 Z',
+          NE: 'M18,70 L28,70 L28,90 L18,90 Z M38,70 L48,70 L48,90 L38,90 Z M58,70 L70,70 L70,90 L58,90 Z M14,62 L74,62 L74,70 L14,70 Z',
+          E:  'M18,68 L24,68 L24,90 L18,90 Z M30,68 L36,68 L36,90 L30,90 Z M42,68 L48,68 L48,90 L42,90 Z M54,68 L60,68 L60,90 L54,90 Z M66,68 L72,68 L72,90 L66,90 Z M78,68 L84,68 L84,90 L78,90 Z',
+          SE: 'M18,70 L28,70 L28,90 L18,90 Z M38,70 L48,70 L48,90 L38,90 Z M58,70 L70,70 L70,90 L58,90 Z',
+          S:  'M14,68 L26,68 L26,90 L14,90 Z M34,68 L46,68 L46,90 L34,90 Z M54,68 L66,68 L66,90 L54,90 Z M74,68 L86,68 L86,90 L74,90 Z',
+          SW: 'M18,70 L28,70 L28,90 L18,90 Z M38,70 L48,70 L48,90 L38,90 Z M58,70 L70,70 L70,90 L58,90 Z',
+          W:  'M18,68 L24,68 L24,90 L18,90 Z M30,68 L36,68 L36,90 L30,90 Z M42,68 L48,68 L48,90 L42,90 Z M54,68 L60,68 L60,90 L54,90 Z M66,68 L72,68 L72,90 L66,90 Z M78,68 L84,68 L84,90 L78,90 Z',
+          NW: 'M18,70 L28,70 L28,90 L18,90 Z M38,70 L48,70 L48,90 L38,90 Z M58,70 L70,70 L70,90 L58,90 Z M14,62 L74,62 L74,70 L14,70 Z',
         },
       },
     ];
     let pIdx = 0, PUZZLE = PUZZLES[pIdx];
 
-    const DIRS = ['N','NE','E','SE','S','SW','W','NW'];
-    const compassEl = $('#sh-compass');
-    const frameEl   = $('#sh-frame');
-    const dirLabel  = $('#sh-dir-label');
-    const placeholder = $('#sh-placeholder');
-    const stripEl   = $('#sh-strip');
+    const NS = 'http://www.w3.org/2000/svg';
+    const fieldEl   = $('#sh-field');
+    const svgEl     = $('#sh-svg');
+    const shadowsLayer = $('#shadows-layer');
+    const lightsLayer  = $('#lights-layer');
     const stageEl   = $('#stage-shadows');
     const inputEl   = $('#sh-input');
     const goBtn     = $('#sh-go');
@@ -289,65 +263,108 @@
     const guessesNum= $('#sh-guesses');
     const shareBtn  = document.querySelector('.tool-btn[data-game="shadows"][data-action="share"]');
 
-    let cast = new Set();
+    const CENTER = { x: 200, y: 200 };
+    const SHADOW_OFFSET = 110;     // distance from center to anchor of cast shadow
+    const SHADOW_SIZE = 110;       // bounding box for the silhouette as drawn
+    const DIRS = ['E','SE','S','SW','W','NW','N','NE'];
+
+    let castShadows = [];   // [{ key, lightX, lightY }]
     let guesses = [];
     let solved = false;
 
     function build() {
-      cast.clear(); guesses = []; solved = false;
+      castShadows = []; guesses = []; solved = false;
       shadowsNum.textContent = '0';
       guessesNum.textContent = '0';
-      stripEl.innerHTML = '';
+      shadowsLayer.innerHTML = '';
+      lightsLayer.innerHTML = '';
       histEl.innerHTML = '';
-      placeholder.style.display = 'block';
-      dirLabel.textContent = 'choose a direction';
-      const exist = frameEl.querySelector('svg.silhouette'); if (exist) exist.remove();
       inputEl.value = ''; inputEl.disabled = false;
       goBtn.disabled = true;
       solvedEl.classList.remove('show', 'is-revealed');
       revealEl.hidden = true;
       shareBtn.hidden = true;
-      // Build compass buttons positioned at angles
-      compassEl.querySelectorAll('.sh-dir').forEach(e => e.remove());
-      DIRS.forEach((d, i) => {
-        const angle = (i * 45) - 90; // start at top (N)
-        const x = 50 + 45 * Math.cos(angle * Math.PI / 180);
-        const y = 50 + 45 * Math.sin(angle * Math.PI / 180);
-        const btn = document.createElement('button');
-        btn.className = 'sh-dir';
-        btn.dataset.dir = d;
-        btn.textContent = d;
-        btn.style.left = `${x}%`;
-        btn.style.top = `${y}%`;
-        btn.addEventListener('click', () => doCast(d));
-        compassEl.appendChild(btn);
-      });
     }
 
-    function doCast(d) {
+    function clientToView(cx, cy) {
+      const r = svgEl.getBoundingClientRect();
+      return [
+        ((cx - r.left) / r.width) * 400,
+        ((cy - r.top) / r.height) * 400,
+      ];
+    }
+
+    fieldEl.addEventListener('click', e => {
       if (solved) return;
-      cast.add(d);
-      shadowsNum.textContent = String(cast.size);
-      // Show in main frame
-      placeholder.style.display = 'none';
-      const exist = frameEl.querySelector('svg.silhouette'); if (exist) exist.remove();
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      svg.setAttribute('class', 'silhouette');
-      svg.setAttribute('viewBox', '0 0 100 100');
-      svg.innerHTML = `<path d="${PUZZLE.sil[d]}"/>`;
-      frameEl.appendChild(svg);
-      dirLabel.textContent = `from ${d}`;
-      // Add to strip if not already there
-      if (!stripEl.querySelector(`[data-dir="${d}"]`)) {
-        const tEl = document.createElement('div');
-        tEl.className = 'thumb';
-        tEl.dataset.dir = d;
-        tEl.innerHTML = `<svg viewBox="0 0 100 100"><path d="${PUZZLE.sil[d]}"/></svg><span class="dir">${d}</span>`;
-        tEl.addEventListener('click', () => doCast(d));
-        stripEl.appendChild(tEl);
-      }
-      compassEl.querySelector(`.sh-dir[data-dir="${d}"]`).classList.add('cast');
+      const [x, y] = clientToView(e.clientX, e.clientY);
+      const dx = x - CENTER.x, dy = y - CENTER.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 30) return;     // ignore clicks on / very near the object itself
+      // Compute angle in screen coords (0=east/right, 90=south/down, 180=west, 270=north)
+      let deg = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
+      // Snap to nearest 45° to pick a silhouette
+      const idx = Math.round(deg / 45) % 8;
+      const key = DIRS[idx];
+
+      // Light pin position (clamp to within ring)
+      const ringR = Math.min(dist, 175);
+      const ang = Math.atan2(dy, dx);
+      const lightX = CENTER.x + ringR * Math.cos(ang);
+      const lightY = CENTER.y + ringR * Math.sin(ang);
+
+      // Shadow anchor: opposite side of object
+      const shadowAnchorX = CENTER.x - Math.cos(ang) * SHADOW_OFFSET;
+      const shadowAnchorY = CENTER.y - Math.sin(ang) * SHADOW_OFFSET;
+
+      castShadows.push({ key, lightX, lightY, ang });
+      shadowsNum.textContent = String(castShadows.length);
+      renderShadows();
       haptic(8);
+    });
+
+    function renderShadows() {
+      shadowsLayer.innerHTML = '';
+      lightsLayer.innerHTML = '';
+      castShadows.forEach((s, i) => {
+        const isCurrent = i === castShadows.length - 1;
+        // Shadow position
+        const sx = CENTER.x - Math.cos(s.ang) * SHADOW_OFFSET;
+        const sy = CENTER.y - Math.sin(s.ang) * SHADOW_OFFSET;
+        // Place silhouette as a group, scaled to SHADOW_SIZE.
+        // Silhouettes are designed in a 100×100 viewBox; we translate so the
+        // base of the silhouette (around y=90) sits roughly at the anchor.
+        const g = document.createElementNS(NS, 'g');
+        const tx = sx - SHADOW_SIZE / 2;
+        const ty = sy - SHADOW_SIZE * 0.9;   // anchor near base of silhouette
+        const scale = SHADOW_SIZE / 100;
+        g.setAttribute('transform', `translate(${tx.toFixed(1)},${ty.toFixed(1)}) scale(${scale.toFixed(3)})`);
+        const path = document.createElementNS(NS, 'path');
+        path.setAttribute('d', PUZZLE.sil[s.key]);
+        path.setAttribute('class', 'silhouette ' + (isCurrent ? 'show' : 'past'));
+        g.appendChild(path);
+        shadowsLayer.appendChild(g);
+
+        // Light ray + pin (only current)
+        if (isCurrent) {
+          const ray = document.createElementNS(NS, 'line');
+          ray.setAttribute('class', 'light-ray');
+          ray.setAttribute('x1', s.lightX); ray.setAttribute('y1', s.lightY);
+          ray.setAttribute('x2', sx); ray.setAttribute('y2', sy);
+          lightsLayer.appendChild(ray);
+        }
+        const pin = document.createElementNS(NS, 'circle');
+        pin.setAttribute('class', 'light-pin');
+        pin.setAttribute('cx', s.lightX);
+        pin.setAttribute('cy', s.lightY);
+        pin.setAttribute('r', isCurrent ? 6 : 3);
+        pin.setAttribute('opacity', isCurrent ? 1 : 0.45);
+        lightsLayer.appendChild(pin);
+      });
+      // Trigger fade-in for newest
+      requestAnimationFrame(() => {
+        const last = shadowsLayer.lastChild;
+        if (last) last.querySelector('.silhouette').classList.add('show');
+      });
     }
 
     function canon(s) { return s.toLowerCase().trim().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' '); }
@@ -376,7 +393,7 @@
 
     function win() {
       solved = true;
-      solvedEl.querySelector('.solved-text').textContent = `Identified · ${cast.size} shadow${cast.size===1?'':'s'}`;
+      solvedEl.querySelector('.solved-text').textContent = `Identified · ${castShadows.length} shadow${castShadows.length===1?'':'s'}`;
       solvedEl.classList.add('show');
       revealEl.innerHTML = `<em>${PUZZLE.canonical}</em>`;
       revealEl.hidden = false;
@@ -391,8 +408,10 @@
       reset();
     }
     function share() {
-      const dirs = DIRS.map(d => cast.has(d) ? d : '·').join(' ');
-      copyShare(`Shadows · ${cast.size} cast\n${dirs}\ninternet.house/game`);
+      // 8-direction emoji wheel showing which directions the player cast from
+      const used = new Set(castShadows.map(s => s.key));
+      const wheel = ['N','NE','E','SE','S','SW','W','NW'].map(d => used.has(d) ? '✦' : '·').join(' ');
+      copyShare(`Shadows · ${castShadows.length} cast\n${wheel}\ninternet.house/game`);
     }
 
     build();
