@@ -204,22 +204,107 @@
     // designed to read as a "footprint shadow" — the object as seen from above
     // by the light source's eye. Width centered around x=50, height extending up
     // from y=90 (the base, sitting on the ground at the object's foot).
+    // Silhouettes are designed in a 100×100 viewBox with the silhouette base
+    // around y=90 and the figure extending UP from there. Each path captures
+    // the iconic profile of the object — curving legs, tapered tower, lintels,
+    // legs, raised piano lid, etc.
+    const SIL = {
+      // ==== Eiffel Tower ====
+      eiffel_side: [
+        // Splayed-leg base curving inward to first platform
+        'M6,90 Q22,82 34,66 L66,66 Q78,82 94,90 Z',
+        // First platform horizontal band
+        'M30,66 L70,66 L70,62 L30,62 Z',
+        // Tapered tower body from first platform to upper section
+        'M34,62 L40,38 L60,38 L66,62 Z',
+        // Second platform horizontal
+        'M38,38 L62,38 L62,35 L38,35 Z',
+        // Upper tapered section
+        'M40,35 L46,16 L54,16 L60,35 Z',
+        // Third platform
+        'M44,16 L56,16 L56,13 L44,13 Z',
+        // Antenna spike
+        'M48,13 L48,3 L52,3 L52,13 Z',
+      ].join(' '),
+      eiffel_corner: [
+        // Slightly narrower silhouette as seen from corner — the four legs
+        // foreshorten slightly
+        'M10,90 Q24,82 36,66 L64,66 Q76,82 90,90 Z',
+        'M32,66 L68,66 L68,62 L32,62 Z',
+        'M36,62 L41,38 L59,38 L64,62 Z',
+        'M40,38 L60,38 L60,35 L40,35 Z',
+        'M42,35 L47,16 L53,16 L58,35 Z',
+        'M45,16 L55,16 L55,13 L45,13 Z',
+        'M48,13 L48,3 L52,3 L52,13 Z',
+      ].join(' '),
+
+      // ==== Grand Piano (side profile) — raised lid + curved body + 3 legs ====
+      piano_side: [
+        // Body — long curved profile of the piano case
+        'M4,68 L4,80 Q50,86 96,80 L96,68 Q60,58 4,68 Z',
+        // Raised lid (triangular) hinged at left
+        'M4,68 L4,40 Q40,42 80,68 Z',
+        // Left leg
+        'M10,80 L8,90 L18,90 L20,80 Z',
+        // Middle leg
+        'M48,82 L46,90 L56,90 L54,82 Z',
+        // Right leg
+        'M82,80 L80,90 L92,90 L90,80 Z',
+        // Keyboard cantilever (small block extending left of body)
+        'M0,72 L4,72 L4,76 L0,76 Z',
+      ].join(' '),
+      piano_front: [
+        // Front view: keyboard line + body + 3 leg stubs visible
+        'M14,68 Q50,52 86,68 L86,84 L14,84 Z',
+        'M14,84 L86,84 L86,88 L14,88 Z',          // keyboard band
+        'M22,88 L24,90 L28,90 L30,88 Z',
+        'M48,88 L50,90 L54,90 L56,88 Z',
+        'M70,88 L72,90 L76,90 L78,88 Z',
+      ].join(' '),
+      piano_back: [
+        // Back view: just the curved body, no keyboard, two legs visible
+        'M14,68 Q50,52 86,68 L86,86 L14,86 Z',
+        'M22,86 L24,90 L28,90 L30,86 Z',
+        'M70,86 L72,90 L76,90 L78,86 Z',
+      ].join(' '),
+
+      // ==== Stonehenge (side view: row of trilithons + circle stones) ====
+      stones_side: [
+        // Trilithon 1 (two uprights + lintel)
+        'M10,90 L20,90 L20,40 L10,40 Z',
+        'M28,90 L38,90 L38,40 L28,40 Z',
+        'M6,40 L42,40 L42,32 L6,32 Z',     // lintel
+        // Toppled stone (lying on the ground between trilithons)
+        'M44,86 L60,86 L60,90 L44,90 Z',
+        // Trilithon 2 (smaller, behind)
+        'M64,90 L72,90 L72,52 L64,52 Z',
+        'M78,90 L86,90 L86,52 L78,52 Z',
+        'M60,52 L90,52 L90,46 L60,46 Z',   // lintel
+      ].join(' '),
+      stones_front: [
+        // Front view: more stones in the row spread wider
+        'M6,90 L14,90 L14,42 L6,42 Z',
+        'M20,90 L28,90 L28,42 L20,42 Z',
+        'M2,42 L32,42 L32,34 L2,34 Z',      // lintel
+        'M40,90 L48,90 L48,55 L40,55 Z',
+        'M54,90 L62,90 L62,55 L54,55 Z',
+        'M36,55 L66,55 L66,49 L36,49 Z',
+        'M70,90 L78,90 L78,60 L70,60 Z',
+        'M84,90 L92,90 L92,60 L84,60 Z',
+        'M68,60 L94,60 L94,54 L68,54 Z',
+      ].join(' '),
+    };
+
     const PUZZLES = [
       {
         id: 'shadows-001',
         title: 'Eiffel Tower',
         accept: ['eiffel','eiffel tower','tour eiffel','la tour eiffel'],
         canonical: 'Eiffel Tower · Paris · 1889',
-        // 4-fold symmetric — cardinal and diagonal slightly different
+        // 4-fold symmetric (cardinal sides) with slightly narrower diagonal views
         sil: {
-          E:  'M30,90 L34,52 L40,28 L46,12 L48,8 L50,12 L54,28 L60,52 L70,90 Z M44,40 Q50,38 56,40 L56,42 L44,42 Z',
-          SE: 'M28,90 L34,50 L40,26 L46,10 L48,6 L50,10 L56,26 L62,50 L72,90 Z',
-          S:  'M30,90 L34,52 L40,28 L46,12 L48,8 L50,12 L54,28 L60,52 L70,90 Z M44,40 Q50,38 56,40 L56,42 L44,42 Z',
-          SW: 'M28,90 L34,50 L40,26 L46,10 L48,6 L50,10 L56,26 L62,50 L72,90 Z',
-          W:  'M30,90 L34,52 L40,28 L46,12 L48,8 L50,12 L54,28 L60,52 L70,90 Z M44,40 Q50,38 56,40 L56,42 L44,42 Z',
-          NW: 'M28,90 L34,50 L40,26 L46,10 L48,6 L50,10 L56,26 L62,50 L72,90 Z',
-          N:  'M30,90 L34,52 L40,28 L46,12 L48,8 L50,12 L54,28 L60,52 L70,90 Z M44,40 Q50,38 56,40 L56,42 L44,42 Z',
-          NE: 'M28,90 L34,50 L40,26 L46,10 L48,6 L50,10 L56,26 L62,50 L72,90 Z',
+          N: SIL.eiffel_side,  E: SIL.eiffel_side, S: SIL.eiffel_side,  W: SIL.eiffel_side,
+          NE:SIL.eiffel_corner,SE:SIL.eiffel_corner,SW:SIL.eiffel_corner,NW:SIL.eiffel_corner,
         },
       },
       {
@@ -228,17 +313,10 @@
         accept: ['grand piano','piano','baby grand'],
         canonical: 'Grand piano',
         sil: {
-          // From front: keyboard line + curved body silhouette
-          N:  'M14,82 L86,82 L86,90 L14,90 Z M18,72 Q50,52 82,72 L82,82 L18,82 Z',
-          NE: 'M18,72 Q50,52 82,72 L78,90 L22,90 Z',
-          // From side: leg silhouette + curved body profile
-          E:  'M16,68 Q50,46 84,68 L84,84 L16,84 Z M22,84 L26,90 L30,90 L30,84 Z M70,84 L74,90 L78,90 L78,84 Z',
-          SE: 'M16,68 Q50,46 84,68 L84,84 L16,84 Z M70,84 L74,90 L78,90 L78,84 Z',
-          // From back: body, no keyboard
-          S:  'M14,72 Q50,52 86,72 L86,90 L14,90 Z',
-          SW: 'M16,68 Q50,46 84,68 L84,84 L16,84 Z M22,84 L26,90 L30,90 L30,84 Z',
-          W:  'M16,68 Q50,46 84,68 L84,84 L16,84 Z M22,84 L26,90 L30,90 L30,84 Z M70,84 L74,90 L78,90 L78,84 Z',
-          NW: 'M18,72 Q50,52 82,72 L78,90 L22,90 Z',
+          N:  SIL.piano_front,
+          NE: SIL.piano_side, E: SIL.piano_side, SE: SIL.piano_side,
+          S:  SIL.piano_back,
+          SW: SIL.piano_side, W: SIL.piano_side, NW: SIL.piano_side,
         },
       },
       {
@@ -247,14 +325,10 @@
         accept: ['stonehenge','stones'],
         canonical: 'Stonehenge · Wiltshire · c. 3000 BC',
         sil: {
-          N:  'M14,68 L26,68 L26,90 L14,90 Z M34,68 L46,68 L46,90 L34,90 Z M54,68 L66,68 L66,90 L54,90 Z M74,68 L86,68 L86,90 L74,90 Z M10,60 L90,60 L90,68 L10,68 Z',
-          NE: 'M18,70 L28,70 L28,90 L18,90 Z M38,70 L48,70 L48,90 L38,90 Z M58,70 L70,70 L70,90 L58,90 Z M14,62 L74,62 L74,70 L14,70 Z',
-          E:  'M18,68 L24,68 L24,90 L18,90 Z M30,68 L36,68 L36,90 L30,90 Z M42,68 L48,68 L48,90 L42,90 Z M54,68 L60,68 L60,90 L54,90 Z M66,68 L72,68 L72,90 L66,90 Z M78,68 L84,68 L84,90 L78,90 Z',
-          SE: 'M18,70 L28,70 L28,90 L18,90 Z M38,70 L48,70 L48,90 L38,90 Z M58,70 L70,70 L70,90 L58,90 Z',
-          S:  'M14,68 L26,68 L26,90 L14,90 Z M34,68 L46,68 L46,90 L34,90 Z M54,68 L66,68 L66,90 L54,90 Z M74,68 L86,68 L86,90 L74,90 Z',
-          SW: 'M18,70 L28,70 L28,90 L18,90 Z M38,70 L48,70 L48,90 L38,90 Z M58,70 L70,70 L70,90 L58,90 Z',
-          W:  'M18,68 L24,68 L24,90 L18,90 Z M30,68 L36,68 L36,90 L30,90 Z M42,68 L48,68 L48,90 L42,90 Z M54,68 L60,68 L60,90 L54,90 Z M66,68 L72,68 L72,90 L66,90 Z M78,68 L84,68 L84,90 L78,90 Z',
-          NW: 'M18,70 L28,70 L28,90 L18,90 Z M38,70 L48,70 L48,90 L38,90 Z M58,70 L70,70 L70,90 L58,90 Z M14,62 L74,62 L74,70 L14,70 Z',
+          N:  SIL.stones_front,
+          NE: SIL.stones_side, E: SIL.stones_side, SE: SIL.stones_side,
+          S:  SIL.stones_front,
+          SW: SIL.stones_side, W: SIL.stones_side, NW: SIL.stones_side,
         },
       },
     ];
