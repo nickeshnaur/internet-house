@@ -48,22 +48,31 @@
   }
 
   .silhouette {
-    fill: var(--accent);
-    opacity: 0;
-    transition: opacity 280ms var(--ease);
+    fill: #16110a;
+    fill-opacity: 0;
+    transition: fill-opacity 380ms var(--ease);
   }
-  .silhouette.show { opacity: 0.92; }
-  .silhouette.past { opacity: 0.18; }
+  .silhouette.show { fill-opacity: 0.62; }
+  .object-3d {
+    fill: #2a2218;
+    stroke: #1a140d;
+    stroke-width: 0.8;
+  }
+  .object-3d-top { fill: #4a3d2a; }
 
-  .light-pin {
+  .sun-halo {
     fill: #F5C84B;
-    filter: drop-shadow(0 0 6px #F5C84B) drop-shadow(0 0 14px rgba(245,200,75,0.4));
+    fill-opacity: 0.18;
+  }
+  .light-pin {
+    fill: #FFD86B;
+    filter: drop-shadow(0 0 6px #F5C84B) drop-shadow(0 0 14px rgba(245,200,75,0.5));
   }
   .light-ray {
     stroke: #F5C84B;
-    stroke-width: 0.6;
-    stroke-dasharray: 1.2 2;
-    stroke-opacity: 0.45;
+    stroke-width: 0.5;
+    stroke-dasharray: 1 2.5;
+    stroke-opacity: 0.35;
   }
 
   .sh-meta {
@@ -144,6 +153,7 @@
 
       <div class="toolbar">
         <button class="tool-btn" data-action="reset" data-game="shadows">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="shadows">Reveal</button>
         <button class="tool-btn" data-action="share" data-game="shadows" hidden>Share</button>
         <span class="sep"></span>
         <span class="puzzle-picker" data-game="shadows" role="group" aria-label="Choose puzzle">
@@ -158,14 +168,16 @@
 
         <div class="sh-field" id="sh-field">
           <svg class="sh-svg" id="sh-svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
-            <circle class="ring-guide" cx="200" cy="200" r="140"/>
-            <circle class="ring-guide" cx="200" cy="200" r="100"/>
+            <circle class="ring-guide" cx="200" cy="200" r="170"/>
+            <circle class="ring-guide" cx="200" cy="200" r="120"/>
+            <!-- shadow renders BELOW the object so it appears anchored at the base -->
             <g id="shadows-layer"></g>
-            <g id="lights-layer"></g>
             <g id="object-layer">
-              <circle class="object-mark" cx="200" cy="200" r="14"/>
-              <text class="object-label" x="200" y="230">object</text>
+              <ellipse class="object-3d" cx="200" cy="206" rx="14" ry="4"/>
+              <rect    class="object-3d" x="192" y="184" width="16" height="22" rx="2"/>
+              <ellipse class="object-3d-top" cx="200" cy="184" rx="8" ry="2.5"/>
             </g>
+            <g id="lights-layer"></g>
           </svg>
         </div>
 
@@ -284,6 +296,8 @@
       solvedEl.classList.remove('show', 'is-revealed');
       revealEl.hidden = true;
       shareBtn.hidden = true;
+      const revealBtn = document.querySelector('.tool-btn[data-game="shadows"][data-action="reveal"]');
+      if (revealBtn) revealBtn.hidden = false;
     }
 
     function clientToView(cx, cy) {
@@ -325,45 +339,85 @@
     function renderShadows() {
       shadowsLayer.innerHTML = '';
       lightsLayer.innerHTML = '';
+      // Only the most recent shadow is visible — the prior light pins remain
+      // as small dim dots so the player can read their probing pattern.
+      const cur = castShadows[castShadows.length - 1];
       castShadows.forEach((s, i) => {
         const isCurrent = i === castShadows.length - 1;
-        // Shadow position
-        const sx = CENTER.x - Math.cos(s.ang) * SHADOW_OFFSET;
-        const sy = CENTER.y - Math.sin(s.ang) * SHADOW_OFFSET;
-        // Place silhouette as a group, scaled to SHADOW_SIZE.
-        // Silhouettes are designed in a 100×100 viewBox; we translate so the
-        // base of the silhouette (around y=90) sits roughly at the anchor.
-        const g = document.createElementNS(NS, 'g');
-        const tx = sx - SHADOW_SIZE / 2;
-        const ty = sy - SHADOW_SIZE * 0.9;   // anchor near base of silhouette
-        const scale = SHADOW_SIZE / 100;
-        g.setAttribute('transform', `translate(${tx.toFixed(1)},${ty.toFixed(1)}) scale(${scale.toFixed(3)})`);
-        const path = document.createElementNS(NS, 'path');
-        path.setAttribute('d', PUZZLE.sil[s.key]);
-        path.setAttribute('class', 'silhouette ' + (isCurrent ? 'show' : 'past'));
-        g.appendChild(path);
-        shadowsLayer.appendChild(g);
-
-        // Light ray + pin (only current)
-        if (isCurrent) {
-          const ray = document.createElementNS(NS, 'line');
-          ray.setAttribute('class', 'light-ray');
-          ray.setAttribute('x1', s.lightX); ray.setAttribute('y1', s.lightY);
-          ray.setAttribute('x2', sx); ray.setAttribute('y2', sy);
-          lightsLayer.appendChild(ray);
+        // Old light pins as faint dots
+        if (!isCurrent) {
+          const pin = document.createElementNS(NS, 'circle');
+          pin.setAttribute('class', 'light-pin');
+          pin.setAttribute('cx', s.lightX);
+          pin.setAttribute('cy', s.lightY);
+          pin.setAttribute('r', 2.5);
+          pin.setAttribute('opacity', 0.32);
+          pin.style.filter = 'none';
+          lightsLayer.appendChild(pin);
         }
-        const pin = document.createElementNS(NS, 'circle');
-        pin.setAttribute('class', 'light-pin');
-        pin.setAttribute('cx', s.lightX);
-        pin.setAttribute('cy', s.lightY);
-        pin.setAttribute('r', isCurrent ? 6 : 3);
-        pin.setAttribute('opacity', isCurrent ? 1 : 0.45);
-        lightsLayer.appendChild(pin);
       });
-      // Trigger fade-in for newest
+      if (!cur) return;
+
+      // Shadow direction = opposite of light direction
+      // Silhouette is drawn in a 100×100 viewBox with its base at (50,90) and
+      // extending UP to roughly (50,8). To make it lie on the ground extending
+      // AWAY from the light, we anchor its base at the object's foot and rotate
+      // it so its "up" axis points along the shadow direction.
+      const lightDist = Math.hypot(cur.lightX - CENTER.x, cur.lightY - CENTER.y);
+      // Long shadow when sun is low (far from object); short when overhead.
+      const stretch = 0.55 + (lightDist / 175) * 1.55;     // 0.55 .. 2.1
+      const widthSquash = 0.65;                             // shadow always squashed perpendicular
+      const baseLen = 90;                                   // base length unit
+      // shadow direction in degrees (0 = east, 90 = south in screen coords)
+      const shadowAngDeg = (cur.ang * 180 / Math.PI) + 180;
+      // Silhouette's natural "up" points at -90° in screen coords. We need to
+      // rotate by (shadowAngDeg - (-90)) = shadowAngDeg + 90 so the tip points
+      // along the shadow direction.
+      const rot = shadowAngDeg + 90;
+
+      const baseX = CENTER.x;
+      const baseY = CENTER.y + 6;   // anchor at the object's base ellipse
+
+      const g = document.createElementNS(NS, 'g');
+      // SVG transforms apply right-to-left.
+      // 1. translate(-50, -90)  — move silhouette so its base anchor is at origin
+      // 2. scale(widthSquash, stretch * baseLen/100)  — squash width, stretch length
+      // 3. rotate(rot)          — point "up" along shadow direction
+      // 4. translate(baseX, baseY) — place at object base
+      g.setAttribute(
+        'transform',
+        `translate(${baseX.toFixed(1)},${baseY.toFixed(1)}) ` +
+        `rotate(${rot.toFixed(1)}) ` +
+        `scale(${widthSquash.toFixed(3)},${(stretch * baseLen / 100).toFixed(3)}) ` +
+        `translate(-50,-90)`
+      );
+      const path = document.createElementNS(NS, 'path');
+      path.setAttribute('d', PUZZLE.sil[cur.key]);
+      path.setAttribute('class', 'silhouette');
+      g.appendChild(path);
+      shadowsLayer.appendChild(g);
+
+      // Light pin + halo + faint ray
+      const halo = document.createElementNS(NS, 'circle');
+      halo.setAttribute('class', 'sun-halo');
+      halo.setAttribute('cx', cur.lightX);
+      halo.setAttribute('cy', cur.lightY);
+      halo.setAttribute('r', 16);
+      lightsLayer.appendChild(halo);
+      const pin = document.createElementNS(NS, 'circle');
+      pin.setAttribute('class', 'light-pin');
+      pin.setAttribute('cx', cur.lightX);
+      pin.setAttribute('cy', cur.lightY);
+      pin.setAttribute('r', 6);
+      lightsLayer.appendChild(pin);
+      const ray = document.createElementNS(NS, 'line');
+      ray.setAttribute('class', 'light-ray');
+      ray.setAttribute('x1', cur.lightX); ray.setAttribute('y1', cur.lightY);
+      ray.setAttribute('x2', baseX); ray.setAttribute('y2', baseY);
+      lightsLayer.appendChild(ray);
+
       requestAnimationFrame(() => {
-        const last = shadowsLayer.lastChild;
-        if (last) last.querySelector('.silhouette').classList.add('show');
+        path.classList.add('show');
       });
     }
 
@@ -398,6 +452,20 @@
       revealEl.innerHTML = `<em>${PUZZLE.canonical}</em>`;
       revealEl.hidden = false;
       shareBtn.hidden = false;
+      const revealBtn = document.querySelector('.tool-btn[data-game="shadows"][data-action="reveal"]');
+      if (revealBtn) revealBtn.hidden = true;
+      flashReveal(stageEl);
+    }
+
+    function reveal() {
+      if (solved) return;
+      solved = true;
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      solvedEl.classList.add('show', 'is-revealed');
+      revealEl.innerHTML = `<em>${PUZZLE.canonical}</em>`;
+      revealEl.hidden = false;
+      const revealBtn = document.querySelector('.tool-btn[data-game="shadows"][data-action="reveal"]');
+      if (revealBtn) revealBtn.hidden = true;
       flashReveal(stageEl);
     }
 
@@ -415,7 +483,7 @@
     }
 
     build();
-    GAMES.shadows = { reset, share, load };
+    GAMES.shadows = { reset, share, load, reveal };
   })();
   </script>
 </body>
