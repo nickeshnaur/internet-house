@@ -221,6 +221,30 @@
         // canonical = ROAD (BACKROAD + ROADSIDE), COUNTRY (BACKCOUNTRY+COUNTRYSIDE), FIRE (BACKFIRE+FIRESIDE)
         examples: ['ROAD → BACKROAD + ROADSIDE', 'COUNTRY → BACKCOUNTRY + COUNTRYSIDE', 'FIRE → BACKFIRE + FIRESIDE'],
       },
+      {
+        id: 'bridge-004',
+        left: 'HORSE', right: 'POWER',
+        canonical: 'MAN',
+        leftAccept:  ['MAN','POWER','PLAY','BACK','SHOE','RACE','HAIR','SHOW','WHIP','CART','BARN','RADISH','FLY','TAIL','MEAT'],
+        rightAccept: ['MAN','HORSE','FIRE','WILL','SUPER','BRAIN','OVER','EMPOWER','MAN'],
+        examples: ['MAN → HORSEMAN + MANPOWER'],
+      },
+      {
+        id: 'bridge-005',
+        left: 'GREEN', right: 'HOUSE',
+        canonical: 'LIGHT',
+        leftAccept:  ['LIGHT','HOUSE','WAY','PATH','GROUND','SIDE','HORN','FIELD','LAND','MAN','FLY','BACK','BELT','RIVER','ROOM','TEA','THUMB'],
+        rightAccept: ['LIGHT','OUT','WARE','TREE','BIRD','DOG','FARM','SCHOOL','GUEST','POWER','COURT','CHURCH','BOAT','WORK','OPEN','FRONT','SAND','FIRE','TOWN','GREEN','PENT'],
+        examples: ['LIGHT → GREENLIGHT + LIGHTHOUSE'],
+      },
+      {
+        id: 'bridge-006',
+        left: 'OUT', right: 'DOOR',
+        canonical: 'BACK',
+        leftAccept:  ['BACK','SIDE','LINE','LOOK','POST','REACH','HOUSE','FIT','LET','RIGHT','DOOR','LAW','NUMBER','RUN','SHINE','SOURCE','CAST','DATED','LAY','BREAK','LOAD','TAKE','SPOKEN','GROW','LIVE','LAST'],
+        rightAccept: ['BACK','TRAP','IN','SIDE','FRONT','BAR','BELL','BREAK','KNOB','POST','STEP','STOP','MAN','WAY'],
+        examples: ['BACK → OUTBACK + BACKDOOR'],
+      },
     ];
     let pIdx = 0, PUZZLE = PUZZLES[pIdx];
 
