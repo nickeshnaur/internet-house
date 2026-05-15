@@ -233,6 +233,61 @@
         answer: 'a cat',
         caption: 'one cat at the right pane, three small books at the left',
       },
+      {
+        id: 'glance-004',
+        scene: `
+          <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <rect width="800" height="600" fill="#F0E5CE"/>
+            <rect x="0" y="380" width="800" height="220" fill="#B89770"/>
+            <rect x="0" y="370" width="800" height="14" fill="#7A5F3F"/>
+            <g><rect x="120" y="220" width="80" height="160" fill="#9C2E2E" stroke="#5A1E1E" stroke-width="3"/><rect x="160" y="200" width="20" height="24" fill="#9C2E2E"/><rect x="155" y="195" width="30" height="8" fill="#5A1E1E"/><polygon points="165,200 200,180 200,210" fill="#5A1E1E"/></g>
+            <g fill="#5C4438"><circle cx="280" cy="345" r="22"/><rect x="262" y="350" width="36" height="22" rx="3"/></g>
+            <g fill="#3A3528"><circle cx="350" cy="345" r="22"/><rect x="332" y="350" width="36" height="22" rx="3"/></g>
+            <g fill="#A8C3DE"><circle cx="420" cy="345" r="22"/><rect x="402" y="350" width="36" height="22" rx="3"/></g>
+            <g fill="#D4A536"><circle cx="490" cy="345" r="22"/><rect x="472" y="350" width="36" height="22" rx="3"/></g>
+            <g class="highlights"><ellipse class="highlight" cx="160" cy="290" rx="60" ry="100"/></g>
+          </svg>`,
+        question: 'What color was the kettle on the counter?',
+        choices: ['black', 'red', 'silver', 'green'],
+        answer: 'red',
+        caption: 'a red kettle on the left, four mugs lined up to the right',
+      },
+      {
+        id: 'glance-005',
+        scene: `
+          <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <rect width="800" height="380" fill="#A8D5E2"/>
+            <rect y="380" width="800" height="220" fill="#7C9E5C"/>
+            <g><circle cx="160" cy="260" r="60" fill="#3D6B45"/><rect x="155" y="320" width="10" height="60" fill="#5C3A1E"/></g>
+            <g><circle cx="640" cy="240" r="78" fill="#3D6B45"/><rect x="635" y="320" width="10" height="60" fill="#5C3A1E"/></g>
+            <g fill="#D4A536"><circle cx="280" cy="430" r="14"/><circle cx="280" cy="445" r="6" fill="#A78229"/></g>
+            <g fill="#C25E3A"><circle cx="380" cy="450" r="14"/><circle cx="380" cy="465" r="6" fill="#8C3E20"/></g>
+            <g fill="#A78BFA"><circle cx="490" cy="440" r="14"/><circle cx="490" cy="455" r="6" fill="#7053C5"/></g>
+            <g class="highlights"><circle class="highlight" cx="160" cy="280" r="80"/><circle class="highlight" cx="640" cy="260" r="98"/></g>
+          </svg>`,
+        question: 'How many trees were in the scene?',
+        choices: ['1', '2', '3', '4'],
+        answer: '2',
+        caption: 'two trees, three flowers in the foreground',
+      },
+      {
+        id: 'glance-006',
+        scene: `
+          <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <rect width="800" height="600" fill="#E8DBC4"/>
+            <rect x="60" y="120" width="680" height="380" fill="#7A5F3F"/>
+            <rect x="80" y="140" width="640" height="340" fill="#3A2A1A"/>
+            <g fill="#A6BBC9"><rect x="140" y="280" width="50" height="180"/><rect x="200" y="240" width="50" height="220"/><rect x="260" y="270" width="50" height="190"/><rect x="320" y="220" width="50" height="240"/><rect x="380" y="290" width="50" height="170"/></g>
+            <g fill="#D4A536"><rect x="140" y="280" width="50" height="14"/><rect x="200" y="240" width="50" height="14"/><rect x="260" y="270" width="50" height="14"/><rect x="320" y="220" width="50" height="14"/><rect x="380" y="290" width="50" height="14"/></g>
+            <g fill="#3A3528"><circle cx="500" cy="380" r="30"/><circle cx="490" cy="370" r="3" fill="#D4A536"/><circle cx="510" cy="370" r="3" fill="#D4A536"/></g>
+            <g fill="#5C4438"><rect x="600" y="320" width="40" height="80"/><rect x="595" y="310" width="50" height="14"/><rect x="610" y="200" width="20" height="120"/></g>
+            <g class="highlights"><rect class="highlight" x="120" y="200" width="320" height="280"/></g>
+          </svg>`,
+        question: 'How many books were on the shelf?',
+        choices: ['3', '4', '5', '6'],
+        answer: '5',
+        caption: 'five books on the shelf, a black cat on the floor, a lamp at right',
+      },
     ];
     let pIdx = 0, PUZZLE = PUZZLES[pIdx];
 

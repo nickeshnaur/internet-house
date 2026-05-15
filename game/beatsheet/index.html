@@ -270,6 +270,78 @@
       ],
       answer: ['host', 'critic', 'waiter', 'chef'],
     },
+    {
+      id: 'beatsheet-004',
+      headline: 'A library after midnight. Four shadows.',
+      CHARS: [
+        { id: 'librarian', name: 'Librarian', glyph: '📚', pos: 'pos-nw' },
+        { id: 'student',   name: 'Student',   glyph: '🎓', pos: 'pos-ne' },
+        { id: 'janitor',   name: 'Janitor',   glyph: '🧹', pos: 'pos-se' },
+        { id: 'stranger',  name: 'Stranger',  glyph: '🕴️', pos: 'pos-sw' },
+      ],
+      CLUES: [
+        { text: 'The Librarian arrived first to lock up.',
+          check: o => o[0] === 'librarian' },
+        { text: 'The Stranger left last, after everyone else had gone.',
+          check: o => o[o.length - 1] === 'stranger' },
+        { text: 'The Janitor came after the Librarian but before the Student.',
+          check: o => {
+            const j = o.indexOf('janitor'), l = o.indexOf('librarian'), s = o.indexOf('student');
+            return l < j && j < s;
+          } },
+        { text: 'The Student arrived directly before the Stranger.',
+          check: o => {
+            const s = o.indexOf('student'), st = o.indexOf('stranger');
+            return s >= 0 && st >= 0 && st - s === 1;
+          } },
+      ],
+      answer: ['librarian', 'janitor', 'student', 'stranger'],
+    },
+    {
+      id: 'beatsheet-005',
+      headline: 'A backstage opening night. Four tempers.',
+      CHARS: [
+        { id: 'director', name: 'Director', glyph: '🎬', pos: 'pos-nw' },
+        { id: 'lead',     name: 'Lead',     glyph: '🌟', pos: 'pos-ne' },
+        { id: 'stagehand',name: 'Stagehand',glyph: '🔧', pos: 'pos-sw' },
+        { id: 'critic',   name: 'Critic',   glyph: '📰', pos: 'pos-se' },
+      ],
+      CLUES: [
+        { text: 'The Stagehand was already there when the others arrived.',
+          check: o => o[0] === 'stagehand' },
+        { text: 'The Critic slipped in last, just before curtain.',
+          check: o => o[o.length - 1] === 'critic' },
+        { text: 'The Director arrived second.',
+          check: o => o[1] === 'director' },
+        { text: 'The Lead arrived before the Critic.',
+          check: o => o.indexOf('lead') < o.indexOf('critic') },
+      ],
+      answer: ['stagehand', 'director', 'lead', 'critic'],
+    },
+    {
+      id: 'beatsheet-006',
+      headline: 'A morning commute. Four travelers.',
+      CHARS: [
+        { id: 'driver',     name: 'Driver',     glyph: '🚌', pos: 'pos-nw' },
+        { id: 'cyclist',    name: 'Cyclist',    glyph: '🚴', pos: 'pos-ne' },
+        { id: 'pedestrian', name: 'Pedestrian', glyph: '🚶', pos: 'pos-sw' },
+        { id: 'commuter',   name: 'Commuter',   glyph: '☕', pos: 'pos-se' },
+      ],
+      CLUES: [
+        { text: 'The Cyclist was the first to pass through the intersection.',
+          check: o => o[0] === 'cyclist' },
+        { text: 'The Driver arrived before the Pedestrian.',
+          check: o => o.indexOf('driver') < o.indexOf('pedestrian') },
+        { text: 'The Commuter was last.',
+          check: o => o[o.length - 1] === 'commuter' },
+        { text: 'The Pedestrian was directly before the Commuter.',
+          check: o => {
+            const p = o.indexOf('pedestrian'), c = o.indexOf('commuter');
+            return p >= 0 && c >= 0 && c - p === 1;
+          } },
+      ],
+      answer: ['cyclist', 'driver', 'pedestrian', 'commuter'],
+    },
   ];
   let pIdx = 0;
   let PUZZLE = PUZZLES[pIdx];
