@@ -171,6 +171,48 @@
         {c:2,r:3,n:0},{c:0,r:4,n:2},{c:4,r:4,n:2},
       ],
     },
+    {
+      id: 'filament-004',
+      shape: '◇ a tight inner square',
+      // 2×2 loop encircling the inner four cells (cells [1..2][1..2]).
+      ANSWER_PATH: [
+        [1,1],[2,1],[3,1],[3,2],[3,3],[2,3],[1,3],[1,2],[1,1],
+      ],
+      CLUES_CELLS: [
+        {c:1,r:1,n:2},{c:2,r:1,n:2},
+        {c:1,r:2,n:2},{c:2,r:2,n:2},
+        {c:0,r:0,n:0},{c:4,r:0,n:0},{c:0,r:4,n:0},{c:4,r:4,n:0},
+      ],
+    },
+    {
+      id: 'filament-005',
+      shape: '▢ a corner block',
+      // 3×3 loop in the bottom-right (cells [2..4][2..4]).
+      ANSWER_PATH: [
+        [2,2],[3,2],[4,2],[5,2],[5,3],[5,4],[5,5],[4,5],[3,5],[2,5],[2,4],[2,3],[2,2],
+      ],
+      CLUES_CELLS: [
+        {c:2,r:2,n:2},{c:3,r:2,n:1},{c:4,r:2,n:2},
+        {c:2,r:3,n:1},{c:3,r:3,n:0},{c:4,r:3,n:1},
+        {c:2,r:4,n:2},{c:3,r:4,n:1},{c:4,r:4,n:2},
+        {c:0,r:0,n:0},
+      ],
+    },
+    {
+      id: 'filament-006',
+      shape: '▭ a perimeter frame',
+      // Full 4×4 perimeter (cells [0..3][0..3]).
+      ANSWER_PATH: [
+        [0,0],[1,0],[2,0],[3,0],[4,0],[4,1],[4,2],[4,3],[4,4],
+        [3,4],[2,4],[1,4],[0,4],[0,3],[0,2],[0,1],[0,0],
+      ],
+      CLUES_CELLS: [
+        {c:0,r:0,n:2},{c:3,r:0,n:2},{c:0,r:3,n:2},{c:3,r:3,n:2},
+        {c:1,r:0,n:1},{c:0,r:1,n:1},
+        {c:1,r:1,n:0},{c:2,r:2,n:0},
+        {c:4,r:4,n:0},
+      ],
+    },
   ];
   let pIdx = 0;
   let PUZZLE = PUZZLES[pIdx];
