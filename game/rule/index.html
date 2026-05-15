@@ -254,6 +254,40 @@
         transform(s) { return s.length < 2 ? s : s.slice(1) + s[0]; },
         challenges: ['ORANGE', 'CASTLE', 'BRIDGE'],
       },
+      {
+        id: 'rule-004',
+        name: 'every vowel becomes X',
+        transform(s) {
+          const vow = 'aeiouAEIOU';
+          return s.split('').map(c => vow.includes(c) ? 'X' : c).join('');
+        },
+        challenges: ['LADDER', 'HORIZON', 'AVENUE'],
+      },
+      {
+        id: 'rule-005',
+        name: 'each letter shifts forward in the alphabet by one (Caesar +1, wraps Z→A)',
+        transform(s) {
+          return s.split('').map(c => {
+            const u = c.charCodeAt(0);
+            if (u >= 65 && u <= 90)  return String.fromCharCode((u - 65 + 1) % 26 + 65);
+            if (u >= 97 && u <= 122) return String.fromCharCode((u - 97 + 1) % 26 + 97);
+            return c;
+          }).join('');
+        },
+        challenges: ['ZEBRA', 'CRYSTAL', 'GAME'],
+      },
+      {
+        id: 'rule-006',
+        name: 'consecutive duplicate letters collapse to one',
+        transform(s) {
+          let out = '';
+          for (let i = 0; i < s.length; i++) {
+            if (i === 0 || s[i] !== s[i - 1]) out += s[i];
+          }
+          return out;
+        },
+        challenges: ['BUZZER', 'HALLOWEEN', 'COMMITTEE'],
+      },
     ];
     let pIdx = 0, PUZZLE = PUZZLES[pIdx];
 

@@ -267,13 +267,44 @@
       },
       {
         id: 'switch-003',
-        // A→W, B→X, C→Y, D→Z (one-to-one trivial)... let's mix
         // A→W,Y, B→X, C→W,Z, D→X,Y
         wiring: [
           [true, false,true, false],
           [false,true, false,false],
           [true, false,false,true],
           [false,true, true, false],
+        ],
+      },
+      {
+        id: 'switch-004',
+        // simple diagonal (one-to-one)
+        // A→W, B→X, C→Y, D→Z
+        wiring: [
+          [true, false,false,false],
+          [false,true, false,false],
+          [false,false,true, false],
+          [false,false,false,true ],
+        ],
+      },
+      {
+        id: 'switch-005',
+        // dense — every switch wires to multiple lights
+        // A→W,X,Z, B→Y,Z, C→W,Y, D→X,Y,Z
+        wiring: [
+          [true, true, false,true],
+          [false,false,true, true],
+          [true, false,true, false],
+          [false,true, true, true],
+        ],
+      },
+      {
+        id: 'switch-006',
+        // ring — A→W,X; B→X,Y; C→Y,Z; D→Z,W
+        wiring: [
+          [true, true, false,false],
+          [false,true, true, false],
+          [false,false,true, true ],
+          [true, false,false,true ],
         ],
       },
     ];
