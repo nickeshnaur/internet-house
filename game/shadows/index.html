@@ -28,18 +28,6 @@
   }
   .sh-svg { width: 100%; height: 100%; display: block; }
 
-  .object-mark {
-    fill: var(--ink-faint);
-    stroke: var(--ink-soft);
-    stroke-width: 1;
-  }
-  .object-label {
-    font: 500 0.55rem 'Inter', sans-serif;
-    fill: var(--ink-faint);
-    text-anchor: middle;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-  }
   .ring-guide {
     fill: none;
     stroke: var(--hairline);
@@ -53,12 +41,6 @@
     transition: fill-opacity 380ms var(--ease);
   }
   .silhouette.show { fill-opacity: 0.62; }
-  .object-3d {
-    fill: #2a2218;
-    stroke: #1a140d;
-    stroke-width: 0.8;
-  }
-  .object-3d-top { fill: #4a3d2a; }
 
   .sun-halo {
     fill: #F5C84B;
@@ -170,13 +152,7 @@
           <svg class="sh-svg" id="sh-svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
             <circle class="ring-guide" cx="200" cy="200" r="170"/>
             <circle class="ring-guide" cx="200" cy="200" r="120"/>
-            <!-- shadow renders BELOW the object so it appears anchored at the base -->
             <g id="shadows-layer"></g>
-            <g id="object-layer">
-              <ellipse class="object-3d" cx="200" cy="206" rx="14" ry="4"/>
-              <rect    class="object-3d" x="192" y="184" width="16" height="22" rx="2"/>
-              <ellipse class="object-3d-top" cx="200" cy="184" rx="8" ry="2.5"/>
-            </g>
             <g id="lights-layer"></g>
           </svg>
         </div>
