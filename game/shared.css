@@ -50,6 +50,10 @@
   --balance:    #8C7B4E;
   --bounce:     #3DB7D4;
   --group:      #6F4DB8;
+  --cipher:     #B45F8E;
+  --weigh:      #4B8B5E;
+  --window:     #B96A2B;
+  --parity:     #1E3A8A;
 
   --accent: var(--ink);
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -134,6 +138,10 @@ body[data-game="safe"]       { --accent: var(--safe); }
 body[data-game="balance"]    { --accent: var(--balance); }
 body[data-game="bounce"]     { --accent: var(--bounce); }
 body[data-game="group"]      { --accent: var(--group); }
+body[data-game="cipher"]     { --accent: var(--cipher); }
+body[data-game="weigh"]      { --accent: var(--weigh); }
+body[data-game="window"]     { --accent: var(--window); }
+body[data-game="parity"]     { --accent: var(--parity); }
 
 /* ───────── Crew-group shared component feedback (Palette / Heist / Constellation / Tidepool) ───────── */
 .fb-row {

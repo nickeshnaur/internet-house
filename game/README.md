@@ -1,6 +1,6 @@
 # /game
 
-Forty daily-puzzle prototypes, one per folder, served straight
+Forty-four daily-puzzle prototypes, one per folder, served straight
 out of `game/`. No build step.
 
 ```
@@ -48,6 +48,10 @@ game/
   balance/index.html        ← Game 38    Pure
   bounce/index.html         ← Game 39    Pure
   group/index.html          ← Game 40    Pure
+  cipher/index.html         ← Game 41    Pure
+  weigh/index.html          ← Game 42    Pure
+  window/index.html         ← Game 43    Pure
+  parity/index.html         ← Game 44    Pure
 ```
 
 Each game lives in its own folder; visiting `/game/<slug>/` loads only
@@ -93,11 +97,13 @@ The hub clusters the thirty-two games:
   feedback is component-wise (✓ exact / ~ in set / ✗ absent), and a
   second-layer visualization renders alongside the abstract dots
   (composition / comic strip / drawn star map / mini tidepool sim).
-- **Pure** — Safe, Balance, Bounce, Group. Mechanics-first prototypes
-  with no narrative wrapper. Each guess returns multi-dimensional
-  independent feedback; the visual is the instrument (digit display,
-  pan balance, beam grid, item grid). Typography and grid systems
-  do all the work.
+- **Pure** — Safe, Balance, Bounce, Group, Cipher, Weigh, Window,
+  Parity. Mechanics-first prototypes with no narrative wrapper.
+  Each guess returns multi-dimensional independent feedback; the
+  visual is the instrument. The four Bulls-and-Cows-lineage games
+  (Cipher, Weigh, Window, Parity) push the principle further: the
+  feedback is purely aggregate — a sum, a count, a parity — and
+  cross-referencing across guesses is required for deduction.
 
 The hub itself (`game/index.html`) is a card grid — each card has a
 glyph, name, one-line description, and a tinted accent border.
@@ -911,7 +917,61 @@ Five puzzles ship per game.
 
 ---
 
-## Adding a forty-first game
+## The Pure group · aggregate-feedback extension
+
+Four more pure-mechanic prototypes in the lineage of Bulls and Cows.
+The defining trait: feedback is purely **aggregate** — a count, a
+sum, a parity — never a per-element verdict. Solving requires
+cross-referencing across guesses; no single query is enough.
+
+**Cipher** is classic Bulls and Cows. A four-position code drawn from
+a six-color palette (repeats allowed). Each guess returns total
+bulls (right color, right slot) and total cows (right color, wrong
+slot) as aggregate counts — never per-position. Eight guesses;
+Knuth's classic Mastermind solver shows five is optimal worst-case.
+
+```js
+{ id: 'cipher-NNN', code: [0, 2, 2, 3] }   // palette indices
+```
+
+**Weigh** is subset-sum deduction. Five boxes A–E with distinct
+hidden weights 1–9. Select 2–4 boxes, get their exact sum. Six
+weighings, then commit each box's weight (no repeats). Five
+unknowns and the all-different constraint mean ~5 linearly
+independent queries are needed; six gives one buffer.
+
+```js
+{ id: 'weigh-NNN', w: { A:2, B:7, C:4, D:9, E:5 } }
+```
+
+**Window** is spatial count deduction. A 5×5 grid hides eight
+filled cells; querying a 3×3 sub-region returns the count inside.
+Nine possible window positions. Six queries, then commit a full
+grid. Puzzles are hand-authored — each one was brute-force
+verified to be uniquely solvable by enumerating all 1,081,575
+configurations of C(25, 8) and checking that the chosen filled
+set is the only one matching its 9-tuple of window counts.
+
+```js
+{ id: 'window-NNN', filled: [0,1,4,5,19,20,23,24] }   // flat indices r*5+c
+```
+
+**Parity** is the most mathematically pure of the four. Eight cells
+in a row, each filled or empty. Pick any subset; the response is
+ODD or EVEN (the parity of filled cells inside). Eight queries,
+then commit the full state. Optimal strategy is to choose subsets
+forming a basis under XOR — equivalent to building a Hamming code.
+The strategy emerges from play.
+
+```js
+{ id: 'parity-NNN', state: [1,0,1,1,0,0,1,0] }
+```
+
+Five puzzles ship per game.
+
+---
+
+## Adding a forty-fifth game
 
 1. Create `/game/<slug>/index.html` modeled on any existing game.
 2. Add an accent color in `shared.css`:

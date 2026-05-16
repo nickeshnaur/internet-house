@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Cipher · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .cp-stage { width: 100%; max-width: 420px; }
+
+  .cp-board {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .cp-row {
+    display: grid;
+    grid-template-columns: 22px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+  }
+  .cp-row.current {
+    border-color: var(--accent);
+    background: var(--paper);
+  }
+  .cp-row .gnum {
+    font: 500 0.66rem 'Inter', sans-serif;
+    color: var(--ink-faint);
+  }
+  .cp-row .pegs {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+  .cp-row .peg {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--c, var(--paper-deep));
+    border: 1px solid var(--hairline-strong);
+    transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  }
+  .cp-row .peg.empty {
+    background: transparent;
+    border-style: dashed;
+  }
+  .cp-row .peg.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+    transform: scale(1.06);
+  }
+  .cp-row .fb {
+    display: grid;
+    grid-template-columns: repeat(2, 8px);
+    grid-template-rows: repeat(2, 8px);
+    gap: 3px;
+    width: 19px;
+    flex-shrink: 0;
+  }
+  .cp-row .fb .d {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid var(--hairline-strong);
+  }
+  .cp-row .fb .d.bull { background: var(--ink); border-color: var(--ink); }
+  .cp-row .fb .d.cow  { background: transparent; border-color: var(--ink); border-width: 1.5px; }
+
+  .cp-palette {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding: 8px 0;
+  }
+  .cp-chip {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--c, #ccc);
+    border: 1.5px solid var(--hairline);
+    transition: transform var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  @media (hover: hover) {
+    .cp-chip:hover { transform: scale(1.08); border-color: var(--ink-soft); }
+  }
+
+  .cp-controls {
+    display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap;
+  }
+  .cp-btn {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .cp-btn[disabled] { opacity: 0.32; pointer-events: none; }
+  .cp-btn.ghost { color: var(--ink-faint); border-color: var(--hairline-strong); }
+
+  .cp-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .cp-status b { color: var(--ink); font-weight: 600; }
+
+  .cp-reveal {
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1rem;
+  }
+  .cp-reveal em { color: var(--accent); font-style: normal; font-weight: 500; }
+
+  .cp-legend {
+    display: flex; gap: 14px; justify-content: center;
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .cp-legend .swatch {
+    display: inline-block;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+    transform: translateY(-1px);
+  }
+  .cp-legend .swatch.bull { background: var(--ink); border: 1px solid var(--ink); }
+  .cp-legend .swatch.cow { background: transparent; border: 1.5px solid var(--ink); }
+</style>
+</head>
+<body data-game="cipher" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="cipher">
+      <div class="game-head">
+        <div class="eyebrow">No. 041 · Cipher</div>
+        <h1 class="title">Cipher</h1>
+        <p class="rule">Crack the four-color code. Eight tries.</p>
+        <p class="howto"><b>How to play.</b> Tap a slot, then a color. Submit four pegs. You'll see the <b>total</b> bulls (right color, right spot) and cows (right color, wrong spot) — never which is which. Repetitions allowed.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="cipher">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="cipher">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="cipher" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="cipher" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="cipher" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="cipher" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="cipher" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="cipher" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="cipher" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage cp-stage" id="stage-cipher">
+
+        <div class="cp-legend">
+          <span><span class="swatch bull"></span>Bull</span>
+          <span><span class="swatch cow"></span>Cow</span>
+        </div>
+
+        <div class="cp-board" id="cp-board"></div>
+
+        <div class="cp-status" id="cp-status">Guess <b>1</b> of <b>8</b></div>
+
+        <div class="cp-palette" id="cp-palette"></div>
+
+        <div class="cp-controls">
+          <button class="cp-btn ghost" id="cp-clear">Clear</button>
+          <button class="cp-btn" id="cp-submit" disabled>Submit</button>
+        </div>
+
+        <div class="solved" id="solved-cipher"><span class="check">✓</span><span class="solved-text">Cracked</span></div>
+        <p class="cp-reveal" id="cp-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Cipher() {
+    // 6 colors; code is 4 positions from the palette (repeats allowed)
+    const COLORS = ['#D44A4A', '#3B8A4F', '#3066BE', '#D4A536', '#9D5BB8', '#E8A0C8'];
+    const NAMES  = ['red',     'green',   'blue',    'amber',   'violet',  'rose'];
+    const SLOTS = 4;
+    const MAX_GUESSES = 8;
+
+    const PUZZLES = [
+      { id: 'cipher-001', code: [0, 2, 2, 3] },     // RED, BLUE, BLUE, AMBER
+      { id: 'cipher-002', code: [1, 4, 0, 5] },     // GREEN, VIOLET, RED, ROSE
+      { id: 'cipher-003', code: [3, 3, 1, 2] },     // AMBER, AMBER, GREEN, BLUE
+      { id: 'cipher-004', code: [5, 0, 4, 0] },     // ROSE, RED, VIOLET, RED
+      { id: 'cipher-005', code: [2, 1, 5, 4] },     // BLUE, GREEN, ROSE, VIOLET
+    ];
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let entry = [null, null, null, null];
+    let activeSlot = 0;
+    let history = [];     // [{ guess:[4], bulls, cows }]
+    let solved = false, done = false, revealed = false;
+
+    const stageEl   = $('#stage-cipher');
+    const boardEl   = $('#cp-board');
+    const paletteEl = $('#cp-palette');
+    const statusEl  = $('#cp-status');
+    const submitBtn = $('#cp-submit');
+    const clearBtn  = $('#cp-clear');
+    const solvedEl  = $('#solved-cipher');
+    const revealEl  = $('#cp-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="cipher"][data-action="share"]');
+
+    function feedback(guess, code) {
+      let bulls = 0;
+      const codeRem = [], guessRem = [];
+      for (let i = 0; i < SLOTS; i++) {
+        if (guess[i] === code[i]) bulls++;
+        else { codeRem.push(code[i]); guessRem.push(guess[i]); }
+      }
+      let cows = 0;
+      for (const g of guessRem) {
+        const idx = codeRem.indexOf(g);
+        if (idx >= 0) { cows++; codeRem.splice(idx, 1); }
+      }
+      return { bulls, cows };
+    }
+
+    function buildPalette() {
+      paletteEl.innerHTML = '';
+      COLORS.forEach((c, i) => {
+        const b = document.createElement('button');
+        b.className = 'cp-chip'; b.dataset.cidx = String(i);
+        b.style.setProperty('--c', c);
+        b.setAttribute('aria-label', NAMES[i]);
+        paletteEl.appendChild(b);
+      });
+    }
+
+    function renderBoard() {
+      boardEl.innerHTML = '';
+      // past guesses
+      history.forEach((g, i) => {
+        const row = document.createElement('div');
+        row.className = 'cp-row';
+        row.innerHTML = `
+          <span class="gnum">${i + 1}</span>
+          <span class="pegs">${
+            g.guess.map(c => `<span class="peg" style="--c: ${COLORS[c]}"></span>`).join('')
+          }</span>
+          <span class="fb">${renderFb(g.bulls, g.cows)}</span>
+        `;
+        boardEl.appendChild(row);
+      });
+      // current guess (if not done)
+      if (!done) {
+        const row = document.createElement('div');
+        row.className = 'cp-row current';
+        row.innerHTML = `
+          <span class="gnum">${history.length + 1}</span>
+          <span class="pegs" id="cp-current-pegs">${
+            entry.map((c, i) => {
+              if (c === null) return `<span class="peg empty${i === activeSlot ? ' active' : ''}" data-slot="${i}"></span>`;
+              return `<span class="peg${i === activeSlot ? ' active' : ''}" style="--c: ${COLORS[c]}" data-slot="${i}"></span>`;
+            }).join('')
+          }</span>
+          <span class="fb">${renderFb(0, 0, true)}</span>
+        `;
+        boardEl.appendChild(row);
+      }
+    }
+    function renderFb(b, c, blank=false) {
+      let html = '';
+      const total = b + c;
+      for (let i = 0; i < 4; i++) {
+        if (blank) html += '<span class="d"></span>';
+        else if (i < b) html += '<span class="d bull"></span>';
+        else if (i < total) html += '<span class="d cow"></span>';
+        else html += '<span class="d"></span>';
+      }
+      return html;
+    }
+
+    function updateStatus() {
+      const t = history.length + 1;
+      if (solved) statusEl.innerHTML = `Cracked in <b>${history.length}</b>`;
+      else if (revealed) statusEl.innerHTML = `Revealed`;
+      else if (done) statusEl.innerHTML = `Out of guesses`;
+      else statusEl.innerHTML = `Guess <b>${t}</b> of <b>${MAX_GUESSES}</b>`;
+    }
+
+    function updateSubmit() {
+      submitBtn.disabled = done || entry.some(c => c === null);
+    }
+
+    function pickSlot(i) {
+      if (done) return;
+      activeSlot = i;
+      renderBoard();
+    }
+
+    function placeColor(ci) {
+      if (done) return;
+      entry[activeSlot] = ci;
+      // advance to next empty slot
+      const next = (activeSlot + 1) % SLOTS;
+      activeSlot = entry[next] === null ? next : (entry.findIndex(c => c === null));
+      if (activeSlot === -1) activeSlot = SLOTS - 1;
+      renderBoard();
+      updateSubmit();
+    }
+
+    function clearEntry() {
+      if (done) return;
+      entry = [null, null, null, null];
+      activeSlot = 0;
+      renderBoard();
+      updateSubmit();
+    }
+
+    function submit() {
+      if (entry.some(c => c === null) || done) return;
+      const { bulls, cows } = feedback(entry, PUZZLE.code);
+      history.push({ guess: entry.slice(), bulls, cows });
+      if (bulls === SLOTS) {
+        solved = true; done = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+      } else if (history.length >= MAX_GUESSES) {
+        done = true;
+      } else {
+        haptic(8);
+      }
+      entry = [null, null, null, null];
+      activeSlot = 0;
+      renderBoard();
+      updateStatus();
+      updateSubmit();
+      if (done && shareBtn) shareBtn.hidden = false;
+    }
+
+    function reset() {
+      entry = [null, null, null, null];
+      activeSlot = 0;
+      history = [];
+      solved = false; done = false; revealed = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Cracked';
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      if (shareBtn) shareBtn.hidden = true;
+      renderBoard();
+      updateStatus();
+      updateSubmit();
+    }
+
+    function reveal() {
+      if (done) return;
+      done = true; revealed = true;
+      solvedEl.classList.add('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      revealEl.hidden = false;
+      revealEl.innerHTML = `Code was ${PUZZLE.code.map(c => `<span class="peg" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${COLORS[c]};border:1px solid var(--hairline-strong);vertical-align:middle;margin:0 1px"></span>`).join('')}.`;
+      renderBoard();
+      updateStatus();
+      updateSubmit();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+
+    function share() {
+      // 4 cells per row: ⬛ bulls, 🟡 cows, ⬜ neither
+      const lines = history.map(g => {
+        const total = 4;
+        let s = '';
+        for (let i = 0; i < total; i++) {
+          if (i < g.bulls) s += '⬛';
+          else if (i < g.bulls + g.cows) s += '🟡';
+          else s += '⬜';
+        }
+        return s;
+      });
+      const head = solved ? `Cipher ${pIdx + 1} · ${history.length}/${MAX_GUESSES}` :
+                   revealed ? `Cipher ${pIdx + 1} · revealed` :
+                   `Cipher ${pIdx + 1} · X/${MAX_GUESSES}`;
+      copyShare(`${head}\n\n${lines.join('\n')}\n\ninternet.house/game/cipher`);
+    }
+
+    function load(i) {
+      pIdx = (i + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+
+    boardEl.addEventListener('click', e => {
+      const p = e.target.closest('.peg[data-slot]'); if (!p) return;
+      pickSlot(+p.dataset.slot);
+    });
+    paletteEl.addEventListener('click', e => {
+      const b = e.target.closest('.cp-chip'); if (!b) return;
+      placeColor(+b.dataset.cidx);
+    });
+    submitBtn.addEventListener('click', submit);
+    clearBtn.addEventListener('click', clearEntry);
+
+    buildPalette();
+    GAMES['cipher'] = { reset, share, reveal, load };
+    load(0);
+  })();
+  </script>
+</body>
+</html>

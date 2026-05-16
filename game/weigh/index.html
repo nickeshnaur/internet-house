@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Weigh · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .wh-stage { width: 100%; max-width: 460px; }
+
+  .wh-boxes {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 360px;
+  }
+  .wh-box {
+    aspect-ratio: 1 / 1.15;
+    background: var(--paper-soft);
+    border: 1.5px solid var(--hairline-strong);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+    color: var(--ink);
+    cursor: pointer;
+    position: relative;
+    transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+  }
+  @media (hover: hover) {
+    .wh-box:hover { border-color: var(--ink-soft); }
+  }
+  .wh-box.sel {
+    background: color-mix(in srgb, var(--accent) 18%, var(--paper));
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .wh-box.locked { pointer-events: none; opacity: 0.6; }
+  .wh-box .badge {
+    position: absolute;
+    bottom: -8px; right: -6px;
+    background: var(--accent);
+    color: var(--paper);
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 0.78rem;
+    display: none;
+    align-items: center; justify-content: center;
+  }
+  .wh-box[data-w] .badge { display: inline-flex; }
+
+  .wh-scale {
+    width: 100%;
+    max-width: 280px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    padding: 18px 22px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 14px;
+  }
+  .wh-scale .lhs {
+    font: 500 0.68rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .wh-scale .lhs b {
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    margin-right: 4px;
+  }
+  .wh-scale .rhs {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    min-width: 2.5ch;
+    text-align: right;
+  }
+  .wh-scale.weighing .rhs { animation: wh-pulse 720ms var(--ease); }
+  @keyframes wh-pulse {
+    0% { opacity: 0.2; transform: scale(0.92); }
+    60% { opacity: 1; transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+
+  .wh-controls {
+    display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap;
+  }
+  .wh-btn {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .wh-btn[disabled] { opacity: 0.32; pointer-events: none; }
+  .wh-btn.ghost { color: var(--ink-faint); border-color: var(--hairline-strong); }
+
+  .wh-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .wh-status b { color: var(--ink); font-weight: 600; }
+
+  .wh-history {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .wh-history-row {
+    display: grid;
+    grid-template-columns: 22px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 6px 10px;
+  }
+  .wh-history-row .gnum { font: 500 0.66rem 'JetBrains Mono', monospace; color: var(--ink-faint); }
+  .wh-history-row .boxes {
+    display: flex; gap: 4px;
+  }
+  .wh-history-row .boxes .b {
+    width: 20px; height: 20px;
+    border-radius: 4px;
+    border: 1px solid var(--hairline);
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+    display: inline-flex;
+    align-items: center; justify-content: center;
+  }
+  .wh-history-row .boxes .b.on {
+    background: var(--accent); color: var(--paper); border-color: var(--accent);
+  }
+  .wh-history-row .sum {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 0.9rem;
+  }
+
+  .wh-commit {
+    width: 100%;
+    border-top: 1px solid var(--hairline);
+    padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .wh-commit-head {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .wh-commit-rows {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 360px;
+  }
+  .wh-commit-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .wh-commit-cell .lbl {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--ink-soft);
+  }
+  .wh-commit-cell select {
+    width: 100%;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--ink);
+    border: 1px solid var(--hairline-strong);
+    background: var(--paper);
+    border-radius: 4px;
+    padding: 6px 4px;
+    text-align: center;
+    appearance: none;
+  }
+
+  .wh-reveal {
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1rem;
+  }
+  .wh-reveal em { color: var(--accent); font-style: normal; font-weight: 500; font-family: 'JetBrains Mono', monospace; }
+</style>
+</head>
+<body data-game="weigh" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="weigh">
+      <div class="game-head">
+        <div class="eyebrow">No. 042 · Weigh</div>
+        <h1 class="title">Weigh</h1>
+        <p class="rule">Five boxes. Five distinct weights from 1 to 9.</p>
+        <p class="howto"><b>How to play.</b> Tap 2–4 boxes to put on the scale, then <b>Weigh</b> — you'll see the exact sum. Six weighings. Then commit each box's weight (no repeats).</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="weigh">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="weigh">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="weigh" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="weigh" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="weigh" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="weigh" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="weigh" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="weigh" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="weigh" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage wh-stage" id="stage-weigh">
+
+        <div class="wh-boxes" id="wh-boxes"></div>
+
+        <div class="wh-scale" id="wh-scale">
+          <div class="lhs"><b id="wh-count">0</b>boxes on scale</div>
+          <div class="rhs" id="wh-readout">—</div>
+        </div>
+
+        <div class="wh-status" id="wh-status">Weighing <b>1</b> of <b>6</b></div>
+
+        <div class="wh-controls">
+          <button class="wh-btn ghost" id="wh-clear">Clear</button>
+          <button class="wh-btn" id="wh-weigh" disabled>Weigh</button>
+        </div>
+
+        <div class="wh-history" id="wh-history"></div>
+
+        <div class="wh-commit" id="wh-commit" hidden>
+          <div class="wh-commit-head">Commit your answer</div>
+          <div class="wh-commit-rows" id="wh-commit-rows"></div>
+          <button class="wh-btn" id="wh-commit-btn" disabled>Lock in</button>
+        </div>
+
+        <div class="solved" id="solved-weigh"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+        <p class="wh-reveal" id="wh-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Weigh() {
+    const LABELS = ['A','B','C','D','E'];
+    const MAX_WEIGHINGS = 6;
+
+    const PUZZLES = [
+      { id: 'weigh-001', w: { A:2, B:7, C:4, D:9, E:5 } },
+      { id: 'weigh-002', w: { A:8, B:3, C:6, D:1, E:9 } },
+      { id: 'weigh-003', w: { A:5, B:9, C:2, D:8, E:6 } },
+      { id: 'weigh-004', w: { A:1, B:4, C:7, D:3, E:8 } },
+      { id: 'weigh-005', w: { A:6, B:2, C:9, D:5, E:3 } },
+    ];
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let onScale = new Set();      // labels currently selected
+    let history = [];             // [{ boxes:[labels], sum }]
+    let committed = {};           // label -> weight (player's pick)
+    let solved = false, done = false, revealed = false;
+
+    const stageEl   = $('#stage-weigh');
+    const boxesEl   = $('#wh-boxes');
+    const scaleEl   = $('#wh-scale');
+    const readoutEl = $('#wh-readout');
+    const countEl   = $('#wh-count');
+    const statusEl  = $('#wh-status');
+    const weighBtn  = $('#wh-weigh');
+    const clearBtn  = $('#wh-clear');
+    const histEl    = $('#wh-history');
+    const commitEl  = $('#wh-commit');
+    const commitRowsEl = $('#wh-commit-rows');
+    const commitBtn = $('#wh-commit-btn');
+    const solvedEl  = $('#solved-weigh');
+    const revealEl  = $('#wh-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="weigh"][data-action="share"]');
+
+    function buildBoxes() {
+      boxesEl.innerHTML = '';
+      LABELS.forEach(L => {
+        const b = document.createElement('button');
+        b.className = 'wh-box'; b.dataset.l = L;
+        b.innerHTML = `${L}<span class="badge"></span>`;
+        boxesEl.appendChild(b);
+      });
+      paintBoxes();
+    }
+    function paintBoxes() {
+      $$('.wh-box', boxesEl).forEach(b => {
+        const L = b.dataset.l;
+        b.classList.toggle('sel', onScale.has(L));
+        if (done) b.classList.add('locked'); else b.classList.remove('locked');
+        // remove any reveal badge
+        b.removeAttribute('data-w');
+        b.querySelector('.badge').textContent = '';
+      });
+      countEl.textContent = onScale.size;
+      const n = onScale.size;
+      weighBtn.disabled = done || n < 2 || n > 4;
+      // running sum is hidden by design (player only sees sum after pressing Weigh)
+      readoutEl.textContent = n ? '?' : '—';
+    }
+
+    function toggleBox(L) {
+      if (done) return;
+      if (onScale.has(L)) onScale.delete(L);
+      else {
+        if (onScale.size >= 4) { showToast('Up to 4 on the scale'); return; }
+        onScale.add(L);
+      }
+      paintBoxes();
+    }
+
+    function clearScale() {
+      if (done) return;
+      onScale.clear();
+      paintBoxes();
+    }
+
+    function weigh() {
+      if (done || onScale.size < 2 || onScale.size > 4) return;
+      const labels = [...onScale];
+      const sum = labels.reduce((s, L) => s + PUZZLE.w[L], 0);
+      history.push({ boxes: labels.slice(), sum });
+      scaleEl.classList.remove('weighing'); void scaleEl.offsetWidth; scaleEl.classList.add('weighing');
+      readoutEl.textContent = String(sum);
+      haptic(12);
+      onScale.clear();
+      setTimeout(() => { paintBoxes(); readoutEl.textContent = '—'; }, 1000);
+      commitEl.hidden = false;
+      renderHistory();
+      updateStatus();
+    }
+
+    function buildCommit() {
+      commitRowsEl.innerHTML = '';
+      LABELS.forEach(L => {
+        const cell = document.createElement('div');
+        cell.className = 'wh-commit-cell';
+        const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.textContent = L;
+        const sel = document.createElement('select'); sel.dataset.l = L;
+        sel.innerHTML = '<option value="">—</option>' + [1,2,3,4,5,6,7,8,9].map(n => `<option value="${n}">${n}</option>`).join('');
+        cell.appendChild(lbl); cell.appendChild(sel);
+        commitRowsEl.appendChild(cell);
+      });
+    }
+
+    function onCommitChange() {
+      committed = {};
+      const used = new Set();
+      let valid = true;
+      $$('select', commitRowsEl).forEach(s => {
+        const v = s.value ? +s.value : null;
+        if (v === null) valid = false;
+        else if (used.has(v)) valid = false;
+        else used.add(v);
+        committed[s.dataset.l] = v;
+      });
+      commitBtn.disabled = done || !valid;
+    }
+
+    function commit() {
+      if (done) return;
+      const ok = LABELS.every(L => committed[L] === PUZZLE.w[L]);
+      done = true;
+      if (ok) {
+        solved = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+      } else {
+        revealEl.hidden = false;
+        revealEl.innerHTML = LABELS.map(L => `<em>${L}=${PUZZLE.w[L]}</em>`).join(' · ');
+        shake(stageEl);
+      }
+      paintBoxes();
+      showActuals();
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+    function showActuals() {
+      $$('.wh-box', boxesEl).forEach(b => {
+        const L = b.dataset.l;
+        b.dataset.w = String(PUZZLE.w[L]);
+        b.querySelector('.badge').textContent = String(PUZZLE.w[L]);
+      });
+    }
+
+    function renderHistory() {
+      histEl.innerHTML = '';
+      history.forEach((h, i) => {
+        const row = document.createElement('div');
+        row.className = 'wh-history-row';
+        const num = document.createElement('div'); num.className = 'gnum'; num.textContent = String(i + 1);
+        const boxes = document.createElement('div'); boxes.className = 'boxes';
+        boxes.innerHTML = LABELS.map(L => `<span class="b${h.boxes.includes(L) ? ' on' : ''}">${L}</span>`).join('');
+        const sum = document.createElement('div'); sum.className = 'sum'; sum.textContent = '= ' + h.sum;
+        row.appendChild(num); row.appendChild(boxes); row.appendChild(sum);
+        histEl.appendChild(row);
+      });
+    }
+
+    function updateStatus() {
+      const t = history.length + 1;
+      if (solved) statusEl.innerHTML = `Solved in <b>${history.length}</b> weighings`;
+      else if (revealed) statusEl.innerHTML = `Revealed`;
+      else if (done) statusEl.innerHTML = `Locked`;
+      else if (history.length >= MAX_WEIGHINGS) statusEl.innerHTML = `Commit your answer`;
+      else statusEl.innerHTML = `Weighing <b>${t}</b> of <b>${MAX_WEIGHINGS}</b>`;
+    }
+
+    function reset() {
+      onScale = new Set();
+      history = [];
+      committed = {};
+      solved = false; done = false; revealed = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Solved';
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      commitEl.hidden = true;
+      $$('select', commitRowsEl).forEach(s => s.value = '');
+      commitBtn.disabled = true;
+      buildBoxes();
+      renderHistory();
+      updateStatus();
+      readoutEl.textContent = '—';
+      if (shareBtn) shareBtn.hidden = true;
+    }
+
+    function reveal() {
+      if (done) return;
+      done = true; revealed = true;
+      solvedEl.classList.add('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      revealEl.hidden = false;
+      revealEl.innerHTML = LABELS.map(L => `<em>${L}=${PUZZLE.w[L]}</em>`).join(' · ');
+      showActuals();
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+
+    function share() {
+      const lines = history.map(h => `${LABELS.map(L => h.boxes.includes(L) ? L : '·').join('')} = ${h.sum}`);
+      const head = solved ? `Weigh ${pIdx + 1} · solved (${history.length}/${MAX_WEIGHINGS})` :
+                   revealed ? `Weigh ${pIdx + 1} · revealed` :
+                   `Weigh ${pIdx + 1} · X`;
+      const ans = (solved || revealed) ? `\n\n${LABELS.map(L => L + '=' + PUZZLE.w[L]).join(' ')}` : '';
+      copyShare(`${head}\n\n${lines.join('\n')}${ans}\n\ninternet.house/game/weigh`);
+    }
+
+    function load(i) {
+      pIdx = (i + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+
+    boxesEl.addEventListener('click', e => {
+      const b = e.target.closest('.wh-box'); if (!b) return;
+      toggleBox(b.dataset.l);
+    });
+    weighBtn.addEventListener('click', weigh);
+    clearBtn.addEventListener('click', clearScale);
+    commitRowsEl.addEventListener('change', onCommitChange);
+    commitBtn.addEventListener('click', commit);
+
+    buildCommit();
+    GAMES['weigh'] = { reset, share, reveal, load };
+    load(0);
+  })();
+  </script>
+</body>
+</html>
