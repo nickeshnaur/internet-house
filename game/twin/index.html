@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Twin · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .tw-stage { width: 100%; max-width: 460px; }
+
+  .tw-targets {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    width: 100%;
+    max-width: 360px;
+  }
+  .tw-target {
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .tw-target.cracked {
+    background: color-mix(in srgb, var(--accent) 12%, var(--paper));
+    border-color: var(--accent);
+  }
+  .tw-target .lbl {
+    font: 500 0.7rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 6px;
+  }
+  .tw-target.cracked .lbl { color: var(--accent); }
+  .tw-target .pegs {
+    display: flex; gap: 4px; justify-content: center;
+  }
+  .tw-target .pegs .pg {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1px solid var(--hairline-strong);
+  }
+  .tw-target.cracked .pegs .pg { background: var(--c); border-color: var(--c); }
+
+  .tw-slots { display: flex; gap: 10px; justify-content: center; }
+  .tw-slot {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--paper-soft);
+    border: 1.5px dashed var(--hairline-strong);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    transition: all var(--t-fast) var(--ease);
+  }
+  .tw-slot.filled {
+    background: var(--c);
+    border-style: solid;
+    border-color: var(--c);
+    color: white;
+    font-size: 0;
+  }
+  .tw-slot.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+
+  .tw-palette {
+    display: flex; gap: 10px; justify-content: center;
+  }
+  .tw-chip {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--c);
+    border: 1.5px solid var(--hairline);
+    transition: transform var(--t-fast) var(--ease);
+  }
+  @media (hover: hover) { .tw-chip:hover { transform: scale(1.08); } }
+
+  .tw-tx-section { width: 100%; }
+  .tw-tx-header {
+    font: 500 0.62rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  .tw-tx-menu {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    width: 100%;
+    max-width: 380px;
+    margin: 0 auto;
+  }
+  .tw-tx {
+    border: 1px solid var(--hairline-strong);
+    border-radius: 6px;
+    background: var(--paper);
+    padding: 8px 6px 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  @media (hover: hover) { .tw-tx:hover { border-color: var(--ink-soft); } }
+  .tw-tx.picked {
+    background: color-mix(in srgb, var(--accent) 14%, var(--paper));
+    border-color: var(--accent);
+  }
+  .tw-tx.correct {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  .tw-tx.correct .name, .tw-tx.correct svg { color: var(--paper); }
+  .tw-tx .ico {
+    height: 22px;
+    display: flex; justify-content: center; align-items: center;
+    color: var(--ink-soft);
+  }
+  .tw-tx .name {
+    font: 500 0.58rem 'Inter', sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+
+  .tw-controls {
+    display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;
+  }
+  .tw-btn {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .tw-btn[disabled] { opacity: 0.32; pointer-events: none; }
+  .tw-btn.ghost { color: var(--ink-faint); border-color: var(--hairline-strong); }
+
+  .tw-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .tw-status b { color: var(--ink); font-weight: 600; }
+
+  .tw-history { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+  .tw-history-row {
+    display: grid;
+    grid-template-columns: 22px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 6px 10px;
+  }
+  .tw-history-row .gnum { font: 500 0.66rem 'JetBrains Mono', monospace; color: var(--ink-faint); }
+  .tw-history-row .pegs { display: flex; gap: 4px; }
+  .tw-history-row .pegs .pg {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--c);
+    border: 1px solid var(--hairline);
+  }
+  .tw-history-row .fbs {
+    display: flex; gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.74rem;
+  }
+  .tw-history-row .fbs .one {
+    color: var(--ink-soft);
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 2px 6px;
+    min-width: 38px;
+    text-align: center;
+  }
+  .tw-history-row .fbs .one.cracked { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+</style>
+</head>
+<body data-game="twin" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="twin">
+      <div class="game-head">
+        <div class="eyebrow">No. 054 · Twin</div>
+        <h1 class="title">Twin</h1>
+        <p class="rule">Two codes. A hidden rule turns one into the other.</p>
+        <p class="howto"><b>How to play.</b> Today's Code A is the primary; Code B comes from A by one of the six transformations below. Each guess returns two bulls·cows pairs. Crack A and B in eight tries, then pick the transformation.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="twin">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="twin">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="twin" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="twin" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="twin" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="twin" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="twin" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="twin" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="twin" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage tw-stage" id="stage-twin">
+
+        <div class="tw-targets" id="tw-targets"></div>
+
+        <div class="tw-slots" id="tw-slots"></div>
+
+        <div class="tw-palette" id="tw-palette"></div>
+
+        <div class="tw-status" id="tw-status">Guess <b>1</b> of <b>8</b></div>
+
+        <div class="tw-controls">
+          <button class="tw-btn ghost" id="tw-clear">Clear</button>
+          <button class="tw-btn" id="tw-submit" disabled>Submit</button>
+        </div>
+
+        <div class="tw-tx-section">
+          <div class="tw-tx-header">Transformation candidates · tap to mark</div>
+          <div class="tw-tx-menu" id="tw-tx-menu"></div>
+        </div>
+
+        <div class="tw-history" id="tw-history"></div>
+
+        <div class="solved" id="solved-twin"><span class="check">✓</span><span class="solved-text">Twins cracked</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Twin() {
+    const SLOTS = 4;
+    const PALETTE_SIZE = 6;
+    const MAX_GUESSES = 8;
+    const COLORS = ['#D44A4A', '#3B8A4F', '#3066BE', '#D4A536', '#9D5BB8', '#E8A0C8'];
+
+    const TX = [
+      { id: 'reverse',  name: 'Reverse',     ico: '↻',  fn: A => [A[3], A[2], A[1], A[0]] },
+      { id: 'rotateL',  name: 'Rotate left', ico: '◐', fn: A => [A[1], A[2], A[3], A[0]] },
+      { id: 'swapIn',   name: 'Swap inner',  ico: '↔', fn: A => [A[0], A[2], A[1], A[3]] },
+      { id: 'swapOut',  name: 'Swap outer',  ico: '⇋', fn: A => [A[3], A[1], A[2], A[0]] },
+      { id: 'shiftC',   name: 'Shift +1',    ico: '+1', fn: A => A.map(c => (c + 1) % PALETTE_SIZE) },
+      { id: 'compl',    name: 'Complement',  ico: '~',  fn: A => A.map(c => PALETTE_SIZE - 1 - c) },
+    ];
+
+    // 5 puzzles. Each names the transformation by id; B is derived from A.
+    const PUZZLES = [
+      { id: 'twin-001', tx: 'reverse', a: [0,1,2,3] },
+      { id: 'twin-002', tx: 'rotateL', a: [0,3,1,4] },
+      { id: 'twin-003', tx: 'swapIn',  a: [5,2,4,1] },
+      { id: 'twin-004', tx: 'shiftC',  a: [0,2,4,1] },
+      { id: 'twin-005', tx: 'compl',   a: [0,1,3,5] },
+    ];
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let codeA = [], codeB = [];
+    let entry = [null, null, null, null];
+    let activeSlot = 0;
+    let history = [];
+    let cracked = [false, false];
+    let pickedTx = null;
+    let done = false, revealed = false;
+
+    const stageEl   = $('#stage-twin');
+    const targetsEl = $('#tw-targets');
+    const slotsEl   = $('#tw-slots');
+    const paletteEl = $('#tw-palette');
+    const txMenuEl  = $('#tw-tx-menu');
+    const statusEl  = $('#tw-status');
+    const submitBtn = $('#tw-submit');
+    const clearBtn  = $('#tw-clear');
+    const histEl    = $('#tw-history');
+    const solvedEl  = $('#solved-twin');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="twin"][data-action="share"]');
+
+    function feedback(guess, code) {
+      let bulls = 0; const cR = [], gR = [];
+      for (let i = 0; i < SLOTS; i++) {
+        if (guess[i] === code[i]) bulls++;
+        else { cR.push(code[i]); gR.push(guess[i]); }
+      }
+      let cows = 0;
+      for (const g of gR) {
+        const idx = cR.indexOf(g);
+        if (idx >= 0) { cows++; cR.splice(idx, 1); }
+      }
+      return { bulls, cows };
+    }
+
+    function buildTargets() {
+      targetsEl.innerHTML = '';
+      ['A', 'B'].forEach((L, i) => {
+        const t = document.createElement('div');
+        t.className = 'tw-target'; t.dataset.t = String(i);
+        t.innerHTML = `<div class="lbl">${L}</div><div class="pegs">${
+          Array(SLOTS).fill(0).map(() => `<span class="pg"></span>`).join('')
+        }</div>`;
+        targetsEl.appendChild(t);
+      });
+      paintTargets();
+    }
+    function paintTargets() {
+      const code = [codeA, codeB];
+      $$('.tw-target', targetsEl).forEach((t, i) => {
+        const isCracked = cracked[i] || revealed;
+        t.classList.toggle('cracked', isCracked);
+        const pegs = $$('.pg', t);
+        pegs.forEach((pg, k) => {
+          if (isCracked) pg.style.setProperty('--c', COLORS[code[i][k]]);
+          else pg.style.removeProperty('--c');
+        });
+      });
+    }
+
+    function buildSlots() {
+      slotsEl.innerHTML = '';
+      for (let i = 0; i < SLOTS; i++) {
+        const s = document.createElement('button');
+        s.className = 'tw-slot'; s.dataset.slot = String(i);
+        s.textContent = String(i + 1);
+        slotsEl.appendChild(s);
+      }
+      paintSlots();
+    }
+    function paintSlots() {
+      $$('.tw-slot', slotsEl).forEach((s, i) => {
+        s.classList.remove('filled', 'active');
+        s.style.removeProperty('--c');
+        const c = entry[i];
+        if (c !== null && c !== undefined) { s.classList.add('filled'); s.style.setProperty('--c', COLORS[c]); }
+        if (!done && i === activeSlot) s.classList.add('active');
+      });
+      submitBtn.disabled = done || entry.some(c => c === null);
+    }
+    function buildPalette() {
+      paletteEl.innerHTML = '';
+      COLORS.forEach((c, i) => {
+        const b = document.createElement('button');
+        b.className = 'tw-chip'; b.dataset.cidx = String(i);
+        b.style.setProperty('--c', c);
+        paletteEl.appendChild(b);
+      });
+    }
+    function buildTxMenu() {
+      txMenuEl.innerHTML = '';
+      TX.forEach(t => {
+        const card = document.createElement('button');
+        card.className = 'tw-tx'; card.dataset.tx = t.id;
+        card.innerHTML = `<div class="ico">${t.ico}</div><div class="name">${t.name}</div>`;
+        txMenuEl.appendChild(card);
+      });
+      paintTxMenu();
+    }
+    function paintTxMenu() {
+      $$('.tw-tx', txMenuEl).forEach(c => {
+        c.classList.remove('picked', 'correct');
+        if (pickedTx === c.dataset.tx) c.classList.add('picked');
+        if ((done || revealed) && PUZZLE.tx === c.dataset.tx) c.classList.add('correct');
+      });
+    }
+
+    function pickSlot(i) { if (done) return; activeSlot = i; paintSlots(); }
+    function placeColor(ci) {
+      if (done) return;
+      entry[activeSlot] = ci;
+      const next = (activeSlot + 1) % SLOTS;
+      activeSlot = (entry[next] === null) ? next : (entry.findIndex(c => c === null));
+      if (activeSlot === -1) activeSlot = SLOTS - 1;
+      paintSlots();
+    }
+    function clearEntry() {
+      if (done) return;
+      entry = [null, null, null, null]; activeSlot = 0;
+      paintSlots();
+    }
+    function pickTx(id) { if (done) return; pickedTx = (pickedTx === id ? null : id); paintTxMenu(); }
+
+    function submit() {
+      if (entry.some(c => c === null) || done) return;
+      const fbA = feedback(entry, codeA);
+      const fbB = feedback(entry, codeB);
+      history.push({ guess: entry.slice(), fbs: [fbA, fbB] });
+      if (fbA.bulls === SLOTS) cracked[0] = true;
+      if (fbB.bulls === SLOTS) cracked[1] = true;
+      entry = [null, null, null, null]; activeSlot = 0;
+      const both = cracked[0] && cracked[1];
+      if (both) {
+        done = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+      } else if (history.length >= MAX_GUESSES) {
+        done = true; revealed = true;
+      } else { haptic(8); }
+      paintTargets(); paintSlots(); paintTxMenu();
+      renderHistory();
+      updateStatus();
+      if (done && shareBtn) shareBtn.hidden = false;
+    }
+
+    function renderHistory() {
+      histEl.innerHTML = '';
+      history.forEach((h, i) => {
+        const row = document.createElement('div');
+        row.className = 'tw-history-row';
+        const num = document.createElement('div'); num.className = 'gnum'; num.textContent = String(i + 1);
+        const pegs = document.createElement('div'); pegs.className = 'pegs';
+        h.guess.forEach(c => {
+          const p = document.createElement('span'); p.className = 'pg'; p.style.setProperty('--c', COLORS[c]);
+          pegs.appendChild(p);
+        });
+        const fbs = document.createElement('div'); fbs.className = 'fbs';
+        h.fbs.forEach(fb => {
+          const o = document.createElement('div'); o.className = 'one' + (fb.bulls === SLOTS ? ' cracked' : '');
+          o.textContent = `${fb.bulls}·${fb.cows}`;
+          fbs.appendChild(o);
+        });
+        row.appendChild(num); row.appendChild(pegs); row.appendChild(fbs);
+        histEl.appendChild(row);
+      });
+    }
+
+    function updateStatus() {
+      const t = history.length + 1;
+      const c = cracked.filter(Boolean).length;
+      if (cracked[0] && cracked[1]) {
+        const txOk = pickedTx === PUZZLE.tx;
+        statusEl.innerHTML = `Solved · ${history.length}/${MAX_GUESSES} · ${txOk ? 'transformation matched' : 'transformation revealed'}`;
+      }
+      else if (revealed) statusEl.innerHTML = `Revealed · <b>${c}</b>/2 cracked`;
+      else if (done) statusEl.innerHTML = `Out · <b>${c}</b>/2 cracked`;
+      else statusEl.innerHTML = `Guess <b>${t}</b> of <b>${MAX_GUESSES}</b> · <b>${c}</b>/2 cracked`;
+    }
+
+    function reset() {
+      codeA = PUZZLE.a.slice();
+      codeB = TX.find(t => t.id === PUZZLE.tx).fn(codeA);
+      entry = [null, null, null, null]; activeSlot = 0;
+      history = []; cracked = [false, false]; pickedTx = null;
+      done = false; revealed = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Twins cracked';
+      if (shareBtn) shareBtn.hidden = true;
+      buildTargets(); paintSlots(); paintTxMenu();
+      renderHistory();
+      updateStatus();
+    }
+
+    function reveal() {
+      if (done) return;
+      done = true; revealed = true;
+      solvedEl.classList.add('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      paintTargets(); paintTxMenu();
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+
+    function share() {
+      const lines = history.map(h => h.fbs.map(fb => `${fb.bulls}·${fb.cows}`).join('  '));
+      const c = cracked.filter(Boolean).length;
+      const txCorrect = pickedTx === PUZZLE.tx;
+      const txName = TX.find(t => t.id === PUZZLE.tx).name;
+      const head = (cracked[0] && cracked[1]) ? `Twin ${pIdx + 1} · ${history.length}/${MAX_GUESSES} · 2/2` :
+                   revealed ? `Twin ${pIdx + 1} · revealed · ${c}/2` :
+                   `Twin ${pIdx + 1} · X · ${c}/2`;
+      const txLine = (cracked[0] && cracked[1]) ? `\n\n${txCorrect ? '✓' : '✗'} ${txName}` : '';
+      copyShare(`${head}${txLine}\n\n${lines.join('\n')}\n\ninternet.house/game/twin`);
+    }
+
+    function load(i) {
+      pIdx = (i + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+
+    slotsEl.addEventListener('click', e => {
+      const s = e.target.closest('.tw-slot'); if (!s) return;
+      pickSlot(+s.dataset.slot);
+    });
+    paletteEl.addEventListener('click', e => {
+      const b = e.target.closest('.tw-chip'); if (!b) return;
+      placeColor(+b.dataset.cidx);
+    });
+    txMenuEl.addEventListener('click', e => {
+      const c = e.target.closest('.tw-tx'); if (!c) return;
+      pickTx(c.dataset.tx);
+    });
+    submitBtn.addEventListener('click', submit);
+    clearBtn.addEventListener('click', clearEntry);
+
+    buildPalette();
+    buildTxMenu();
+    GAMES['twin'] = { reset, share, reveal, load };
+    load(0);
+  })();
+  </script>
+</body>
+</html>

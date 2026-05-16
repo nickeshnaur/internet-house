@@ -190,6 +190,12 @@
   .card[data-game="melody"]     { --card-accent: var(--melody); }
   .card[data-game="jumble"]     { --card-accent: var(--jumble); }
   .card[data-game="year"]       { --card-accent: var(--year); }
+  .card[data-game="chorus"]     { --card-accent: var(--chorus); }
+  .card[data-game="persona"]    { --card-accent: var(--persona); }
+  .card[data-game="opus"]       { --card-accent: var(--opus); }
+  .card[data-game="canvas"]     { --card-accent: var(--canvas); }
+  .card[data-game="prism"]      { --card-accent: var(--prism); }
+  .card[data-game="twin"]       { --card-accent: var(--twin); }
 
   @media (max-width: 480px) {
     .grid { grid-template-columns: 1fr; gap: 10px; }
@@ -738,6 +744,70 @@
           </div>
           <h3 class="card-name">Year</h3>
           <p class="card-desc">A four-digit historical year. Bulls and cows.</p>
+        </a>
+
+        <a class="card" data-game="prism" href="prism/">
+          <span class="card-tag">No. 053</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><g><circle cx="14" cy="14" r="7" fill="#D44A4A"/><circle cx="26" cy="14" r="7" fill="#3B8A4F"/><circle cx="38" cy="14" r="7" fill="#3066BE"/><circle cx="50" cy="14" r="7" fill="#D4A536"/></g><g transform="translate(0,18)"><circle cx="14" cy="14" r="6" fill="#3066BE"/><circle cx="26" cy="14" r="6" fill="#D44A4A"/><circle cx="38" cy="14" r="6" fill="#D4A536"/><circle cx="50" cy="14" r="6" fill="#3B8A4F"/></g><g transform="translate(0,34)"><circle cx="14" cy="14" r="5" fill="#D4A536"/><circle cx="26" cy="14" r="5" fill="#3066BE"/><circle cx="38" cy="14" r="5" fill="#3B8A4F"/><circle cx="50" cy="14" r="5" fill="#D44A4A"/></g><g transform="translate(64,12)" font-family="Inter, sans-serif" font-weight="700" font-size="9" fill="currentColor" fill-opacity="0.5"><text>A</text><text y="14">B</text><text y="28">C</text></g></svg>
+          </div>
+          <h3 class="card-name">Prism</h3>
+          <p class="card-desc">Three codes from one secret multiset.</p>
+        </a>
+
+        <a class="card" data-game="twin" href="twin/">
+          <span class="card-tag">No. 054</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><g><circle cx="10" cy="14" r="5" fill="#D44A4A"/><circle cx="22" cy="14" r="5" fill="#3B8A4F"/><circle cx="34" cy="14" r="5" fill="#3066BE"/><circle cx="46" cy="14" r="5" fill="#D4A536"/></g><g transform="translate(0,28)"><circle cx="10" cy="14" r="5" fill="#D4A536"/><circle cx="22" cy="14" r="5" fill="#3066BE"/><circle cx="34" cy="14" r="5" fill="#3B8A4F"/><circle cx="46" cy="14" r="5" fill="#D44A4A"/></g><g transform="translate(60,22)" font-family="JetBrains Mono, monospace" font-weight="700" font-size="14" fill="currentColor"><text>↻</text></g></svg>
+          </div>
+          <h3 class="card-name">Twin</h3>
+          <p class="card-desc">Two codes. A hidden rule between them.</p>
+        </a>
+
+      </div>
+    </section>
+
+    <section class="group" aria-labelledby="grp-cultural">
+      <div class="group-head">
+        <h2 class="group-name" id="grp-cultural">Cultural</h2>
+        <span class="group-tagline">A famous unit hides in pure mechanics.</span>
+      </div>
+      <div class="grid">
+
+        <a class="card" data-game="chorus" href="chorus/">
+          <span class="card-tag">No. 049</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><g font-family="Fraunces, serif" font-weight="500" font-size="13" fill="currentColor" letter-spacing="-0.5"><rect x="4"  y="18" width="20" height="18" rx="2" fill="currentColor"/><text x="14" y="31" text-anchor="middle" fill="var(--paper)">ASK</text><rect x="28" y="18" width="20" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="38" y="31" text-anchor="middle">NOT</text><rect x="52" y="18" width="28" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.4"/><text x="66" y="31" text-anchor="middle" fill-opacity="0.5" font-size="11">WHAT</text></g></svg>
+          </div>
+          <h3 class="card-name">Chorus</h3>
+          <p class="card-desc">Five words of a famous line. Wordle for quotes.</p>
+        </a>
+
+        <a class="card" data-game="persona" href="persona/">
+          <span class="card-tag">No. 050</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><circle cx="42" cy="22" r="14" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"/><path d="M22 56 Q42 36 62 56 Z" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"/><text x="42" y="26" text-anchor="middle" font-family="Fraunces, serif" font-style="italic" font-size="11" fill="currentColor">?</text></svg>
+          </div>
+          <h3 class="card-name">Persona</h3>
+          <p class="card-desc">A famous figure across six attributes.</p>
+        </a>
+
+        <a class="card" data-game="opus" href="opus/">
+          <span class="card-tag">No. 051</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><g transform="translate(6,16)"><rect x="0"  y="0" width="12" height="32" rx="2" fill="#B33A3A"/><rect x="13" y="0" width="12" height="32" rx="2" fill="#B33A3A"/><rect x="26" y="0" width="12" height="32" rx="2" fill="#B33A3A"/><rect x="39" y="0" width="12" height="32" rx="2" fill="#C9AE4A"/></g><g transform="translate(64,18)" font-family="JetBrains Mono, monospace" font-weight="700" font-size="9" fill="currentColor"><text>♫</text><text y="14">5°</text></g></svg>
+          </div>
+          <h3 class="card-name">Opus</h3>
+          <p class="card-desc">A famous motif. Bulls and cows by ear.</p>
+        </a>
+
+        <a class="card" data-game="canvas" href="canvas/">
+          <span class="card-tag">No. 052</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><rect x="20" y="6" width="44" height="44" fill="none" stroke="currentColor" stroke-width="3" stroke-opacity="0.85"/><rect x="22" y="8" width="40" height="40" fill="currentColor" fill-opacity="0.12"/><text x="42" y="32" text-anchor="middle" font-family="Fraunces, serif" font-style="italic" font-size="18" fill="currentColor">?</text></svg>
+          </div>
+          <h3 class="card-name">Canvas</h3>
+          <p class="card-desc">A famous painting across five attributes.</p>
         </a>
 
       </div>

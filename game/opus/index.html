@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Opus · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .op-stage { width: 100%; max-width: 460px; }
+
+  .op-sequence {
+    display: flex; gap: 12px; justify-content: center;
+  }
+  .op-slot {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--paper-soft);
+    border: 1.5px dashed var(--hairline-strong);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 0.86rem;
+    color: var(--ink-faint);
+    transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  }
+  .op-slot.filled {
+    background: var(--c, var(--paper-soft));
+    border-style: solid;
+    border-color: var(--c, var(--hairline-strong));
+    color: white;
+  }
+  .op-slot.playing { transform: scale(1.12); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c, var(--accent)) 30%, transparent); }
+
+  .op-keys {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    width: clamp(280px, 92vw, 380px);
+  }
+  .op-key {
+    aspect-ratio: 2 / 3;
+    border-radius: 6px;
+    background: var(--c, #ccc);
+    border: 1.5px solid var(--c, var(--hairline-strong));
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.66rem;
+    color: rgba(255,255,255,0.85);
+    transition: transform var(--t-fast) var(--ease), filter var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  @media (hover: hover) {
+    .op-key:hover { filter: brightness(1.08); transform: translateY(-2px); }
+  }
+  .op-key:active { transform: scale(0.96); }
+  .op-key.playing { transform: scale(1.06); filter: brightness(1.15); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 50%, transparent); }
+
+  .op-target-card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .op-target-card .play {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--paper);
+    flex-shrink: 0;
+  }
+  .op-target-card .play::before {
+    content: '';
+    border-left: 11px solid var(--accent);
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    margin-left: 3px;
+  }
+  .op-target-card .desc {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .op-target-card .desc b { color: var(--ink-soft); font-weight: 600; }
+
+  .op-controls {
+    display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;
+  }
+  .op-btn {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .op-btn[disabled] { opacity: 0.32; pointer-events: none; }
+  .op-btn.ghost { color: var(--ink-faint); border-color: var(--hairline-strong); }
+
+  .op-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .op-status b { color: var(--ink); font-weight: 600; }
+
+  .op-history {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .op-history-row {
+    display: grid;
+    grid-template-columns: 22px 1fr auto auto;
+    align-items: center;
+    gap: 10px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 6px 10px;
+  }
+  .op-history-row .gnum { font: 500 0.66rem 'JetBrains Mono', monospace; color: var(--ink-faint); }
+  .op-history-row .dots { display: flex; gap: 4px; }
+  .op-history-row .dots .d {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--c, #ccc);
+    border: 1px solid var(--hairline);
+  }
+  .op-history-row .replay {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 999px;
+    padding: 4px 8px;
+  }
+  .op-history-row .fb {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: var(--accent);
+  }
+
+  .op-reveal {
+    text-align: center;
+    margin: 8px auto;
+    max-width: 32em;
+  }
+  .op-reveal .title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.4rem;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+  }
+  .op-reveal .attr {
+    margin-top: 4px;
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+</style>
+</head>
+<body data-game="opus" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="opus">
+      <div class="game-head">
+        <div class="eyebrow">No. 051 · Opus</div>
+        <h1 class="title">Opus</h1>
+        <p class="rule">A famous motif in four notes. Six tries.</p>
+        <p class="howto"><b>How to play.</b> Tap four keys, <b>Submit</b>. You'll hear your sequence then the target. Feedback is <b>bulls</b> (right note, right slot) and <b>cows</b> (right note, wrong slot). On solve, the work reveals.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="opus">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="opus">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="opus" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="opus" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="opus" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="opus" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="opus" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="opus" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="opus" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage op-stage" id="stage-opus">
+
+        <div class="op-target-card">
+          <button class="play" id="op-play-target" aria-label="Play target"></button>
+          <div class="desc"><b>Target</b> · play to hear</div>
+        </div>
+
+        <div class="op-sequence" id="op-sequence"></div>
+
+        <div class="op-keys" id="op-keys"></div>
+
+        <div class="op-status" id="op-status">Guess <b>1</b> of <b>6</b></div>
+
+        <div class="op-controls">
+          <button class="op-btn ghost" id="op-clear">Clear</button>
+          <button class="op-btn ghost" id="op-play-mine">Play mine</button>
+          <button class="op-btn" id="op-submit" disabled>Submit</button>
+        </div>
+
+        <div class="op-history" id="op-history"></div>
+
+        <div class="solved" id="solved-opus"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+        <div class="op-reveal" id="op-reveal" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Opus() {
+    const SLOTS = 4;
+    const MAX_GUESSES = 6;
+
+    // Diatonic 6-key scale, cool→warm by pitch.
+    const KEYS = [
+      { name: 'C', freq: 261.63, color: '#3A6BAA' },
+      { name: 'D', freq: 293.66, color: '#3F8BAA' },
+      { name: 'E', freq: 329.63, color: '#5BA88E' },
+      { name: 'F', freq: 349.23, color: '#C9AE4A' },
+      { name: 'G', freq: 392.00, color: '#C97A3A' },
+      { name: 'A', freq: 440.00, color: '#B33A3A' },
+    ];
+
+    // Culturally significant 4-note motifs (transposed where needed to fit the diatonic scale).
+    const PUZZLES = [
+      { id: 'opus-001', seq: [5,5,5,3], title: "Beethoven's Symphony No. 5",     attr: 'Ludwig van Beethoven · 1808 · opening motif (transposed)' },
+      { id: 'opus-002', seq: [0,2,3,4], title: 'When the Saints Go Marching In', attr: 'American spiritual · 19th century' },
+      { id: 'opus-003', seq: [0,0,3,3], title: 'Auld Lang Syne',                 attr: 'Scottish folk song · words by Robert Burns · 1788' },
+      { id: 'opus-004', seq: [0,0,1,2], title: 'Yankee Doodle',                  attr: 'American folk song · 18th century' },
+      { id: 'opus-005', seq: [2,4,3,0], title: 'Westminster Quarters',           attr: 'Big Ben chime · St Mary the Great, Cambridge · 1793' },
+    ];
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let entry = [];
+    let history = [];
+    let solved = false, done = false, revealed = false;
+    let ctx = null;
+
+    const stageEl   = $('#stage-opus');
+    const seqEl     = $('#op-sequence');
+    const keysEl    = $('#op-keys');
+    const statusEl  = $('#op-status');
+    const submitBtn = $('#op-submit');
+    const clearBtn  = $('#op-clear');
+    const playMineBtn = $('#op-play-mine');
+    const playTargetBtn = $('#op-play-target');
+    const histEl    = $('#op-history');
+    const solvedEl  = $('#solved-opus');
+    const revealEl  = $('#op-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="opus"][data-action="share"]');
+
+    function ensureCtx() {
+      if (!ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) ctx = new AC();
+      }
+      if (ctx && ctx.state === 'suspended') ctx.resume();
+      return ctx;
+    }
+    function playNote(freq, startAt, duration = 0.5) {
+      const a = ensureCtx(); if (!a) return;
+      const osc = a.createOscillator();
+      const gain = a.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, startAt);
+      gain.gain.linearRampToValueAtTime(0.22, startAt + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, startAt + duration);
+      osc.connect(gain).connect(a.destination);
+      osc.start(startAt);
+      osc.stop(startAt + duration + 0.02);
+    }
+    async function playSequence(seq, gap = 0.55) {
+      const a = ensureCtx(); if (!a) return;
+      const start = a.currentTime + 0.05;
+      seq.forEach((k, i) => {
+        playNote(KEYS[k].freq, start + i * gap, 0.5);
+        setTimeout(() => {
+          const el = keysEl.querySelector(`[data-k="${k}"]`);
+          if (el) { el.classList.add('playing'); setTimeout(() => el.classList.remove('playing'), 380); }
+        }, (start - a.currentTime + i * gap) * 1000);
+      });
+      await new Promise(r => setTimeout(r, (seq.length * gap + 0.55) * 1000));
+    }
+
+    function buildKeys() {
+      keysEl.innerHTML = '';
+      KEYS.forEach((k, i) => {
+        const b = document.createElement('button');
+        b.className = 'op-key'; b.dataset.k = String(i);
+        b.style.setProperty('--c', k.color);
+        b.textContent = k.name;
+        keysEl.appendChild(b);
+      });
+    }
+    function buildSequence() {
+      seqEl.innerHTML = '';
+      for (let i = 0; i < SLOTS; i++) {
+        const s = document.createElement('div'); s.className = 'op-slot'; s.dataset.slot = String(i);
+        seqEl.appendChild(s);
+      }
+      paintSequence();
+    }
+    function paintSequence() {
+      $$('.op-slot', seqEl).forEach((s, i) => {
+        s.classList.remove('filled', 'playing');
+        s.style.removeProperty('--c');
+        const k = entry[i];
+        if (k !== undefined && k !== null) {
+          s.classList.add('filled'); s.style.setProperty('--c', KEYS[k].color); s.textContent = KEYS[k].name;
+        } else s.textContent = String(i + 1);
+      });
+      submitBtn.disabled = done || entry.length !== SLOTS;
+    }
+
+    function pressKey(i) {
+      if (done) return;
+      if (entry.length >= SLOTS) { showToast(`${SLOTS} notes max`); return; }
+      entry.push(i);
+      const a = ensureCtx(); if (a) playNote(KEYS[i].freq, a.currentTime + 0.01, 0.4);
+      paintSequence();
+    }
+
+    function feedback(guess, code) {
+      let bulls = 0; const cR = [], gR = [];
+      for (let i = 0; i < SLOTS; i++) {
+        if (guess[i] === code[i]) bulls++;
+        else { cR.push(code[i]); gR.push(guess[i]); }
+      }
+      let cows = 0;
+      for (const g of gR) {
+        const idx = cR.indexOf(g);
+        if (idx >= 0) { cows++; cR.splice(idx, 1); }
+      }
+      return { bulls, cows };
+    }
+
+    async function submit() {
+      if (done || entry.length !== SLOTS) return;
+      const { bulls, cows } = feedback(entry, PUZZLE.seq);
+      const guess = entry.slice();
+      history.push({ guess, bulls, cows });
+      submitBtn.disabled = true;
+      await playSequence(guess);
+      await playSequence(PUZZLE.seq);
+      submitBtn.disabled = false;
+      if (bulls === SLOTS) {
+        solved = true; done = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+        showReveal();
+      } else if (history.length >= MAX_GUESSES) {
+        done = true;
+        showReveal();
+      } else { haptic(8); }
+      entry = [];
+      paintSequence();
+      renderHistory();
+      updateStatus();
+      if (done && shareBtn) shareBtn.hidden = false;
+    }
+
+    function showReveal() {
+      revealEl.hidden = false;
+      revealEl.innerHTML = `<div class="title">${PUZZLE.title}</div><div class="attr">${PUZZLE.attr}</div>`;
+    }
+
+    function renderHistory() {
+      histEl.innerHTML = '';
+      history.forEach((h, i) => {
+        const row = document.createElement('div');
+        row.className = 'op-history-row';
+        const num = document.createElement('div'); num.className = 'gnum'; num.textContent = String(i + 1);
+        const dots = document.createElement('div'); dots.className = 'dots';
+        h.guess.forEach(k => {
+          const d = document.createElement('div'); d.className = 'd'; d.style.setProperty('--c', KEYS[k].color);
+          dots.appendChild(d);
+        });
+        const replay = document.createElement('button'); replay.className = 'replay'; replay.textContent = 'Play';
+        replay.addEventListener('click', () => playSequence(h.guess));
+        const fb = document.createElement('div'); fb.className = 'fb'; fb.textContent = `${h.bulls}·${h.cows}`;
+        row.appendChild(num); row.appendChild(dots); row.appendChild(replay); row.appendChild(fb);
+        histEl.appendChild(row);
+      });
+    }
+
+    function updateStatus() {
+      const t = history.length + 1;
+      if (solved) statusEl.innerHTML = `Solved in <b>${history.length}</b>`;
+      else if (revealed) statusEl.innerHTML = `Revealed`;
+      else if (done) statusEl.innerHTML = `Out of guesses`;
+      else statusEl.innerHTML = `Guess <b>${t}</b> of <b>${MAX_GUESSES}</b>`;
+    }
+
+    function reset() {
+      entry = []; history = [];
+      solved = false; done = false; revealed = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Solved';
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      if (shareBtn) shareBtn.hidden = true;
+      buildSequence();
+      renderHistory();
+      updateStatus();
+    }
+
+    function reveal() {
+      if (done) return;
+      done = true; revealed = true;
+      solvedEl.classList.add('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      showReveal();
+      playSequence(PUZZLE.seq);
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+
+    function share() {
+      const lines = history.map(h => `${h.bulls}·${h.cows}`);
+      const head = solved ? `Opus ${pIdx + 1} · ${history.length}/${MAX_GUESSES}` :
+                   revealed ? `Opus ${pIdx + 1} · revealed` :
+                   `Opus ${pIdx + 1} · X/${MAX_GUESSES}`;
+      copyShare(`${head}\n\n${lines.join('  ')}\n\ninternet.house/game/opus`);
+    }
+
+    function load(i) {
+      pIdx = (i + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+
+    keysEl.addEventListener('click', e => {
+      const b = e.target.closest('.op-key'); if (!b) return;
+      pressKey(+b.dataset.k);
+    });
+    submitBtn.addEventListener('click', submit);
+    clearBtn.addEventListener('click', () => { if (!done) { entry = []; paintSequence(); } });
+    playMineBtn.addEventListener('click', () => { if (entry.length) playSequence(entry); else showToast('Tap notes first'); });
+    playTargetBtn.addEventListener('click', () => playSequence(PUZZLE.seq));
+
+    buildKeys();
+    GAMES['opus'] = { reset, share, reveal, load };
+    load(0);
+  })();
+  </script>
+</body>
+</html>

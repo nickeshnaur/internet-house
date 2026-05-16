@@ -1,6 +1,6 @@
 # /game
 
-Forty-eight daily-puzzle prototypes, one per folder, served straight
+Fifty-four daily-puzzle prototypes, one per folder, served straight
 out of `game/`. No build step.
 
 ```
@@ -56,6 +56,12 @@ game/
   melody/index.html         ← Game 46    Pure
   jumble/index.html         ← Game 47    Pure
   year/index.html           ← Game 48    Pure
+  chorus/index.html         ← Game 49    Cultural
+  persona/index.html        ← Game 50    Cultural
+  opus/index.html           ← Game 51    Cultural
+  canvas/index.html         ← Game 52    Cultural
+  prism/index.html          ← Game 53    Pure
+  twin/index.html           ← Game 54    Pure
 ```
 
 Each game lives in its own folder; visiting `/game/<slug>/` loads only
@@ -102,16 +108,22 @@ The hub clusters the thirty-two games:
   second-layer visualization renders alongside the abstract dots
   (composition / comic strip / drawn star map / mini tidepool sim).
 - **Pure** — Safe, Balance, Bounce, Group, Cipher, Weigh, Window,
-  Parity, Icon, Melody, Jumble, Year. Mechanics-first prototypes
-  with no narrative wrapper. Each guess returns multi-dimensional
-  independent feedback; the visual is the instrument. The
-  Bulls-and-Cows-lineage games push the principle further: feedback
-  is purely aggregate — a sum, a count, a parity, an overlap, a
-  bull/cow count — and cross-referencing across guesses is required
-  for deduction. The latest four (Icon, Melody, Jumble, Year) pair
-  pure mechanics with daily content that has cultural texture — a
-  recognizable shape, a famous melody, a multi-anagram letter set,
-  a historically loaded year.
+  Parity, Icon, Melody, Jumble, Year, Prism, Twin. Mechanics-first
+  prototypes with no narrative wrapper. Each guess returns
+  multi-dimensional independent feedback; the visual is the
+  instrument. The Bulls-and-Cows-lineage games push the principle
+  further: feedback is purely aggregate, and cross-referencing
+  across guesses is required for deduction. The Pure group now
+  includes two structural-variant Bulls-and-Cows games: **Prism**
+  (three codes from one secret multiset, triple feedback per guess)
+  and **Twin** (two codes related by a hidden transformation drawn
+  from a visible six-card menu).
+- **Cultural** — Chorus, Persona, Opus, Canvas. The mechanic stays
+  in the Bulls-and-Cows lineage but the daily answer is a
+  culturally rich unit: a 5-word fragment of a famous line
+  (Chorus), a historical figure (Persona), a recognizable melody
+  (Opus), a widely-known painting (Canvas). Per-attribute or
+  per-position feedback on a typed/tapped guess narrows the search.
 
 The hub itself (`game/index.html`) is a card grid — each card has a
 glyph, name, one-line description, and a tinted accent border.
@@ -1038,7 +1050,105 @@ Five puzzles ship per game.
 
 ---
 
-## Adding a forty-ninth game
+## The Cultural group
+
+Four Wordle-DNA games where the daily answer is a culturally rich
+unit. The mechanic is conventional Bulls-and-Cows / per-position
+matching; the variability that makes "today's puzzle" worth showing
+up for comes from the content well.
+
+**Chorus** is Wordle for famous quotes. Today's answer is a 5-word
+fragment of a famous line. The player types five words separated
+by spaces; feedback is per-word ✓ exact / ~ elsewhere in the quote
+/ ✗ absent. Six guesses. On solve, the full quote and attribution
+display. Word equivalency is exact-string (case-insensitive) for
+the prototype.
+
+```js
+{
+  id: 'chorus-NNN',
+  words: ['ASK','NOT','WHAT','YOUR','COUNTRY'],
+  full: 'Ask not what your country can do for you…',
+  attr: 'John F. Kennedy · Inaugural Address · 1961',
+}
+```
+
+**Persona** is attribute Mastermind for famous figures. Library of
+30 historically significant figures spanning eras and cultures
+(curated to avoid Eurocentric/modern-centric defaults). Six
+attribute cells per guess: century (directional ↑↓✓), region,
+gender, domain, fame tier (~ for adjacent), alive/deceased. Input
+is a datalist autocomplete over the library.
+
+```js
+{ name: 'Hedy Lamarr', century: 20, region: 'Europe', gender: 'F',
+  domain: 'art', tier: 2, alive: false, bio: '…' }
+```
+
+**Opus** is cultural Audio Bulls-and-Cows. Same six-key diatonic
+keyboard as Melody (cool→warm by pitch), but the motif library is
+classical/folk/anthemic: Beethoven's 5th (transposed), Saints Go
+Marching In, Auld Lang Syne, Yankee Doodle, Westminster Quarters.
+A Play-Target button lets the player hear the answer before
+attempting to identify the colored keys.
+
+```js
+{ seq: [5,5,5,3], title: "Beethoven's Symphony No. 5",
+  attr: 'Ludwig van Beethoven · 1808 · opening motif (transposed)' }
+```
+
+**Canvas** is attribute Mastermind for famous paintings. Library
+of 25 widely recognized works spanning eras and continents
+(Hokusai, Kahlo, Marshall, Utamaro alongside the European canon).
+Five attribute cells: century (directional), region, dominant color
+(with swatch), subject type, figure count (~ for adjacent). On
+solve, the frame fills with the painting's dominant color and the
+title appears.
+
+```js
+{ name: 'The Great Wave off Kanagawa', century: 19, region: 'Asia',
+  color: 'blue', subject: 'landscape', figures: 0,
+  by: 'Katsushika Hokusai', year: 'c. 1831' }
+```
+
+Five puzzles ship per game.
+
+---
+
+## The Pure group · structural variants
+
+Two Bulls-and-Cows variants in the Pure group push the mechanic
+itself rather than the content.
+
+**Prism** runs your single guess against three hidden codes at
+once. The three codes share a secret 4-symbol multiset (drawn from
+the 6-color palette) but are arranged in different orderings. Each
+guess returns three bulls·cows pairs. Crack all three within six
+guesses. Strategy: early guesses establish the symbol set; later
+guesses pin specific orderings.
+
+```js
+{ id: 'prism-NNN', codes: [[0,1,2,3], [2,0,3,1], [3,2,1,0]] }
+```
+
+**Twin** runs your guess against two codes related by a hidden
+transformation. Code A is primary; Code B is derived from A via
+one of six transformations on a visible menu: **Reverse**,
+**Rotate left**, **Swap inner**, **Swap outer**, **Shift +1**,
+**Complement**. Each guess returns two bulls·cows pairs. Eight
+guesses to crack both codes; identifying the transformation falls
+out of cracking both. The menu visibility is critical — players
+have a finite hypothesis space to deduce from.
+
+```js
+{ id: 'twin-NNN', tx: 'reverse', a: [0,1,2,3] }   // B = reverse(A)
+```
+
+Five puzzles ship per game.
+
+---
+
+## Adding a fifty-fifth game
 
 1. Create `/game/<slug>/index.html` modeled on any existing game.
 2. Add an accent color in `shared.css`:

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Persona · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .ps-stage { width: 100%; max-width: 540px; }
+
+  .ps-portrait {
+    width: 92px; height: 92px;
+    border-radius: 50%;
+    background: var(--paper-soft);
+    border: 1.5px solid var(--hairline-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-faint);
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 2.4rem;
+    overflow: hidden;
+  }
+  .ps-portrait .silhouette {
+    width: 100%; height: 100%;
+    background: linear-gradient(180deg, var(--paper-soft) 0%, var(--paper-deep) 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .ps-input-wrap {
+    width: 100%;
+    max-width: 380px;
+    position: relative;
+  }
+  .ps-input {
+    width: 100%;
+    border: 1.5px solid var(--hairline-strong);
+    border-radius: 6px;
+    background: var(--paper);
+    padding: 12px 14px;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.05rem;
+    color: var(--ink);
+    text-align: center;
+  }
+  .ps-input:focus { border-color: var(--accent); }
+  .ps-input::placeholder { color: var(--ink-faint); font-style: italic; }
+
+  .ps-row {
+    display: grid;
+    grid-template-columns: minmax(120px, 1.8fr) repeat(6, 1fr);
+    gap: 4px;
+    padding: 6px 8px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    align-items: center;
+  }
+  .ps-row .name {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ps-cell {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.62rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: var(--ink-faint);
+    padding: 2px;
+    min-height: 40px;
+  }
+  .ps-cell.exact   { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+  .ps-cell.partial { background: color-mix(in srgb, var(--accent) 25%, transparent); border-color: var(--accent); color: var(--accent); }
+  .ps-cell.absent  { background: var(--paper); color: var(--ink-faint); border-color: var(--hairline); }
+  .ps-cell .arrow { font-weight: 700; font-size: 0.78rem; }
+
+  .ps-legend {
+    display: grid;
+    grid-template-columns: minmax(120px, 1.8fr) repeat(6, 1fr);
+    gap: 4px;
+    width: 100%;
+    padding: 0 8px;
+    font: 500 0.54rem 'Inter', sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .ps-legend > div { text-align: center; padding: 2px 0; }
+  .ps-legend > div:first-child { text-align: left; }
+
+  .ps-board { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+
+  .ps-controls {
+    display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;
+  }
+  .ps-btn {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .ps-btn[disabled] { opacity: 0.32; pointer-events: none; }
+  .ps-btn.ghost { color: var(--ink-faint); border-color: var(--hairline-strong); }
+
+  .ps-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .ps-status b { color: var(--ink); font-weight: 600; }
+
+  .ps-reveal {
+    text-align: center;
+    margin: 8px auto;
+    max-width: 32em;
+  }
+  .ps-reveal .name {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.6rem;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+  .ps-reveal .bio {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body data-game="persona" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="persona">
+      <div class="game-head">
+        <div class="eyebrow">No. 050 · Persona</div>
+        <h1 class="title">Persona</h1>
+        <p class="rule">A famous figure. Six tries.</p>
+        <p class="howto"><b>How to play.</b> Type any name from the library. You'll see six attribute cells per guess: <b>century</b> (with ↑ older / ↓ newer), <b>continent</b>, <b>gender</b>, <b>domain</b>, <b>tier</b> (~ for adjacent), and <b>alive/dead</b>.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="persona">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="persona">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="persona" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="persona" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="persona" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="persona" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="persona" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="persona" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="persona" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage ps-stage" id="stage-persona">
+
+        <div class="ps-portrait" id="ps-portrait">
+          <div class="silhouette">?</div>
+        </div>
+
+        <div class="ps-input-wrap">
+          <input class="ps-input" id="ps-input" list="ps-names" placeholder="Type any name from the library…" autocomplete="off">
+          <datalist id="ps-names"></datalist>
+        </div>
+
+        <div class="ps-controls">
+          <button class="ps-btn ghost" id="ps-clear">Clear</button>
+          <button class="ps-btn" id="ps-submit" disabled>Submit</button>
+        </div>
+
+        <div class="ps-status" id="ps-status">Guess <b>1</b> of <b>6</b></div>
+
+        <div class="ps-legend">
+          <div>Name</div>
+          <div>Century</div>
+          <div>Region</div>
+          <div>Gender</div>
+          <div>Domain</div>
+          <div>Tier</div>
+          <div>Era</div>
+        </div>
+
+        <div class="ps-board" id="ps-board"></div>
+
+        <div class="solved" id="solved-persona"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+        <div class="ps-reveal" id="ps-reveal" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Persona() {
+    const MAX_GUESSES = 6;
+
+    // Library — 30 historically significant figures across eras and cultures.
+    // century: integer; negative = BCE.  tier: 1=global icon, 2=widely known, 3=culturally familiar.
+    // domain: science | art | politics | religion | exploration | sport
+    const LIBRARY = [
+      { name: 'Albert Einstein',     century: 20, region: 'Europe',   gender: 'M', domain: 'science',     tier: 1, alive: false, bio: 'German-born theoretical physicist. Special and general relativity reshaped physics; Nobel 1921 for the photoelectric effect.' },
+      { name: 'Marie Curie',         century: 20, region: 'Europe',   gender: 'F', domain: 'science',     tier: 1, alive: false, bio: 'Polish-French physicist and chemist. First person to win Nobel Prizes in two sciences; pioneer of radioactivity.' },
+      { name: 'Charles Darwin',      century: 19, region: 'Europe',   gender: 'M', domain: 'science',     tier: 1, alive: false, bio: 'English naturalist. On the Origin of Species (1859) established evolution by natural selection.' },
+      { name: 'Isaac Newton',        century: 17, region: 'Europe',   gender: 'M', domain: 'science',     tier: 1, alive: false, bio: 'English mathematician and physicist. The Principia (1687) laid the foundations of classical mechanics.' },
+      { name: 'Leonardo da Vinci',   century: 16, region: 'Europe',   gender: 'M', domain: 'art',         tier: 1, alive: false, bio: 'Italian polymath of the High Renaissance. Painter of the Mona Lisa and the Last Supper; notebooks span anatomy to flight.' },
+      { name: 'Frida Kahlo',         century: 20, region: 'Americas', gender: 'F', domain: 'art',         tier: 1, alive: false, bio: 'Mexican painter. Self-portraits drawing on folk art and surrealism explored pain, identity, and the body.' },
+      { name: 'Pablo Picasso',       century: 20, region: 'Europe',   gender: 'M', domain: 'art',         tier: 1, alive: false, bio: 'Spanish painter and sculptor. Co-founder of Cubism; Guernica (1937) became a cry against war.' },
+      { name: 'Vincent van Gogh',    century: 19, region: 'Europe',   gender: 'M', domain: 'art',         tier: 1, alive: false, bio: 'Dutch Post-Impressionist. Sold one painting in his lifetime; about 2,100 artworks survive him.' },
+      { name: 'William Shakespeare', century: 17, region: 'Europe',   gender: 'M', domain: 'art',         tier: 1, alive: false, bio: 'English playwright and poet. 39 plays and 154 sonnets — the foundational figure of English literature.' },
+      { name: 'Maya Angelou',        century: 20, region: 'Americas', gender: 'F', domain: 'art',         tier: 2, alive: false, bio: 'American poet and memoirist. I Know Why the Caged Bird Sings (1969) is a landmark of autobiography.' },
+      { name: 'Toni Morrison',       century: 20, region: 'Americas', gender: 'F', domain: 'art',         tier: 1, alive: false, bio: 'American novelist. Beloved won the Pulitzer; first Black woman to win the Nobel in Literature (1993).' },
+      { name: 'Cleopatra',           century: -1, region: 'Africa',   gender: 'F', domain: 'politics',    tier: 1, alive: false, bio: 'Last pharaoh of Ptolemaic Egypt. Allied with Caesar and Mark Antony; her death sealed the Roman annexation.' },
+      { name: 'Julius Caesar',       century: -1, region: 'Europe',   gender: 'M', domain: 'politics',    tier: 1, alive: false, bio: 'Roman general and dictator. Crossed the Rubicon, conquered Gaul, fell to assassins on the Ides of March, 44 BCE.' },
+      { name: 'Mahatma Gandhi',      century: 20, region: 'Asia',     gender: 'M', domain: 'politics',    tier: 1, alive: false, bio: 'Indian lawyer and leader of nonviolent resistance to British colonial rule. Assassinated 1948.' },
+      { name: 'Nelson Mandela',      century: 20, region: 'Africa',   gender: 'M', domain: 'politics',    tier: 1, alive: false, bio: 'South African anti-apartheid leader. 27 years in prison; first Black president of South Africa, 1994.' },
+      { name: 'Confucius',           century: -5, region: 'Asia',     gender: 'M', domain: 'religion',    tier: 1, alive: false, bio: 'Chinese teacher and philosopher. The Analects shaped East Asian ethics, governance, and family life for millennia.' },
+      { name: 'Buddha',              century: -5, region: 'Asia',     gender: 'M', domain: 'religion',    tier: 1, alive: false, bio: 'Indian prince Siddhārtha Gautama, founder of Buddhism. Taught the Four Noble Truths and the Eightfold Path.' },
+      { name: 'Jesus of Nazareth',   century: 1,  region: 'Asia',     gender: 'M', domain: 'religion',    tier: 1, alive: false, bio: 'Jewish preacher and central figure of Christianity. Crucified under Pontius Pilate in Roman Judea.' },
+      { name: 'Joan of Arc',         century: 15, region: 'Europe',   gender: 'F', domain: 'politics',    tier: 1, alive: false, bio: 'French peasant girl who led armies in the Hundred Years’ War. Burned at the stake at nineteen; canonized 1920.' },
+      { name: 'Hedy Lamarr',         century: 20, region: 'Europe',   gender: 'F', domain: 'art',         tier: 2, alive: false, bio: 'Austrian-American actress and inventor. Co-patented a frequency-hopping system that anticipated modern wireless.' },
+      { name: 'Hokusai',             century: 19, region: 'Asia',     gender: 'M', domain: 'art',         tier: 1, alive: false, bio: 'Japanese ukiyo-e artist. The Great Wave off Kanagawa (c. 1831) is among the most recognized images in the world.' },
+      { name: 'Frederick Douglass',  century: 19, region: 'Americas', gender: 'M', domain: 'politics',    tier: 1, alive: false, bio: 'American abolitionist who escaped slavery. Orator, writer, statesman; counselor to Lincoln.' },
+      { name: 'Sojourner Truth',     century: 19, region: 'Americas', gender: 'F', domain: 'politics',    tier: 2, alive: false, bio: 'Abolitionist and women’s rights advocate. "Ain’t I a Woman?" was delivered at Akron, Ohio, 1851.' },
+      { name: 'Yuri Gagarin',        century: 20, region: 'Europe',   gender: 'M', domain: 'exploration', tier: 1, alive: false, bio: 'Soviet cosmonaut. First human in space, 12 April 1961, aboard Vostok 1.' },
+      { name: 'Pelé',                century: 20, region: 'Americas', gender: 'M', domain: 'sport',       tier: 1, alive: false, bio: 'Brazilian footballer. Three World Cup winners’ medals; over 1,000 career goals.' },
+      { name: 'Serena Williams',     century: 21, region: 'Americas', gender: 'F', domain: 'sport',       tier: 1, alive: true,  bio: 'American tennis player. 23 Grand Slam singles titles in the Open era; transformed the modern game.' },
+      { name: 'Malala Yousafzai',    century: 21, region: 'Asia',     gender: 'F', domain: 'politics',    tier: 1, alive: true,  bio: 'Pakistani education activist. Survived a Taliban assassination attempt at fifteen; youngest Nobel Peace laureate, 2014.' },
+      { name: 'Akira Kurosawa',      century: 20, region: 'Asia',     gender: 'M', domain: 'art',         tier: 1, alive: false, bio: 'Japanese filmmaker. Seven Samurai, Rashomon, Ran; among the most influential directors in cinema history.' },
+      { name: 'Tu Youyou',           century: 20, region: 'Asia',     gender: 'F', domain: 'science',     tier: 2, alive: true,  bio: 'Chinese pharmaceutical chemist. Discovered artemisinin, an anti-malarial that has saved millions; Nobel 2015.' },
+      { name: 'Wangari Maathai',     century: 20, region: 'Africa',   gender: 'F', domain: 'politics',    tier: 2, alive: false, bio: 'Kenyan environmentalist. Founded the Green Belt Movement; first African woman to win the Nobel Peace Prize, 2004.' },
+    ];
+
+    const PUZZLES = [
+      { id: 'persona-001', answer: 'Hedy Lamarr' },
+      { id: 'persona-002', answer: 'Leonardo da Vinci' },
+      { id: 'persona-003', answer: 'Marie Curie' },
+      { id: 'persona-004', answer: 'Confucius' },
+      { id: 'persona-005', answer: 'Frida Kahlo' },
+    ];
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let history = [];
+    let solved = false, done = false, revealed = false;
+
+    const stageEl   = $('#stage-persona');
+    const boardEl   = $('#ps-board');
+    const inputEl   = $('#ps-input');
+    const datalistEl = $('#ps-names');
+    const statusEl  = $('#ps-status');
+    const submitBtn = $('#ps-submit');
+    const clearBtn  = $('#ps-clear');
+    const portraitEl = $('#ps-portrait');
+    const solvedEl  = $('#solved-persona');
+    const revealEl  = $('#ps-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="persona"][data-action="share"]');
+
+    function getEntry(name) {
+      return LIBRARY.find(e => e.name.toLowerCase() === name.trim().toLowerCase());
+    }
+    function answer() {
+      return LIBRARY.find(e => e.name === PUZZLE.answer);
+    }
+
+    function fmtCentury(c) {
+      if (c < 0) return `${Math.abs(c)}c BCE`;
+      return `${c}c CE`;
+    }
+    function fmtTier(t) {
+      return ['', '1', '2', '3'][t];
+    }
+
+    function feedback(g, a) {
+      // returns array of 6 cells: { value, state, sub? }
+      const fb = [];
+      // century
+      if (g.century === a.century) fb.push({ value: fmtCentury(g.century), state: 'exact' });
+      else if (a.century < g.century) fb.push({ value: fmtCentury(g.century), state: 'absent', sub: '↑' });
+      else fb.push({ value: fmtCentury(g.century), state: 'absent', sub: '↓' });
+      // region
+      fb.push({ value: g.region, state: g.region === a.region ? 'exact' : 'absent' });
+      // gender
+      fb.push({ value: g.gender, state: g.gender === a.gender ? 'exact' : 'absent' });
+      // domain
+      fb.push({ value: g.domain, state: g.domain === a.domain ? 'exact' : 'absent' });
+      // tier (~ for adjacent)
+      const td = Math.abs(g.tier - a.tier);
+      fb.push({ value: fmtTier(g.tier), state: td === 0 ? 'exact' : td === 1 ? 'partial' : 'absent' });
+      // alive
+      fb.push({ value: g.alive ? 'alive' : 'dead', state: g.alive === a.alive ? 'exact' : 'absent' });
+      return fb;
+    }
+
+    function buildDatalist() {
+      datalistEl.innerHTML = '';
+      LIBRARY.forEach(e => {
+        const o = document.createElement('option'); o.value = e.name;
+        datalistEl.appendChild(o);
+      });
+    }
+
+    function renderBoard() {
+      boardEl.innerHTML = '';
+      history.forEach(h => {
+        const row = document.createElement('div');
+        row.className = 'ps-row';
+        const name = document.createElement('div'); name.className = 'name'; name.textContent = h.name;
+        row.appendChild(name);
+        h.fb.forEach(cell => {
+          const c = document.createElement('div');
+          c.className = 'ps-cell ' + cell.state;
+          let html = cell.value;
+          if (cell.sub) html += `<span class="arrow"> ${cell.sub}</span>`;
+          c.innerHTML = html;
+          row.appendChild(c);
+        });
+        boardEl.appendChild(row);
+      });
+    }
+
+    function updateSubmit() {
+      const e = getEntry(inputEl.value);
+      submitBtn.disabled = done || !e;
+    }
+
+    function submit() {
+      if (done) return;
+      const g = getEntry(inputEl.value);
+      if (!g) { showToast('Pick a name from the list'); return; }
+      if (history.some(h => h.name === g.name)) { showToast('Already guessed'); return; }
+      const a = answer();
+      const fb = feedback(g, a);
+      history.push({ name: g.name, fb });
+      const all = fb.every(c => c.state === 'exact');
+      if (all) {
+        solved = true; done = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+        showReveal();
+      } else if (history.length >= MAX_GUESSES) {
+        done = true;
+        showReveal();
+      } else {
+        haptic(8);
+      }
+      inputEl.value = '';
+      renderBoard();
+      updateStatus();
+      updateSubmit();
+      if (done && shareBtn) shareBtn.hidden = false;
+    }
+
+    function showReveal() {
+      const a = answer();
+      revealEl.hidden = false;
+      revealEl.innerHTML = `<span class="name">${a.name}</span><div class="bio">${a.bio}</div>`;
+    }
+
+    function updateStatus() {
+      const t = history.length + 1;
+      if (solved) statusEl.innerHTML = `Solved in <b>${history.length}</b>`;
+      else if (revealed) statusEl.innerHTML = `Revealed`;
+      else if (done) statusEl.innerHTML = `Out of guesses`;
+      else statusEl.innerHTML = `Guess <b>${t}</b> of <b>${MAX_GUESSES}</b>`;
+    }
+
+    function reset() {
+      history = [];
+      solved = false; done = false; revealed = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Solved';
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      if (shareBtn) shareBtn.hidden = true;
+      inputEl.value = '';
+      inputEl.disabled = false;
+      renderBoard();
+      updateStatus();
+      updateSubmit();
+    }
+
+    function reveal() {
+      if (done) return;
+      done = true; revealed = true;
+      solvedEl.classList.add('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      showReveal();
+      inputEl.disabled = true;
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+
+    function share() {
+      const lines = history.map(h => h.fb.map(c => c.state === 'exact' ? '🟪' : c.state === 'partial' ? '🟨' : c.sub === '↑' ? '⬆️' : c.sub === '↓' ? '⬇️' : '⬜').join(''));
+      const head = solved ? `Persona ${pIdx + 1} · ${history.length}/${MAX_GUESSES}` :
+                   revealed ? `Persona ${pIdx + 1} · revealed` :
+                   `Persona ${pIdx + 1} · X/${MAX_GUESSES}`;
+      copyShare(`${head}\n\n${lines.join('\n')}\n\ninternet.house/game/persona`);
+    }
+
+    function load(i) {
+      pIdx = (i + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+
+    inputEl.addEventListener('input', updateSubmit);
+    inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !submitBtn.disabled) submit(); });
+    submitBtn.addEventListener('click', submit);
+    clearBtn.addEventListener('click', () => { if (!done) { inputEl.value = ''; updateSubmit(); inputEl.focus(); } });
+
+    buildDatalist();
+    GAMES['persona'] = { reset, share, reveal, load };
+    load(0);
+  })();
+  </script>
+</body>
+</html>

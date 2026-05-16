@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Chorus · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .ch-stage { width: 100%; max-width: 540px; }
+
+  .ch-board {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .ch-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    padding: 8px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+  }
+  .ch-row.current { border-color: var(--accent); background: var(--paper); }
+  .ch-word {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(0.92rem, 3.4vw, 1.08rem);
+    padding: 6px 10px;
+    border-radius: 4px;
+    background: var(--paper);
+    border: 1px solid var(--hairline-strong);
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    min-width: 2.4em;
+    text-align: center;
+  }
+  .ch-word.exact   { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+  .ch-word.partial { background: color-mix(in srgb, var(--accent) 25%, transparent); border-color: var(--accent); color: var(--accent); }
+  .ch-word.absent  { background: var(--paper); color: var(--ink-faint); border-color: var(--hairline); }
+
+  .ch-input {
+    width: 100%;
+    max-width: 420px;
+    border: 1.5px solid var(--hairline-strong);
+    border-radius: 6px;
+    background: var(--paper);
+    padding: 12px 14px;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.05rem;
+    color: var(--ink);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .ch-input:focus { border-color: var(--accent); }
+  .ch-input::placeholder { color: var(--ink-faint); text-transform: none; font-style: italic; letter-spacing: 0; font-weight: 400; }
+
+  .ch-controls {
+    display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;
+  }
+  .ch-btn {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .ch-btn[disabled] { opacity: 0.32; pointer-events: none; }
+  .ch-btn.ghost { color: var(--ink-faint); border-color: var(--hairline-strong); }
+
+  .ch-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .ch-status b { color: var(--ink); font-weight: 600; }
+
+  .ch-reveal {
+    text-align: center;
+    margin: 12px auto;
+    max-width: 32em;
+  }
+  .ch-reveal .quote {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 1.3rem;
+    color: var(--accent);
+    line-height: 1.4;
+  }
+  .ch-reveal .attr {
+    margin-top: 8px;
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+</style>
+</head>
+<body data-game="chorus" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="chorus">
+      <div class="game-head">
+        <div class="eyebrow">No. 049 · Chorus</div>
+        <h1 class="title">Chorus</h1>
+        <p class="rule">Five words of a famous line. Six tries.</p>
+        <p class="howto"><b>How to play.</b> Type five words separated by spaces, then <b>Submit</b>. Per word: <b>solid</b> = right word, right slot; <b>outline</b> = appears elsewhere; <b>faded</b> = not in the quote.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="chorus">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="chorus">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="chorus" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="chorus" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="chorus" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="chorus" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="chorus" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="chorus" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="chorus" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage ch-stage" id="stage-chorus">
+
+        <div class="ch-board" id="ch-board"></div>
+
+        <input class="ch-input" id="ch-input" placeholder="Type five words…" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+
+        <div class="ch-status" id="ch-status">Guess <b>1</b> of <b>6</b></div>
+
+        <div class="ch-controls">
+          <button class="ch-btn ghost" id="ch-clear">Clear</button>
+          <button class="ch-btn" id="ch-submit" disabled>Submit</button>
+        </div>
+
+        <div class="solved" id="solved-chorus"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+        <div class="ch-reveal" id="ch-reveal" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Chorus() {
+    const SLOTS = 5;
+    const MAX_GUESSES = 6;
+
+    // 5 curated 5-word fragments of famous lines.
+    const PUZZLES = [
+      { id: 'chorus-001', words: ['ASK','NOT','WHAT','YOUR','COUNTRY'], full: 'Ask not what your country can do for you — ask what you can do for your country.', attr: 'John F. Kennedy · Inaugural Address · 1961' },
+      { id: 'chorus-002', words: ['IT','WAS','THE','BEST','OF'],         full: 'It was the best of times, it was the worst of times…', attr: 'Charles Dickens · A Tale of Two Cities · 1859' },
+      { id: 'chorus-003', words: ['I','HAVE','A','DREAM','TODAY'],       full: 'I have a dream today.', attr: 'Martin Luther King Jr. · "I Have a Dream" · 1963' },
+      { id: 'chorus-004', words: ['FOUR','SCORE','AND','SEVEN','YEARS'], full: 'Four score and seven years ago, our fathers brought forth on this continent…', attr: 'Abraham Lincoln · Gettysburg Address · 1863' },
+      { id: 'chorus-005', words: ['WE','THE','PEOPLE','OF','THE'],       full: 'We the People of the United States, in Order to form a more perfect Union…', attr: 'Preamble to the United States Constitution · 1787' },
+    ];
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let history = [];   // [{ guess:[words], fb:[states] }]
+    let solved = false, done = false, revealed = false;
+
+    const stageEl   = $('#stage-chorus');
+    const boardEl   = $('#ch-board');
+    const inputEl   = $('#ch-input');
+    const statusEl  = $('#ch-status');
+    const submitBtn = $('#ch-submit');
+    const clearBtn  = $('#ch-clear');
+    const solvedEl  = $('#solved-chorus');
+    const revealEl  = $('#ch-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="chorus"][data-action="share"]');
+
+    function feedback(guess, answer) {
+      // Mastermind-style: exact pass first, then partial pass with consume-once.
+      const fb = new Array(SLOTS).fill('absent');
+      const ansRem = answer.slice();
+      for (let i = 0; i < SLOTS; i++) {
+        if (guess[i] === answer[i]) { fb[i] = 'exact'; ansRem[i] = null; }
+      }
+      for (let i = 0; i < SLOTS; i++) {
+        if (fb[i] === 'exact') continue;
+        const idx = ansRem.indexOf(guess[i]);
+        if (idx >= 0) { fb[i] = 'partial'; ansRem[idx] = null; }
+      }
+      return fb;
+    }
+
+    function parseInput() {
+      return inputEl.value.trim().toUpperCase().split(/\s+/).filter(Boolean);
+    }
+
+    function renderBoard() {
+      boardEl.innerHTML = '';
+      history.forEach(g => {
+        const row = document.createElement('div');
+        row.className = 'ch-row';
+        g.guess.forEach((w, i) => {
+          const s = document.createElement('span');
+          s.className = 'ch-word ' + g.fb[i];
+          s.textContent = w;
+          row.appendChild(s);
+        });
+        boardEl.appendChild(row);
+      });
+    }
+
+    function updateSubmit() {
+      const w = parseInput();
+      submitBtn.disabled = done || w.length !== SLOTS;
+    }
+
+    function submit() {
+      const guess = parseInput();
+      if (guess.length !== SLOTS || done) return;
+      const fb = feedback(guess, PUZZLE.words);
+      history.push({ guess, fb });
+      const all = fb.every(f => f === 'exact');
+      if (all) {
+        solved = true; done = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+        showReveal();
+      } else if (history.length >= MAX_GUESSES) {
+        done = true;
+        showReveal();
+      } else {
+        haptic(8);
+      }
+      inputEl.value = '';
+      renderBoard();
+      updateStatus();
+      updateSubmit();
+      if (done && shareBtn) shareBtn.hidden = false;
+    }
+
+    function showReveal() {
+      revealEl.hidden = false;
+      revealEl.innerHTML = `<div class="quote">"${PUZZLE.full}"</div><div class="attr">${PUZZLE.attr}</div>`;
+    }
+
+    function updateStatus() {
+      const t = history.length + 1;
+      if (solved) statusEl.innerHTML = `Solved in <b>${history.length}</b>`;
+      else if (revealed) statusEl.innerHTML = `Revealed`;
+      else if (done) statusEl.innerHTML = `Out of guesses`;
+      else statusEl.innerHTML = `Guess <b>${t}</b> of <b>${MAX_GUESSES}</b>`;
+    }
+
+    function reset() {
+      history = [];
+      solved = false; done = false; revealed = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Solved';
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      if (shareBtn) shareBtn.hidden = true;
+      inputEl.value = '';
+      inputEl.disabled = false;
+      renderBoard();
+      updateStatus();
+      updateSubmit();
+    }
+
+    function reveal() {
+      if (done) return;
+      done = true; revealed = true;
+      solvedEl.classList.add('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      showReveal();
+      inputEl.disabled = true;
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+
+    function share() {
+      const map = { exact:'🟪', partial:'🟨', absent:'⬜' };
+      const lines = history.map(g => g.fb.map(f => map[f]).join(''));
+      const head = solved ? `Chorus ${pIdx + 1} · ${history.length}/${MAX_GUESSES}` :
+                   revealed ? `Chorus ${pIdx + 1} · revealed` :
+                   `Chorus ${pIdx + 1} · X/${MAX_GUESSES}`;
+      copyShare(`${head}\n\n${lines.join('\n')}\n\ninternet.house/game/chorus`);
+    }
+
+    function load(i) {
+      pIdx = (i + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+
+    inputEl.addEventListener('input', updateSubmit);
+    inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !submitBtn.disabled) submit(); });
+    submitBtn.addEventListener('click', submit);
+    clearBtn.addEventListener('click', () => { if (!done) { inputEl.value = ''; updateSubmit(); inputEl.focus(); } });
+
+    GAMES['chorus'] = { reset, share, reveal, load };
+    load(0);
+  })();
+  </script>
+</body>
+</html>

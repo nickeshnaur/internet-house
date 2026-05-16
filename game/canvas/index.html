@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Canvas · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .cv-stage { width: 100%; max-width: 540px; }
+
+  .cv-frame {
+    width: clamp(140px, 36vw, 180px);
+    aspect-ratio: 4 / 5;
+    border: 8px solid #6E5836;
+    background: var(--paper-soft);
+    box-shadow: 0 4px 16px -8px rgba(0,0,0,0.3);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-faint);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 2.4rem;
+    position: relative;
+  }
+  .cv-frame::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border: 1px solid #4A3A22;
+    pointer-events: none;
+  }
+  .cv-frame .reveal-color {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--reveal-color, var(--paper-soft));
+  }
+  .cv-frame .reveal-name {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 0.92rem;
+    color: var(--paper);
+    padding: 8px 12px;
+    background: rgba(0,0,0,0.55);
+    border-radius: 3px;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .cv-input-wrap { width: 100%; max-width: 380px; }
+  .cv-input {
+    width: 100%;
+    border: 1.5px solid var(--hairline-strong);
+    border-radius: 6px;
+    background: var(--paper);
+    padding: 12px 14px;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.05rem;
+    color: var(--ink);
+    text-align: center;
+  }
+  .cv-input:focus { border-color: var(--accent); }
+  .cv-input::placeholder { color: var(--ink-faint); font-style: italic; }
+
+  .cv-legend {
+    display: grid;
+    grid-template-columns: minmax(120px, 1.6fr) repeat(5, 1fr);
+    gap: 4px;
+    width: 100%;
+    padding: 0 8px;
+    font: 500 0.54rem 'Inter', sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .cv-legend > div { text-align: center; padding: 2px 0; }
+  .cv-legend > div:first-child { text-align: left; }
+
+  .cv-board { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+  .cv-row {
+    display: grid;
+    grid-template-columns: minmax(120px, 1.6fr) repeat(5, 1fr);
+    gap: 4px;
+    padding: 6px 8px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    align-items: center;
+  }
+  .cv-row .name {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cv-cell {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.6rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: var(--ink-faint);
+    padding: 2px;
+    min-height: 40px;
+  }
+  .cv-cell.exact   { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+  .cv-cell.partial { background: color-mix(in srgb, var(--accent) 25%, transparent); border-color: var(--accent); color: var(--accent); }
+  .cv-cell.absent  { background: var(--paper); color: var(--ink-faint); border-color: var(--hairline); }
+  .cv-cell .arrow { font-weight: 700; font-size: 0.76rem; }
+  .cv-cell .swatch {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--swatch, #ccc);
+    border: 1px solid rgba(0,0,0,0.2);
+  }
+
+  .cv-controls {
+    display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;
+  }
+  .cv-btn {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .cv-btn[disabled] { opacity: 0.32; pointer-events: none; }
+  .cv-btn.ghost { color: var(--ink-faint); border-color: var(--hairline-strong); }
+
+  .cv-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .cv-status b { color: var(--ink); font-weight: 600; }
+
+  .cv-reveal {
+    text-align: center;
+    margin: 8px auto;
+    max-width: 32em;
+  }
+  .cv-reveal .title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.4rem;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+  }
+  .cv-reveal .attr {
+    margin-top: 4px;
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+</style>
+</head>
+<body data-game="canvas" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="canvas">
+      <div class="game-head">
+        <div class="eyebrow">No. 052 · Canvas</div>
+        <h1 class="title">Canvas</h1>
+        <p class="rule">A famous painting. Six tries.</p>
+        <p class="howto"><b>How to play.</b> Type any painting from the library. Five attribute cells per guess: <b>century</b> (↑ older / ↓ newer), <b>region</b>, <b>color</b>, <b>subject</b>, and <b>figures</b> (~ for adjacent count).</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="canvas">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="canvas">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="canvas" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="canvas" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="canvas" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="canvas" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="canvas" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="canvas" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="canvas" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage cv-stage" id="stage-canvas">
+
+        <div class="cv-frame" id="cv-frame">?</div>
+
+        <div class="cv-input-wrap">
+          <input class="cv-input" id="cv-input" list="cv-works" placeholder="Type any painting from the library…" autocomplete="off">
+          <datalist id="cv-works"></datalist>
+        </div>
+
+        <div class="cv-controls">
+          <button class="cv-btn ghost" id="cv-clear">Clear</button>
+          <button class="cv-btn" id="cv-submit" disabled>Submit</button>
+        </div>
+
+        <div class="cv-status" id="cv-status">Guess <b>1</b> of <b>6</b></div>
+
+        <div class="cv-legend">
+          <div>Title</div>
+          <div>Century</div>
+          <div>Region</div>
+          <div>Color</div>
+          <div>Subject</div>
+          <div>Figures</div>
+        </div>
+
+        <div class="cv-board" id="cv-board"></div>
+
+        <div class="solved" id="solved-canvas"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+        <div class="cv-reveal" id="cv-reveal" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Canvas_() {
+    const MAX_GUESSES = 6;
+
+    // figures: 0=none, 1=one, 2=few (2-5), 3=many (6+)
+    // subject: portrait | landscape | still-life | religious | mythological | abstract
+    // color: dominant single color name
+    const COLOR_SWATCH = {
+      red:    '#B33A3A', orange: '#D4762E', yellow: '#D4A536', green:  '#3B6B4A',
+      blue:   '#3066BE', purple: '#7A5BB8', brown:  '#8B6F4A', gold:   '#C9A14A',
+      black:  '#1A1A1A', white:  '#E8E0D0', gray:   '#888880', pink:   '#D8A0A0',
+    };
+
+    const LIBRARY = [
+      { name: 'Mona Lisa',                        century: 16, region: 'Europe',   color: 'brown',  subject: 'portrait',     figures: 1, by: 'Leonardo da Vinci', year: 'c. 1503-1519' },
+      { name: 'The Last Supper',                  century: 15, region: 'Europe',   color: 'brown',  subject: 'religious',    figures: 3, by: 'Leonardo da Vinci', year: 'c. 1495-1498' },
+      { name: 'The Starry Night',                 century: 19, region: 'Europe',   color: 'blue',   subject: 'landscape',    figures: 0, by: 'Vincent van Gogh',  year: '1889' },
+      { name: 'Sunflowers',                       century: 19, region: 'Europe',   color: 'yellow', subject: 'still-life',   figures: 0, by: 'Vincent van Gogh',  year: '1888' },
+      { name: 'The Scream',                       century: 19, region: 'Europe',   color: 'orange', subject: 'portrait',     figures: 1, by: 'Edvard Munch',      year: '1893' },
+      { name: 'The Great Wave off Kanagawa',      century: 19, region: 'Asia',     color: 'blue',   subject: 'landscape',    figures: 0, by: 'Katsushika Hokusai',year: 'c. 1831' },
+      { name: 'Guernica',                         century: 20, region: 'Europe',   color: 'gray',   subject: 'abstract',     figures: 3, by: 'Pablo Picasso',     year: '1937' },
+      { name: 'The Persistence of Memory',        century: 20, region: 'Europe',   color: 'brown',  subject: 'landscape',    figures: 0, by: 'Salvador Dalí',     year: '1931' },
+      { name: 'The Two Fridas',                   century: 20, region: 'Americas', color: 'red',    subject: 'portrait',     figures: 2, by: 'Frida Kahlo',       year: '1939' },
+      { name: 'American Gothic',                  century: 20, region: 'Americas', color: 'gray',   subject: 'portrait',     figures: 2, by: 'Grant Wood',        year: '1930' },
+      { name: 'Girl with a Pearl Earring',        century: 17, region: 'Europe',   color: 'blue',   subject: 'portrait',     figures: 1, by: 'Johannes Vermeer',  year: 'c. 1665' },
+      { name: 'The Birth of Venus',               century: 15, region: 'Europe',   color: 'gold',   subject: 'mythological', figures: 2, by: 'Sandro Botticelli', year: 'c. 1485' },
+      { name: 'The School of Athens',             century: 16, region: 'Europe',   color: 'gold',   subject: 'mythological', figures: 3, by: 'Raphael',           year: '1509-1511' },
+      { name: 'The Night Watch',                  century: 17, region: 'Europe',   color: 'brown',  subject: 'portrait',     figures: 3, by: 'Rembrandt',         year: '1642' },
+      { name: 'Las Meninas',                      century: 17, region: 'Europe',   color: 'brown',  subject: 'portrait',     figures: 3, by: 'Diego Velázquez',   year: '1656' },
+      { name: 'Composition with Red Blue Yellow', century: 20, region: 'Europe',   color: 'white',  subject: 'abstract',     figures: 0, by: 'Piet Mondrian',     year: '1930' },
+      { name: 'Nighthawks',                       century: 20, region: 'Americas', color: 'yellow', subject: 'landscape',    figures: 2, by: 'Edward Hopper',     year: '1942' },
+      { name: 'A Sunday on La Grande Jatte',      century: 19, region: 'Europe',   color: 'green',  subject: 'landscape',    figures: 3, by: 'Georges Seurat',    year: '1884-1886' },
+      { name: 'The Kiss',                         century: 20, region: 'Europe',   color: 'gold',   subject: 'portrait',     figures: 2, by: 'Gustav Klimt',      year: '1907-1908' },
+      { name: 'Past Times',                       century: 20, region: 'Americas', color: 'green',  subject: 'landscape',    figures: 3, by: 'Kerry James Marshall', year: '1997' },
+      { name: 'Self-Portrait with Thorn Necklace',century: 20, region: 'Americas', color: 'green',  subject: 'portrait',     figures: 1, by: 'Frida Kahlo',       year: '1940' },
+      { name: 'The Garden of Earthly Delights',   century: 16, region: 'Europe',   color: 'green',  subject: 'religious',    figures: 3, by: 'Hieronymus Bosch',  year: 'c. 1500-1505' },
+      { name: 'Bal du moulin de la Galette',      century: 19, region: 'Europe',   color: 'blue',   subject: 'portrait',     figures: 3, by: 'Pierre-Auguste Renoir', year: '1876' },
+      { name: 'Saturn Devouring His Son',         century: 19, region: 'Europe',   color: 'black',  subject: 'mythological', figures: 2, by: 'Francisco Goya',    year: 'c. 1819-1823' },
+      { name: 'Three Beauties of the Present Day',century: 18, region: 'Asia',     color: 'brown',  subject: 'portrait',     figures: 2, by: 'Kitagawa Utamaro',  year: 'c. 1793' },
+    ];
+
+    const PUZZLES = [
+      { id: 'canvas-001', answer: 'The Great Wave off Kanagawa' },
+      { id: 'canvas-002', answer: 'Mona Lisa' },
+      { id: 'canvas-003', answer: 'The Two Fridas' },
+      { id: 'canvas-004', answer: 'The Starry Night' },
+      { id: 'canvas-005', answer: 'The School of Athens' },
+    ];
+
+    const FIG_LABELS = ['none', 'one', 'few', 'many'];
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let history = [];
+    let solved = false, done = false, revealed = false;
+
+    const stageEl   = $('#stage-canvas');
+    const frameEl   = $('#cv-frame');
+    const boardEl   = $('#cv-board');
+    const inputEl   = $('#cv-input');
+    const datalistEl = $('#cv-works');
+    const statusEl  = $('#cv-status');
+    const submitBtn = $('#cv-submit');
+    const clearBtn  = $('#cv-clear');
+    const solvedEl  = $('#solved-canvas');
+    const revealEl  = $('#cv-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="canvas"][data-action="share"]');
+
+    function getEntry(name) {
+      return LIBRARY.find(e => e.name.toLowerCase() === name.trim().toLowerCase());
+    }
+    function answer() {
+      return LIBRARY.find(e => e.name === PUZZLE.answer);
+    }
+    function fmtCentury(c) {
+      if (c < 0) return `${Math.abs(c)}c BCE`;
+      return `${c}c`;
+    }
+
+    function feedback(g, a) {
+      const fb = [];
+      // century
+      if (g.century === a.century) fb.push({ value: fmtCentury(g.century), state: 'exact' });
+      else if (a.century < g.century) fb.push({ value: fmtCentury(g.century), state: 'absent', sub: '↑' });
+      else fb.push({ value: fmtCentury(g.century), state: 'absent', sub: '↓' });
+      // region
+      fb.push({ value: g.region, state: g.region === a.region ? 'exact' : 'absent' });
+      // color (with swatch)
+      fb.push({ value: g.color, state: g.color === a.color ? 'exact' : 'absent', swatch: COLOR_SWATCH[g.color] });
+      // subject
+      fb.push({ value: g.subject, state: g.subject === a.subject ? 'exact' : 'absent' });
+      // figures (~ for adjacent)
+      const fd = Math.abs(g.figures - a.figures);
+      fb.push({ value: FIG_LABELS[g.figures], state: fd === 0 ? 'exact' : fd === 1 ? 'partial' : 'absent' });
+      return fb;
+    }
+
+    function buildDatalist() {
+      datalistEl.innerHTML = '';
+      LIBRARY.forEach(e => {
+        const o = document.createElement('option'); o.value = e.name;
+        datalistEl.appendChild(o);
+      });
+    }
+
+    function renderBoard() {
+      boardEl.innerHTML = '';
+      history.forEach(h => {
+        const row = document.createElement('div');
+        row.className = 'cv-row';
+        const name = document.createElement('div'); name.className = 'name'; name.textContent = h.name;
+        row.appendChild(name);
+        h.fb.forEach(cell => {
+          const c = document.createElement('div');
+          c.className = 'cv-cell ' + cell.state;
+          let html = '';
+          if (cell.swatch) html += `<span class="swatch" style="--swatch:${cell.swatch}"></span>`;
+          html += cell.value;
+          if (cell.sub) html += `<span class="arrow"> ${cell.sub}</span>`;
+          c.innerHTML = html;
+          row.appendChild(c);
+        });
+        boardEl.appendChild(row);
+      });
+    }
+
+    function updateSubmit() {
+      const e = getEntry(inputEl.value);
+      submitBtn.disabled = done || !e;
+    }
+
+    function submit() {
+      if (done) return;
+      const g = getEntry(inputEl.value);
+      if (!g) { showToast('Pick a painting from the list'); return; }
+      if (history.some(h => h.name === g.name)) { showToast('Already guessed'); return; }
+      const a = answer();
+      const fb = feedback(g, a);
+      history.push({ name: g.name, fb });
+      const all = fb.every(c => c.state === 'exact');
+      if (all) {
+        solved = true; done = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+        showReveal();
+      } else if (history.length >= MAX_GUESSES) {
+        done = true;
+        showReveal();
+      } else { haptic(8); }
+      inputEl.value = '';
+      renderBoard();
+      updateStatus();
+      updateSubmit();
+      if (done && shareBtn) shareBtn.hidden = false;
+    }
+
+    function showReveal() {
+      const a = answer();
+      revealEl.hidden = false;
+      revealEl.innerHTML = `<div class="title">${a.name}</div><div class="attr">${a.by} · ${a.year}</div>`;
+      // Fill the frame with the dominant color and title label
+      frameEl.innerHTML = `<div class="reveal-color" style="--reveal-color:${COLOR_SWATCH[a.color]}"><span class="reveal-name">${a.name}</span></div>`;
+    }
+
+    function updateStatus() {
+      const t = history.length + 1;
+      if (solved) statusEl.innerHTML = `Solved in <b>${history.length}</b>`;
+      else if (revealed) statusEl.innerHTML = `Revealed`;
+      else if (done) statusEl.innerHTML = `Out of guesses`;
+      else statusEl.innerHTML = `Guess <b>${t}</b> of <b>${MAX_GUESSES}</b>`;
+    }
+
+    function reset() {
+      history = [];
+      solved = false; done = false; revealed = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Solved';
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      if (shareBtn) shareBtn.hidden = true;
+      inputEl.value = '';
+      inputEl.disabled = false;
+      frameEl.innerHTML = '?';
+      renderBoard();
+      updateStatus();
+      updateSubmit();
+    }
+
+    function reveal() {
+      if (done) return;
+      done = true; revealed = true;
+      solvedEl.classList.add('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      showReveal();
+      inputEl.disabled = true;
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+
+    function share() {
+      const lines = history.map(h => h.fb.map(c => c.state === 'exact' ? '🟪' : c.state === 'partial' ? '🟨' : c.sub === '↑' ? '⬆️' : c.sub === '↓' ? '⬇️' : '⬜').join(''));
+      const head = solved ? `Canvas ${pIdx + 1} · ${history.length}/${MAX_GUESSES}` :
+                   revealed ? `Canvas ${pIdx + 1} · revealed` :
+                   `Canvas ${pIdx + 1} · X/${MAX_GUESSES}`;
+      copyShare(`${head}\n\n${lines.join('\n')}\n\ninternet.house/game/canvas`);
+    }
+
+    function load(i) {
+      pIdx = (i + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+
+    inputEl.addEventListener('input', updateSubmit);
+    inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !submitBtn.disabled) submit(); });
+    submitBtn.addEventListener('click', submit);
+    clearBtn.addEventListener('click', () => { if (!done) { inputEl.value = ''; updateSubmit(); inputEl.focus(); } });
+
+    buildDatalist();
+    GAMES['canvas'] = { reset, share, reveal, load };
+    load(0);
+  })();
+  </script>
+</body>
+</html>

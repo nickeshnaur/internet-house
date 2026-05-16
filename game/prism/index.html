@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Prism · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .pr-stage { width: 100%; max-width: 460px; }
+
+  .pr-targets {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 380px;
+  }
+  .pr-target {
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    padding: 8px 6px;
+    text-align: center;
+  }
+  .pr-target.cracked {
+    background: color-mix(in srgb, var(--accent) 12%, var(--paper));
+    border-color: var(--accent);
+  }
+  .pr-target .lbl {
+    font: 500 0.7rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 6px;
+  }
+  .pr-target.cracked .lbl { color: var(--accent); }
+  .pr-target .pegs {
+    display: flex; gap: 4px; justify-content: center;
+  }
+  .pr-target .pegs .pg {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1px solid var(--hairline-strong);
+  }
+  .pr-target.cracked .pegs .pg { background: var(--c, var(--paper)); border-color: var(--c, var(--accent)); }
+
+  .pr-slots { display: flex; gap: 10px; justify-content: center; }
+  .pr-slot {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--paper-soft);
+    border: 1.5px dashed var(--hairline-strong);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    transition: all var(--t-fast) var(--ease);
+  }
+  .pr-slot.filled {
+    background: var(--c);
+    border-style: solid;
+    border-color: var(--c);
+    color: white;
+    font-size: 0;
+  }
+  .pr-slot.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+
+  .pr-palette {
+    display: flex; gap: 10px; justify-content: center;
+  }
+  .pr-chip {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--c, #ccc);
+    border: 1.5px solid var(--hairline);
+    transition: transform var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+  }
+  @media (hover: hover) { .pr-chip:hover { transform: scale(1.08); } }
+
+  .pr-controls {
+    display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;
+  }
+  .pr-btn {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .pr-btn[disabled] { opacity: 0.32; pointer-events: none; }
+  .pr-btn.ghost { color: var(--ink-faint); border-color: var(--hairline-strong); }
+
+  .pr-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .pr-status b { color: var(--ink); font-weight: 600; }
+
+  .pr-history { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+  .pr-history-row {
+    display: grid;
+    grid-template-columns: 22px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 6px 10px;
+  }
+  .pr-history-row .gnum { font: 500 0.66rem 'JetBrains Mono', monospace; color: var(--ink-faint); }
+  .pr-history-row .pegs { display: flex; gap: 4px; }
+  .pr-history-row .pegs .pg {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--c);
+    border: 1px solid var(--hairline);
+  }
+  .pr-history-row .fbs {
+    display: flex; gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.74rem;
+  }
+  .pr-history-row .fbs .one {
+    color: var(--ink-soft);
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 2px 6px;
+    min-width: 38px;
+    text-align: center;
+  }
+  .pr-history-row .fbs .one.cracked { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+</style>
+</head>
+<body data-game="prism" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="prism">
+      <div class="game-head">
+        <div class="eyebrow">No. 053 · Prism</div>
+        <h1 class="title">Prism</h1>
+        <p class="rule">Three codes. Same symbols. Different orderings.</p>
+        <p class="howto"><b>How to play.</b> All three of today's codes use the same secret four-symbol multiset, arranged differently. Each guess returns three bulls·cows pairs — one per code. Crack all three within six guesses.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="prism">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="prism">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="prism" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="prism" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="prism" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="prism" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="prism" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="prism" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="prism" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage pr-stage" id="stage-prism">
+
+        <div class="pr-targets" id="pr-targets"></div>
+
+        <div class="pr-slots" id="pr-slots"></div>
+
+        <div class="pr-palette" id="pr-palette"></div>
+
+        <div class="pr-status" id="pr-status">Guess <b>1</b> of <b>6</b> · <b>0</b>/3 cracked</div>
+
+        <div class="pr-controls">
+          <button class="pr-btn ghost" id="pr-clear">Clear</button>
+          <button class="pr-btn" id="pr-submit" disabled>Submit</button>
+        </div>
+
+        <div class="pr-history" id="pr-history"></div>
+
+        <div class="solved" id="solved-prism"><span class="check">✓</span><span class="solved-text">All cracked</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Prism() {
+    const SLOTS = 4;
+    const MAX_GUESSES = 6;
+    const COLORS = ['#D44A4A', '#3B8A4F', '#3066BE', '#D4A536', '#9D5BB8', '#E8A0C8'];
+
+    // 5 puzzles. Each: 3 codes drawn from the same multiset, different orderings.
+    const PUZZLES = [
+      { id: 'prism-001', codes: [[0,1,2,3], [2,0,3,1], [3,2,1,0]] },
+      { id: 'prism-002', codes: [[0,4,0,5], [5,0,4,0], [0,5,0,4]] },
+      { id: 'prism-003', codes: [[1,2,3,4], [4,3,2,1], [2,4,1,3]] },
+      { id: 'prism-004', codes: [[0,2,3,5], [3,5,0,2], [5,3,2,0]] },
+      { id: 'prism-005', codes: [[1,4,1,5], [5,1,4,1], [4,5,1,1]] },
+    ];
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let entry = [null, null, null, null];
+    let activeSlot = 0;
+    let history = [];     // [{ guess, fbs:[{bulls,cows},...3] }]
+    let cracked = [false, false, false];
+    let done = false, revealed = false;
+
+    const stageEl   = $('#stage-prism');
+    const targetsEl = $('#pr-targets');
+    const slotsEl   = $('#pr-slots');
+    const paletteEl = $('#pr-palette');
+    const statusEl  = $('#pr-status');
+    const submitBtn = $('#pr-submit');
+    const clearBtn  = $('#pr-clear');
+    const histEl    = $('#pr-history');
+    const solvedEl  = $('#solved-prism');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="prism"][data-action="share"]');
+
+    function feedback(guess, code) {
+      let bulls = 0; const cR = [], gR = [];
+      for (let i = 0; i < SLOTS; i++) {
+        if (guess[i] === code[i]) bulls++;
+        else { cR.push(code[i]); gR.push(guess[i]); }
+      }
+      let cows = 0;
+      for (const g of gR) {
+        const idx = cR.indexOf(g);
+        if (idx >= 0) { cows++; cR.splice(idx, 1); }
+      }
+      return { bulls, cows };
+    }
+
+    function buildTargets() {
+      targetsEl.innerHTML = '';
+      ['A', 'B', 'C'].forEach((L, i) => {
+        const t = document.createElement('div');
+        t.className = 'pr-target'; t.dataset.t = String(i);
+        t.innerHTML = `<div class="lbl">${L}</div><div class="pegs">${
+          Array(SLOTS).fill(0).map(() => `<span class="pg"></span>`).join('')
+        }</div>`;
+        targetsEl.appendChild(t);
+      });
+      paintTargets();
+    }
+    function paintTargets() {
+      $$('.pr-target', targetsEl).forEach((t, i) => {
+        t.classList.toggle('cracked', cracked[i]);
+        if (cracked[i] || revealed) {
+          $$('.pg', t).forEach((pg, k) => pg.style.setProperty('--c', COLORS[PUZZLE.codes[i][k]]));
+        } else {
+          $$('.pg', t).forEach(pg => pg.style.removeProperty('--c'));
+        }
+      });
+    }
+
+    function buildSlots() {
+      slotsEl.innerHTML = '';
+      for (let i = 0; i < SLOTS; i++) {
+        const s = document.createElement('button');
+        s.className = 'pr-slot'; s.dataset.slot = String(i);
+        s.textContent = String(i + 1);
+        slotsEl.appendChild(s);
+      }
+      paintSlots();
+    }
+    function paintSlots() {
+      $$('.pr-slot', slotsEl).forEach((s, i) => {
+        s.classList.remove('filled', 'active');
+        s.style.removeProperty('--c');
+        const c = entry[i];
+        if (c !== null && c !== undefined) {
+          s.classList.add('filled'); s.style.setProperty('--c', COLORS[c]);
+        }
+        if (!done && i === activeSlot) s.classList.add('active');
+      });
+      submitBtn.disabled = done || entry.some(c => c === null);
+    }
+    function buildPalette() {
+      paletteEl.innerHTML = '';
+      COLORS.forEach((c, i) => {
+        const b = document.createElement('button');
+        b.className = 'pr-chip'; b.dataset.cidx = String(i);
+        b.style.setProperty('--c', c);
+        paletteEl.appendChild(b);
+      });
+    }
+
+    function pickSlot(i) {
+      if (done) return;
+      activeSlot = i;
+      paintSlots();
+    }
+    function placeColor(ci) {
+      if (done) return;
+      entry[activeSlot] = ci;
+      // advance
+      const next = (activeSlot + 1) % SLOTS;
+      activeSlot = (entry[next] === null) ? next : (entry.findIndex(c => c === null));
+      if (activeSlot === -1) activeSlot = SLOTS - 1;
+      paintSlots();
+    }
+    function clearEntry() {
+      if (done) return;
+      entry = [null, null, null, null]; activeSlot = 0;
+      paintSlots();
+    }
+
+    function submit() {
+      if (entry.some(c => c === null) || done) return;
+      const fbs = PUZZLE.codes.map(c => feedback(entry, c));
+      history.push({ guess: entry.slice(), fbs });
+      fbs.forEach((fb, i) => { if (fb.bulls === SLOTS) cracked[i] = true; });
+      entry = [null, null, null, null]; activeSlot = 0;
+      paintTargets();
+      const allCracked = cracked.every(Boolean);
+      if (allCracked) {
+        done = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+      } else if (history.length >= MAX_GUESSES) {
+        done = true;
+        revealed = true;
+        paintTargets();
+      } else { haptic(8); }
+      paintSlots();
+      renderHistory();
+      updateStatus();
+      if (done && shareBtn) shareBtn.hidden = false;
+    }
+
+    function renderHistory() {
+      histEl.innerHTML = '';
+      history.forEach((h, i) => {
+        const row = document.createElement('div');
+        row.className = 'pr-history-row';
+        const num = document.createElement('div'); num.className = 'gnum'; num.textContent = String(i + 1);
+        const pegs = document.createElement('div'); pegs.className = 'pegs';
+        h.guess.forEach(c => {
+          const p = document.createElement('span'); p.className = 'pg'; p.style.setProperty('--c', COLORS[c]);
+          pegs.appendChild(p);
+        });
+        const fbs = document.createElement('div'); fbs.className = 'fbs';
+        h.fbs.forEach((fb, k) => {
+          const o = document.createElement('div'); o.className = 'one' + (fb.bulls === SLOTS ? ' cracked' : '');
+          o.textContent = `${fb.bulls}·${fb.cows}`;
+          fbs.appendChild(o);
+        });
+        row.appendChild(num); row.appendChild(pegs); row.appendChild(fbs);
+        histEl.appendChild(row);
+      });
+    }
+
+    function updateStatus() {
+      const t = history.length + 1;
+      const c = cracked.filter(Boolean).length;
+      if (cracked.every(Boolean)) statusEl.innerHTML = `Solved in <b>${history.length}</b> · 3/3 cracked`;
+      else if (revealed) statusEl.innerHTML = `Revealed · <b>${c}</b>/3 cracked`;
+      else if (done) statusEl.innerHTML = `Out of guesses · <b>${c}</b>/3 cracked`;
+      else statusEl.innerHTML = `Guess <b>${t}</b> of <b>${MAX_GUESSES}</b> · <b>${c}</b>/3 cracked`;
+    }
+
+    function reset() {
+      entry = [null, null, null, null]; activeSlot = 0;
+      history = []; cracked = [false, false, false];
+      done = false; revealed = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'All cracked';
+      if (shareBtn) shareBtn.hidden = true;
+      buildTargets();
+      paintSlots();
+      renderHistory();
+      updateStatus();
+    }
+
+    function reveal() {
+      if (done) return;
+      done = true; revealed = true;
+      solvedEl.classList.add('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      paintTargets();
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+
+    function share() {
+      const lines = history.map(h => h.fbs.map(fb => `${fb.bulls}·${fb.cows}`).join('  '));
+      const c = cracked.filter(Boolean).length;
+      const head = cracked.every(Boolean) ? `Prism ${pIdx + 1} · ${history.length}/${MAX_GUESSES} · 3/3` :
+                   revealed ? `Prism ${pIdx + 1} · revealed · ${c}/3` :
+                   `Prism ${pIdx + 1} · X · ${c}/3`;
+      copyShare(`${head}\n\n${lines.join('\n')}\n\ninternet.house/game/prism`);
+    }
+
+    function load(i) {
+      pIdx = (i + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+
+    slotsEl.addEventListener('click', e => {
+      const s = e.target.closest('.pr-slot'); if (!s) return;
+      pickSlot(+s.dataset.slot);
+    });
+    paletteEl.addEventListener('click', e => {
+      const b = e.target.closest('.pr-chip'); if (!b) return;
+      placeColor(+b.dataset.cidx);
+    });
+    submitBtn.addEventListener('click', submit);
+    clearBtn.addEventListener('click', clearEntry);
+
+    buildPalette();
+    GAMES['prism'] = { reset, share, reveal, load };
+    load(0);
+  })();
+  </script>
+</body>
+</html>
