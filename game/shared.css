@@ -54,6 +54,10 @@
   --weigh:      #4B8B5E;
   --window:     #B96A2B;
   --parity:     #1E3A8A;
+  --icon:       #B8534E;
+  --melody:     #5C8B8B;
+  --jumble:     #9B7B3A;
+  --year:       #5B4B7C;
 
   --accent: var(--ink);
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -142,6 +146,10 @@ body[data-game="cipher"]     { --accent: var(--cipher); }
 body[data-game="weigh"]      { --accent: var(--weigh); }
 body[data-game="window"]     { --accent: var(--window); }
 body[data-game="parity"]     { --accent: var(--parity); }
+body[data-game="icon"]       { --accent: var(--icon); }
+body[data-game="melody"]     { --accent: var(--melody); }
+body[data-game="jumble"]     { --accent: var(--jumble); }
+body[data-game="year"]       { --accent: var(--year); }
 
 /* ───────── Crew-group shared component feedback (Palette / Heist / Constellation / Tidepool) ───────── */
 .fb-row {

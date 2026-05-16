@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Icon · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .ic-stage { width: 100%; max-width: 460px; }
+
+  .ic-hint {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  .ic-hint b {
+    font-style: normal;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .ic-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    width: clamp(240px, 80vw, 320px);
+    aspect-ratio: 1;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline-strong);
+  }
+  .ic-cell {
+    border-right: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    background: var(--paper);
+    cursor: pointer;
+    transition: background var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .ic-cell:nth-child(5n) { border-right: none; }
+  .ic-cell:nth-child(n+21) { border-bottom: none; }
+  @media (hover: hover) {
+    .ic-cell:hover { background: var(--paper-deep); }
+  }
+  .ic-cell.sel {
+    background: var(--accent);
+  }
+  .ic-cell.locked { pointer-events: none; }
+  .ic-cell.target-reveal {
+    background: color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+
+  .ic-controls {
+    display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;
+  }
+  .ic-btn {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .ic-btn[disabled] { opacity: 0.32; pointer-events: none; }
+  .ic-btn.ghost { color: var(--ink-faint); border-color: var(--hairline-strong); }
+
+  .ic-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .ic-status b { color: var(--ink); font-weight: 600; }
+
+  .ic-history {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
+  }
+  .ic-thumb {
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 8px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+  }
+  .ic-thumb .mini {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    width: 50px;
+    aspect-ratio: 1;
+    border: 1px solid var(--hairline-strong);
+    background: var(--paper);
+  }
+  .ic-thumb .mini .mc {
+    border-right: 0.5px solid var(--hairline);
+    border-bottom: 0.5px solid var(--hairline);
+  }
+  .ic-thumb .mini .mc:nth-child(5n) { border-right: none; }
+  .ic-thumb .mini .mc:nth-child(n+21) { border-bottom: none; }
+  .ic-thumb .mini .mc.on { background: var(--accent); }
+  .ic-thumb .mini .mc.hit { background: var(--accent); }
+  .ic-thumb .mini .mc.miss { background: color-mix(in srgb, var(--accent) 30%, var(--paper)); }
+  .ic-thumb .count {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .ic-thumb .gnum {
+    grid-column: 1 / -1;
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: -2px;
+  }
+
+  .ic-reveal {
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1rem;
+  }
+  .ic-reveal em { color: var(--accent); font-style: normal; font-weight: 500; }
+
+  .ic-count-display {
+    font: 600 0.7rem 'JetBrains Mono', monospace;
+    color: var(--ink-soft);
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+  .ic-count-display b {
+    color: var(--accent);
+    font-size: 1.05rem;
+  }
+</style>
+</head>
+<body data-game="icon" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="icon">
+      <div class="game-head">
+        <div class="eyebrow">No. 045 · Icon</div>
+        <h1 class="title">Icon</h1>
+        <p class="rule">A hidden shape on a 5×5 grid. Six tries.</p>
+        <p class="howto"><b>How to play.</b> Today's image fills <b>K</b> cells. Tap exactly K, then <b>Submit</b>. You'll see the overlap count — how many of your cells match the answer. The shape resolves visually as you close in.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="icon">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="icon">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="icon" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="icon" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="icon" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="icon" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="icon" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="icon" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="icon" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage ic-stage" id="stage-icon">
+
+        <p class="ic-hint" id="ic-hint"></p>
+
+        <div class="ic-grid" id="ic-grid"></div>
+
+        <div class="ic-count-display"><span id="ic-count">Selected <b>0</b> of <b>—</b></span></div>
+
+        <div class="ic-controls">
+          <button class="ic-btn ghost" id="ic-clear">Clear</button>
+          <button class="ic-btn" id="ic-submit" disabled>Submit</button>
+        </div>
+
+        <div class="ic-status" id="ic-status">Guess <b>1</b> of <b>6</b></div>
+
+        <div class="ic-history" id="ic-history"></div>
+
+        <div class="solved" id="solved-icon"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+        <p class="ic-reveal" id="ic-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Icon() {
+    const N = 5;
+    const MAX_GUESSES = 6;
+
+    // 5 hand-curated icon puzzles. filled[] uses flat indices r*N+c.
+    const PUZZLES = [
+      { id: 'icon-001', name: 'Heart',    filled: [1,3,5,6,7,8,9,11,12,13,17] },        // K=11
+      { id: 'icon-002', name: 'Smile',    filled: [1,3,15,19,21,22,23] },               // K=7
+      { id: 'icon-003', name: 'Letter T', filled: [0,1,2,3,4,7,12,17,22] },             // K=9
+      { id: 'icon-004', name: 'Digit 7',  filled: [0,1,2,3,4,9,13,17,21] },             // K=9
+      { id: 'icon-005', name: 'Plus',     filled: [2,7,10,11,12,13,14,17,22] },         // K=9
+    ];
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let K = PUZZLE.filled.length;
+    let selected = new Set();
+    let history = [];                 // [{ guess:[indices], overlap }]
+    let solved = false, done = false, revealed = false;
+
+    const stageEl   = $('#stage-icon');
+    const hintEl    = $('#ic-hint');
+    const gridEl    = $('#ic-grid');
+    const statusEl  = $('#ic-status');
+    const submitBtn = $('#ic-submit');
+    const clearBtn  = $('#ic-clear');
+    const countEl   = $('#ic-count');
+    const histEl    = $('#ic-history');
+    const solvedEl  = $('#solved-icon');
+    const revealEl  = $('#ic-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="icon"][data-action="share"]');
+
+    function buildGrid() {
+      gridEl.innerHTML = '';
+      for (let i = 0; i < N * N; i++) {
+        const c = document.createElement('button');
+        c.className = 'ic-cell'; c.dataset.i = String(i);
+        gridEl.appendChild(c);
+      }
+      paintGrid();
+    }
+    function paintGrid() {
+      $$('.ic-cell', gridEl).forEach(c => {
+        const i = +c.dataset.i;
+        c.classList.toggle('sel', selected.has(i));
+        if (done) c.classList.add('locked');
+        else c.classList.remove('locked');
+      });
+    }
+
+    function pickCell(i) {
+      if (done) return;
+      if (selected.has(i)) selected.delete(i);
+      else {
+        if (selected.size >= K) { showToast(`Pick exactly ${K}`); return; }
+        selected.add(i);
+      }
+      paintGrid();
+      updateCount();
+    }
+
+    function updateCount() {
+      countEl.innerHTML = `Selected <b>${selected.size}</b> of <b>${K}</b>`;
+      submitBtn.disabled = done || selected.size !== K;
+    }
+
+    function clearSel() {
+      if (done) return;
+      selected.clear();
+      paintGrid();
+      updateCount();
+    }
+
+    function submit() {
+      if (done || selected.size !== K) return;
+      const target = new Set(PUZZLE.filled);
+      const guess = [...selected].sort((a, b) => a - b);
+      const overlap = guess.filter(i => target.has(i)).length;
+      history.push({ guess, overlap });
+      if (overlap === K) {
+        solved = true; done = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+      } else if (history.length >= MAX_GUESSES) {
+        done = true;
+      } else {
+        haptic(8);
+      }
+      selected.clear();
+      paintGrid();
+      renderHistory();
+      updateCount();
+      updateStatus();
+      if (done && shareBtn) shareBtn.hidden = false;
+      if (done && !solved) showRevealOnGrid();
+    }
+    function showRevealOnGrid() {
+      const target = new Set(PUZZLE.filled);
+      $$('.ic-cell', gridEl).forEach(c => {
+        const i = +c.dataset.i;
+        c.classList.remove('sel');
+        if (target.has(i)) c.classList.add('target-reveal');
+      });
+    }
+
+    function renderHistory() {
+      histEl.innerHTML = '';
+      const target = new Set(PUZZLE.filled);
+      history.forEach((h, i) => {
+        const t = document.createElement('div');
+        t.className = 'ic-thumb';
+        t.innerHTML = `<span class="gnum">Guess ${i + 1}</span>`;
+        const mini = document.createElement('div'); mini.className = 'mini';
+        const gSet = new Set(h.guess);
+        for (let k = 0; k < N * N; k++) {
+          const mc = document.createElement('div');
+          mc.className = 'mc';
+          if (gSet.has(k)) {
+            mc.classList.add(target.has(k) ? 'hit' : 'miss');
+          }
+          mini.appendChild(mc);
+        }
+        const cnt = document.createElement('div'); cnt.className = 'count'; cnt.textContent = `${h.overlap}/${K}`;
+        t.appendChild(mini); t.appendChild(cnt);
+        histEl.appendChild(t);
+      });
+    }
+
+    function updateStatus() {
+      const t = history.length + 1;
+      if (solved) statusEl.innerHTML = `Solved in <b>${history.length}</b>`;
+      else if (revealed) statusEl.innerHTML = `Revealed`;
+      else if (done) statusEl.innerHTML = `Out of guesses`;
+      else statusEl.innerHTML = `Guess <b>${t}</b> of <b>${MAX_GUESSES}</b>`;
+    }
+
+    function reset() {
+      K = PUZZLE.filled.length;
+      selected = new Set();
+      history = [];
+      solved = false; done = false; revealed = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Solved';
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      if (shareBtn) shareBtn.hidden = true;
+      hintEl.innerHTML = `<b>${K}</b> cells filled today`;
+      buildGrid();
+      renderHistory();
+      updateCount();
+      updateStatus();
+    }
+
+    function reveal() {
+      if (done) return;
+      done = true; revealed = true;
+      solvedEl.classList.add('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      revealEl.hidden = false;
+      revealEl.innerHTML = `Today's icon: <em>${PUZZLE.name}</em>.`;
+      showRevealOnGrid();
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+
+    function share() {
+      const target = new Set(PUZZLE.filled);
+      const lines = history.map(h => {
+        const gSet = new Set(h.guess);
+        let s = '';
+        for (let k = 0; k < N * N; k++) {
+          if (gSet.has(k)) s += target.has(k) ? '🟧' : '⬜';
+          else s += '⬛';
+          if (k % N === N - 1 && k !== N * N - 1) s += '\n';
+        }
+        return s + `\n${h.overlap}/${K}`;
+      });
+      const head = solved ? `Icon ${pIdx + 1} · ${history.length}/${MAX_GUESSES}` :
+                   revealed ? `Icon ${pIdx + 1} · revealed` :
+                   `Icon ${pIdx + 1} · X/${MAX_GUESSES}`;
+      // Shorter compact share: just per-guess overlap counts
+      const compact = history.map(h => `${h.overlap}/${K}`).join('  ');
+      copyShare(`${head}\n\n${compact}\n\ninternet.house/game/icon`);
+    }
+
+    function load(i) {
+      pIdx = (i + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+
+    gridEl.addEventListener('click', e => {
+      const c = e.target.closest('.ic-cell'); if (!c) return;
+      pickCell(+c.dataset.i);
+    });
+    submitBtn.addEventListener('click', submit);
+    clearBtn.addEventListener('click', clearSel);
+
+    GAMES['icon'] = { reset, share, reveal, load };
+    load(0);
+  })();
+  </script>
+</body>
+</html>

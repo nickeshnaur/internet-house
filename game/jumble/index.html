@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Jumble · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .jm-stage { width: 100%; max-width: 460px; }
+
+  .jm-pool {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    margin: 6px 0;
+  }
+  .jm-pool .letter {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 2rem;
+    color: var(--ink-soft);
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+
+  .jm-slots {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  .jm-slot {
+    width: 52px; height: 52px;
+    border: 1.5px solid var(--hairline-strong);
+    background: var(--paper-soft);
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.6rem;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .jm-slot.empty { color: var(--ink-faint); }
+  .jm-slot.active {
+    border-color: var(--accent);
+    background: var(--paper);
+    transform: scale(1.05);
+  }
+
+  .jm-bank {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .jm-tile {
+    width: 44px; height: 44px;
+    background: var(--paper-soft);
+    border: 1.5px solid var(--hairline-strong);
+    border-radius: 6px;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.4rem;
+    color: var(--ink);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease), opacity var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  @media (hover: hover) {
+    .jm-tile:hover { border-color: var(--ink-soft); }
+  }
+  .jm-tile.used { opacity: 0.32; pointer-events: none; }
+
+  .jm-controls {
+    display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap;
+  }
+  .jm-btn {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .jm-btn[disabled] { opacity: 0.32; pointer-events: none; }
+  .jm-btn.ghost { color: var(--ink-faint); border-color: var(--hairline-strong); }
+
+  .jm-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .jm-status b { color: var(--ink); font-weight: 600; }
+  .jm-status .word { color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+
+  .jm-history {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .jm-history-row {
+    display: grid;
+    grid-template-columns: 22px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 6px 10px;
+  }
+  .jm-history-row .gnum { font: 500 0.66rem 'JetBrains Mono', monospace; color: var(--ink-faint); }
+  .jm-history-row .word {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--ink);
+    letter-spacing: 0.06em;
+  }
+  .jm-history-row .word .b {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .jm-history-row .bull {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: var(--accent);
+  }
+
+  .jm-reveal {
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1rem;
+  }
+  .jm-reveal em { color: var(--accent); font-style: normal; font-weight: 500; font-family: 'Fraunces', serif; }
+  .jm-reveal .defn { display: block; color: var(--ink-faint); font-size: 0.86rem; margin-top: 4px; }
+</style>
+</head>
+<body data-game="jumble" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="jumble">
+      <div class="game-head">
+        <div class="eyebrow">No. 047 · Jumble</div>
+        <h1 class="title">Jumble</h1>
+        <p class="rule">Today's letters spell more than one word. Find ours.</p>
+        <p class="howto"><b>How to play.</b> Arrange the five letters into a real English word, then <b>Submit</b>. You'll see how many letters are in the right position. Five tries.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="jumble">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="jumble">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="jumble" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="jumble" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="jumble" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="jumble" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="jumble" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="jumble" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="jumble" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage jm-stage" id="stage-jumble">
+
+        <div class="jm-pool" id="jm-pool"></div>
+
+        <div class="jm-slots" id="jm-slots"></div>
+
+        <div class="jm-bank" id="jm-bank"></div>
+
+        <div class="jm-status" id="jm-status">Guess <b>1</b> of <b>5</b></div>
+
+        <div class="jm-controls">
+          <button class="jm-btn ghost" id="jm-clear">Clear</button>
+          <button class="jm-btn" id="jm-submit" disabled>Submit</button>
+        </div>
+
+        <div class="jm-history" id="jm-history"></div>
+
+        <div class="solved" id="solved-jumble"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+        <p class="jm-reveal" id="jm-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Jumble() {
+    const LEN = 5;
+    const MAX_GUESSES = 5;
+
+    // 5 hand-curated letter sets. valid[] is the complete list of
+    // 5-letter English words that can be made from these exact letters.
+    const PUZZLES = [
+      {
+        id: 'jumble-001',
+        letters: ['A','E','P','R','S'],
+        valid: ['PARSE','PARES','SPARE','SPEAR','REAPS','PEARS','RAPES','APERS','ASPER','PRASE'],
+        answer: 'PARSE',
+        defn: 'analyze (a sentence) into its parts; from Latin pars, "a part."'
+      },
+      {
+        id: 'jumble-002',
+        letters: ['A','E','H','R','T'],
+        valid: ['HEART','EARTH','HATER','RATHE'],
+        answer: 'HEART',
+        defn: 'the muscular organ that pumps blood; the seat of feeling.'
+      },
+      {
+        id: 'jumble-003',
+        letters: ['A','E','L','S','T'],
+        valid: ['SLATE','LEAST','STALE','STEAL','TALES','TEALS','TESLA','SETAL'],
+        answer: 'SLATE',
+        defn: 'a fine-grained metamorphic rock; or a list of nominees.'
+      },
+      {
+        id: 'jumble-004',
+        letters: ['E','N','O','S','T'],
+        valid: ['NOTES','STONE','TONES','STENO','ONSET','SETON'],
+        answer: 'NOTES',
+        defn: 'brief written records; the sounds of music.'
+      },
+      {
+        id: 'jumble-005',
+        letters: ['A','D','E','R','S'],
+        valid: ['DARES','DEARS','READS','RASED','ARSED','SARED'],
+        answer: 'DARES',
+        defn: 'has the courage to attempt; challenges someone to do.'
+      },
+    ];
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let entry = [];                   // chosen letters in order (by tile id, not char)
+    let usedTiles = new Set();        // tile indices (positions in PUZZLE.letters) currently in entry
+    let history = [];                 // [{ word, bulls }]
+    let solved = false, done = false, revealed = false;
+
+    const stageEl   = $('#stage-jumble');
+    const poolEl    = $('#jm-pool');
+    const slotsEl   = $('#jm-slots');
+    const bankEl    = $('#jm-bank');
+    const statusEl  = $('#jm-status');
+    const submitBtn = $('#jm-submit');
+    const clearBtn  = $('#jm-clear');
+    const histEl    = $('#jm-history');
+    const solvedEl  = $('#solved-jumble');
+    const revealEl  = $('#jm-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="jumble"][data-action="share"]');
+
+    function buildPool() {
+      poolEl.innerHTML = '';
+      PUZZLE.letters.forEach(L => {
+        const el = document.createElement('span'); el.className = 'letter'; el.textContent = L;
+        poolEl.appendChild(el);
+      });
+    }
+    function buildSlots() {
+      slotsEl.innerHTML = '';
+      for (let i = 0; i < LEN; i++) {
+        const s = document.createElement('button');
+        s.className = 'jm-slot empty';
+        s.dataset.slot = String(i);
+        s.textContent = '·';
+        slotsEl.appendChild(s);
+      }
+      paintSlots();
+    }
+    function paintSlots() {
+      $$('.jm-slot', slotsEl).forEach((s, i) => {
+        s.classList.remove('empty', 'active');
+        const t = entry[i];
+        if (t === undefined) { s.classList.add('empty'); s.textContent = '·'; }
+        else s.textContent = PUZZLE.letters[t];
+      });
+    }
+    function buildBank() {
+      bankEl.innerHTML = '';
+      PUZZLE.letters.forEach((L, i) => {
+        const t = document.createElement('button');
+        t.className = 'jm-tile';
+        t.dataset.t = String(i);
+        t.textContent = L;
+        bankEl.appendChild(t);
+      });
+      paintBank();
+    }
+    function paintBank() {
+      $$('.jm-tile', bankEl).forEach((t, i) => {
+        t.classList.toggle('used', usedTiles.has(i));
+      });
+    }
+
+    function pickTile(tIdx) {
+      if (done) return;
+      if (usedTiles.has(tIdx)) return;
+      if (entry.length >= LEN) { showToast('Full — clear to retry'); return; }
+      entry.push(tIdx);
+      usedTiles.add(tIdx);
+      paintSlots(); paintBank();
+      updateSubmit();
+    }
+    function unpickSlot(slot) {
+      if (done) return;
+      const tIdx = entry[slot];
+      if (tIdx === undefined) return;
+      entry.splice(slot, 1);
+      usedTiles.delete(tIdx);
+      paintSlots(); paintBank();
+      updateSubmit();
+    }
+
+    function clearEntry() {
+      if (done) return;
+      entry = [];
+      usedTiles.clear();
+      paintSlots(); paintBank();
+      updateSubmit();
+    }
+
+    function currentWord() {
+      return entry.map(t => PUZZLE.letters[t]).join('');
+    }
+
+    function updateSubmit() {
+      submitBtn.disabled = done || entry.length !== LEN;
+    }
+
+    function submit() {
+      if (done || entry.length !== LEN) return;
+      const word = currentWord();
+      if (!PUZZLE.valid.includes(word)) { showToast('Not a word in our list'); shake(slotsEl); return; }
+      if (history.some(h => h.word === word)) { showToast('Already tried that arrangement'); return; }
+      const ans = PUZZLE.answer;
+      let bulls = 0;
+      for (let i = 0; i < LEN; i++) if (word[i] === ans[i]) bulls++;
+      history.push({ word, bulls });
+      if (bulls === LEN) {
+        solved = true; done = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+      } else if (history.length >= MAX_GUESSES) {
+        done = true;
+      } else {
+        haptic(8);
+      }
+      entry = []; usedTiles.clear();
+      paintSlots(); paintBank();
+      renderHistory();
+      updateSubmit();
+      updateStatus();
+      if (done && shareBtn) shareBtn.hidden = false;
+      if (done && !solved) showReveal();
+    }
+
+    function showReveal() {
+      revealEl.hidden = false;
+      revealEl.innerHTML = `Today's word: <em>${PUZZLE.answer}</em><span class="defn">${PUZZLE.defn}</span>`;
+    }
+
+    function renderHistory() {
+      histEl.innerHTML = '';
+      const ans = PUZZLE.answer;
+      history.forEach((h, i) => {
+        const row = document.createElement('div');
+        row.className = 'jm-history-row';
+        const num = document.createElement('div'); num.className = 'gnum'; num.textContent = String(i + 1);
+        const w = document.createElement('div'); w.className = 'word';
+        // bold-letter the bulls
+        w.innerHTML = h.word.split('').map((c, k) => c === ans[k] ? `<span class="b">${c}</span>` : c).join('');
+        const fb = document.createElement('div'); fb.className = 'bull'; fb.textContent = `${h.bulls}/${LEN}`;
+        row.appendChild(num); row.appendChild(w); row.appendChild(fb);
+        histEl.appendChild(row);
+      });
+    }
+
+    function updateStatus() {
+      const t = history.length + 1;
+      if (solved) statusEl.innerHTML = `Solved in <b>${history.length}</b>`;
+      else if (revealed) statusEl.innerHTML = `Revealed`;
+      else if (done) statusEl.innerHTML = `Out of guesses`;
+      else statusEl.innerHTML = `Guess <b>${t}</b> of <b>${MAX_GUESSES}</b>`;
+    }
+
+    function reset() {
+      entry = []; usedTiles.clear();
+      history = [];
+      solved = false; done = false; revealed = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Solved';
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      if (shareBtn) shareBtn.hidden = true;
+      buildPool(); buildSlots(); buildBank();
+      renderHistory();
+      updateSubmit();
+      updateStatus();
+    }
+
+    function reveal() {
+      if (done) return;
+      done = true; revealed = true;
+      solvedEl.classList.add('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      showReveal();
+      updateSubmit();
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+
+    function share() {
+      const lines = history.map(h => '●'.repeat(h.bulls) + '○'.repeat(LEN - h.bulls));
+      const head = solved ? `Jumble ${pIdx + 1} · ${history.length}/${MAX_GUESSES}` :
+                   revealed ? `Jumble ${pIdx + 1} · revealed` :
+                   `Jumble ${pIdx + 1} · X/${MAX_GUESSES}`;
+      copyShare(`${head}\n\n${lines.join('\n')}\n\ninternet.house/game/jumble`);
+    }
+
+    function load(i) {
+      pIdx = (i + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+
+    bankEl.addEventListener('click', e => {
+      const t = e.target.closest('.jm-tile'); if (!t) return;
+      pickTile(+t.dataset.t);
+    });
+    slotsEl.addEventListener('click', e => {
+      const s = e.target.closest('.jm-slot'); if (!s) return;
+      unpickSlot(+s.dataset.slot);
+    });
+    submitBtn.addEventListener('click', submit);
+    clearBtn.addEventListener('click', clearEntry);
+
+    GAMES['jumble'] = { reset, share, reveal, load };
+    load(0);
+  })();
+  </script>
+</body>
+</html>

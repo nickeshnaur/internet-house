@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Melody · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .ml-stage { width: 100%; max-width: 460px; }
+
+  .ml-sequence {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .ml-slot {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--paper-soft);
+    border: 1.5px dashed var(--hairline-strong);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 0.86rem;
+    color: var(--ink-faint);
+    transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  }
+  .ml-slot.filled {
+    background: var(--c, var(--paper-soft));
+    border-style: solid;
+    border-color: var(--c, var(--hairline-strong));
+    color: white;
+  }
+  .ml-slot.playing { transform: scale(1.12); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c, var(--accent)) 30%, transparent); }
+
+  .ml-keys {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    width: clamp(280px, 92vw, 380px);
+  }
+  .ml-key {
+    aspect-ratio: 2 / 3;
+    border-radius: 6px;
+    background: var(--c, #ccc);
+    border: 1.5px solid var(--c, var(--hairline-strong));
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.66rem;
+    color: rgba(255,255,255,0.85);
+    transition: transform var(--t-fast) var(--ease), filter var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  @media (hover: hover) {
+    .ml-key:hover { filter: brightness(1.08); transform: translateY(-2px); }
+  }
+  .ml-key:active { transform: scale(0.96); }
+  .ml-key.playing { transform: scale(1.06); filter: brightness(1.15); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 50%, transparent); }
+
+  .ml-controls {
+    display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;
+  }
+  .ml-btn {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .ml-btn[disabled] { opacity: 0.32; pointer-events: none; }
+  .ml-btn.ghost { color: var(--ink-faint); border-color: var(--hairline-strong); }
+
+  .ml-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .ml-status b { color: var(--ink); font-weight: 600; }
+
+  .ml-history {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .ml-history-row {
+    display: grid;
+    grid-template-columns: 22px 1fr auto auto;
+    align-items: center;
+    gap: 10px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 6px 10px;
+  }
+  .ml-history-row .gnum {
+    font: 500 0.66rem 'JetBrains Mono', monospace;
+    color: var(--ink-faint);
+  }
+  .ml-history-row .dots {
+    display: flex; gap: 4px;
+  }
+  .ml-history-row .dots .d {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--c, #ccc);
+    border: 1px solid var(--hairline);
+  }
+  .ml-history-row .replay {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 999px;
+    padding: 4px 8px;
+  }
+  .ml-history-row .fb {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: var(--accent);
+  }
+
+  .ml-reveal {
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1rem;
+  }
+  .ml-reveal em { color: var(--accent); font-style: normal; font-weight: 500; }
+
+  .ml-hint {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+</style>
+</head>
+<body data-game="melody" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="melody">
+      <div class="game-head">
+        <div class="eyebrow">No. 046 · Melody</div>
+        <h1 class="title">Melody</h1>
+        <p class="rule">Crack today's four-note melody. Eight tries.</p>
+        <p class="howto"><b>How to play.</b> Tap four keys, then <b>Submit</b>. You'll hear your sequence followed by the target, and see total <b>bulls</b> (right note, right slot) and <b>cows</b> (right note, wrong slot) — never which is which. Keys are colored cool→warm by pitch.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="melody">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="melody">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="melody" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="melody" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="melody" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="melody" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="melody" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="melody" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="melody" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage ml-stage" id="stage-melody">
+
+        <div class="ml-sequence" id="ml-sequence"></div>
+
+        <div class="ml-keys" id="ml-keys"></div>
+
+        <div class="ml-status" id="ml-status">Guess <b>1</b> of <b>8</b></div>
+
+        <div class="ml-controls">
+          <button class="ml-btn ghost" id="ml-clear">Clear</button>
+          <button class="ml-btn ghost" id="ml-replay">Play</button>
+          <button class="ml-btn" id="ml-submit" disabled>Submit</button>
+        </div>
+
+        <div class="ml-history" id="ml-history"></div>
+
+        <div class="solved" id="solved-melody"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+        <p class="ml-hint" id="ml-hint" hidden></p>
+        <p class="ml-reveal" id="ml-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Melody() {
+    const SLOTS = 4;
+    const MAX_GUESSES = 8;
+
+    // 6-note diatonic scale (C major, C4..A4)
+    const KEYS = [
+      { name: 'C', freq: 261.63, color: '#3A6BAA' },
+      { name: 'D', freq: 293.66, color: '#3F8BAA' },
+      { name: 'E', freq: 329.63, color: '#5BA88E' },
+      { name: 'F', freq: 349.23, color: '#C9AE4A' },
+      { name: 'G', freq: 392.00, color: '#C97A3A' },
+      { name: 'A', freq: 440.00, color: '#B33A3A' },
+    ];
+
+    // 5 curated melodies. seq[] is indices into KEYS.
+    const PUZZLES = [
+      { id: 'melody-001', seq: [0,0,4,4], name: 'Twinkle, Twinkle' },          // C C G G
+      { id: 'melody-002', seq: [2,2,3,4], name: 'Ode to Joy'      },            // E E F G
+      { id: 'melody-003', seq: [2,1,0,1], name: 'Mary Had a Little Lamb' },     // E D C D
+      { id: 'melody-004', seq: [0,1,2,0], name: 'Frère Jacques'   },            // C D E C
+      { id: 'melody-005', seq: [4,4,5,4], name: 'Happy Birthday'  },            // G G A G
+    ];
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let entry = [];
+    let history = [];
+    let solved = false, done = false, revealed = false;
+    let ctx = null;
+
+    const stageEl   = $('#stage-melody');
+    const seqEl     = $('#ml-sequence');
+    const keysEl    = $('#ml-keys');
+    const statusEl  = $('#ml-status');
+    const submitBtn = $('#ml-submit');
+    const clearBtn  = $('#ml-clear');
+    const replayBtn = $('#ml-replay');
+    const histEl    = $('#ml-history');
+    const solvedEl  = $('#solved-melody');
+    const hintEl    = $('#ml-hint');
+    const revealEl  = $('#ml-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="melody"][data-action="share"]');
+
+    function ensureCtx() {
+      if (!ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) ctx = new AC();
+      }
+      if (ctx && ctx.state === 'suspended') ctx.resume();
+      return ctx;
+    }
+
+    function playNote(freq, startAt, durationSec = 0.5) {
+      const a = ensureCtx(); if (!a) return;
+      const osc = a.createOscillator();
+      const gain = a.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      // ADSR-ish envelope
+      gain.gain.setValueAtTime(0, startAt);
+      gain.gain.linearRampToValueAtTime(0.22, startAt + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, startAt + durationSec);
+      osc.connect(gain).connect(a.destination);
+      osc.start(startAt);
+      osc.stop(startAt + durationSec + 0.02);
+    }
+
+    async function playSequence(seq, gap = 0.55) {
+      const a = ensureCtx(); if (!a) return;
+      const start = a.currentTime + 0.05;
+      seq.forEach((k, i) => {
+        playNote(KEYS[k].freq, start + i * gap, 0.5);
+        // visual key flash
+        setTimeout(() => {
+          const el = keysEl.querySelector(`[data-k="${k}"]`);
+          if (el) {
+            el.classList.add('playing');
+            setTimeout(() => el.classList.remove('playing'), 380);
+          }
+        }, (start - a.currentTime + i * gap) * 1000);
+      });
+      await new Promise(r => setTimeout(r, (seq.length * gap + 0.55) * 1000));
+    }
+
+    function buildKeys() {
+      keysEl.innerHTML = '';
+      KEYS.forEach((k, i) => {
+        const b = document.createElement('button');
+        b.className = 'ml-key'; b.dataset.k = String(i);
+        b.style.setProperty('--c', k.color);
+        b.textContent = k.name;
+        keysEl.appendChild(b);
+      });
+    }
+    function buildSequence() {
+      seqEl.innerHTML = '';
+      for (let i = 0; i < SLOTS; i++) {
+        const s = document.createElement('div');
+        s.className = 'ml-slot'; s.dataset.slot = String(i);
+        seqEl.appendChild(s);
+      }
+      paintSequence();
+    }
+    function paintSequence() {
+      $$('.ml-slot', seqEl).forEach((s, i) => {
+        s.classList.remove('filled', 'playing');
+        s.style.removeProperty('--c');
+        const k = entry[i];
+        if (k !== undefined && k !== null) {
+          s.classList.add('filled');
+          s.style.setProperty('--c', KEYS[k].color);
+          s.textContent = KEYS[k].name;
+        } else {
+          s.textContent = String(i + 1);
+        }
+      });
+      submitBtn.disabled = done || entry.length !== SLOTS;
+    }
+
+    function pressKey(i) {
+      if (done) return;
+      if (entry.length >= SLOTS) { showToast(`${SLOTS} notes max`); return; }
+      entry.push(i);
+      // play it
+      const a = ensureCtx();
+      if (a) playNote(KEYS[i].freq, a.currentTime + 0.01, 0.4);
+      paintSequence();
+    }
+
+    function clearEntry() {
+      if (done) return;
+      entry = [];
+      paintSequence();
+    }
+
+    function feedback(guess, code) {
+      let bulls = 0;
+      const cR = [], gR = [];
+      for (let i = 0; i < SLOTS; i++) {
+        if (guess[i] === code[i]) bulls++;
+        else { cR.push(code[i]); gR.push(guess[i]); }
+      }
+      let cows = 0;
+      for (const g of gR) {
+        const idx = cR.indexOf(g);
+        if (idx >= 0) { cows++; cR.splice(idx, 1); }
+      }
+      return { bulls, cows };
+    }
+
+    async function submit() {
+      if (done || entry.length !== SLOTS) return;
+      const { bulls, cows } = feedback(entry, PUZZLE.seq);
+      const guess = entry.slice();
+      history.push({ guess, bulls, cows });
+      // play your sequence then target
+      submitBtn.disabled = true;
+      await playSequence(guess);
+      await playSequence(PUZZLE.seq);
+      submitBtn.disabled = false;
+      if (bulls === SLOTS) {
+        solved = true; done = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+      } else if (history.length >= MAX_GUESSES) {
+        done = true;
+      } else {
+        haptic(8);
+      }
+      entry = [];
+      paintSequence();
+      renderHistory();
+      updateStatus();
+      if (done && shareBtn) shareBtn.hidden = false;
+      if (done) showHint();
+    }
+
+    function showHint() {
+      hintEl.hidden = false;
+      hintEl.innerHTML = solved
+        ? `That was <b>${PUZZLE.name}</b>.`
+        : revealed
+          ? `That was <b>${PUZZLE.name}</b>.`
+          : `That was <b>${PUZZLE.name}</b>.`;
+    }
+
+    function renderHistory() {
+      histEl.innerHTML = '';
+      history.forEach((h, i) => {
+        const row = document.createElement('div');
+        row.className = 'ml-history-row';
+        const num = document.createElement('div'); num.className = 'gnum'; num.textContent = String(i + 1);
+        const dots = document.createElement('div'); dots.className = 'dots';
+        h.guess.forEach(k => {
+          const d = document.createElement('div'); d.className = 'd'; d.style.setProperty('--c', KEYS[k].color);
+          dots.appendChild(d);
+        });
+        const replay = document.createElement('button'); replay.className = 'replay'; replay.textContent = 'Play';
+        replay.addEventListener('click', () => playSequence(h.guess));
+        const fb = document.createElement('div'); fb.className = 'fb'; fb.textContent = `${h.bulls}·${h.cows}`;
+        row.appendChild(num); row.appendChild(dots); row.appendChild(replay); row.appendChild(fb);
+        histEl.appendChild(row);
+      });
+    }
+
+    function updateStatus() {
+      const t = history.length + 1;
+      if (solved) statusEl.innerHTML = `Solved in <b>${history.length}</b>`;
+      else if (revealed) statusEl.innerHTML = `Revealed`;
+      else if (done) statusEl.innerHTML = `Out of guesses`;
+      else statusEl.innerHTML = `Guess <b>${t}</b> of <b>${MAX_GUESSES}</b>`;
+    }
+
+    function reset() {
+      entry = [];
+      history = [];
+      solved = false; done = false; revealed = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Solved';
+      hintEl.hidden = true; hintEl.innerHTML = '';
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      if (shareBtn) shareBtn.hidden = true;
+      buildSequence();
+      renderHistory();
+      updateStatus();
+    }
+
+    function reveal() {
+      if (done) return;
+      done = true; revealed = true;
+      solvedEl.classList.add('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      revealEl.hidden = false;
+      revealEl.innerHTML = `Target: ${PUZZLE.seq.map(k => `<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${KEYS[k].color};vertical-align:middle;margin:0 1px"></span>`).join('')} <em>(${PUZZLE.name})</em>.`;
+      updateStatus();
+      showHint();
+      if (shareBtn) shareBtn.hidden = false;
+      // play target on reveal
+      playSequence(PUZZLE.seq);
+    }
+
+    function share() {
+      const lines = history.map(h => `${h.bulls}·${h.cows}`);
+      const head = solved ? `Melody ${pIdx + 1} · ${history.length}/${MAX_GUESSES}` :
+                   revealed ? `Melody ${pIdx + 1} · revealed` :
+                   `Melody ${pIdx + 1} · X/${MAX_GUESSES}`;
+      copyShare(`${head}\n\n${lines.join('  ')}\n\ninternet.house/game/melody`);
+    }
+
+    function load(i) {
+      pIdx = (i + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+
+    keysEl.addEventListener('click', e => {
+      const b = e.target.closest('.ml-key'); if (!b) return;
+      pressKey(+b.dataset.k);
+    });
+    submitBtn.addEventListener('click', submit);
+    clearBtn.addEventListener('click', clearEntry);
+    replayBtn.addEventListener('click', () => {
+      // play current entry if any, otherwise toast
+      if (entry.length > 0) playSequence(entry);
+      else if (done) playSequence(PUZZLE.seq);
+      else showToast('Tap notes first');
+    });
+
+    buildKeys();
+    GAMES['melody'] = { reset, share, reveal, load };
+    load(0);
+  })();
+  </script>
+</body>
+</html>

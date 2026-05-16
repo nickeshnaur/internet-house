@@ -186,6 +186,10 @@
   .card[data-game="weigh"]      { --card-accent: var(--weigh); }
   .card[data-game="window"]     { --card-accent: var(--window); }
   .card[data-game="parity"]     { --card-accent: var(--parity); }
+  .card[data-game="icon"]       { --card-accent: var(--icon); }
+  .card[data-game="melody"]     { --card-accent: var(--melody); }
+  .card[data-game="jumble"]     { --card-accent: var(--jumble); }
+  .card[data-game="year"]       { --card-accent: var(--year); }
 
   @media (max-width: 480px) {
     .grid { grid-template-columns: 1fr; gap: 10px; }
@@ -698,6 +702,42 @@
           </div>
           <h3 class="card-name">Parity</h3>
           <p class="card-desc">Eight cells. Subset queries return odd or even.</p>
+        </a>
+
+        <a class="card" data-game="icon" href="icon/">
+          <span class="card-tag">No. 045</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><g transform="translate(22,4)"><rect x="0" y="0" width="48" height="48" fill="none" stroke="currentColor" stroke-width="0.5" stroke-opacity="0.4"/><g stroke="currentColor" stroke-width="0.5" stroke-opacity="0.3"><line x1="9.6"  y1="0" x2="9.6"  y2="48"/><line x1="19.2" y1="0" x2="19.2" y2="48"/><line x1="28.8" y1="0" x2="28.8" y2="48"/><line x1="38.4" y1="0" x2="38.4" y2="48"/><line x1="0" y1="9.6"  x2="48" y2="9.6"/><line x1="0" y1="19.2" x2="48" y2="19.2"/><line x1="0" y1="28.8" x2="48" y2="28.8"/><line x1="0" y1="38.4" x2="48" y2="38.4"/></g><g fill="currentColor"><rect x="9.6"  y="0"    width="9.6" height="9.6"/><rect x="28.8" y="0"    width="9.6" height="9.6"/><rect x="0"    y="9.6"  width="48"  height="9.6"/><rect x="9.6"  y="19.2" width="28.8" height="9.6"/><rect x="19.2" y="28.8" width="9.6" height="9.6"/></g></g></svg>
+          </div>
+          <h3 class="card-name">Icon</h3>
+          <p class="card-desc">A hidden shape on 5×5. Overlap counts only.</p>
+        </a>
+
+        <a class="card" data-game="melody" href="melody/">
+          <span class="card-tag">No. 046</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><g transform="translate(6,16)"><rect x="0"  y="0" width="12" height="32" rx="2" fill="#3A6BAA"/><rect x="13" y="0" width="12" height="32" rx="2" fill="#3F8BAA"/><rect x="26" y="0" width="12" height="32" rx="2" fill="#5BA88E"/><rect x="39" y="0" width="12" height="32" rx="2" fill="#C9AE4A"/><rect x="52" y="0" width="12" height="32" rx="2" fill="#C97A3A"/><rect x="65" y="0" width="12" height="32" rx="2" fill="#B33A3A"/></g><g transform="translate(8,4)" fill="currentColor"><circle cx="3" cy="4" r="3"/><circle cx="38" cy="4" r="3"/></g></svg>
+          </div>
+          <h3 class="card-name">Melody</h3>
+          <p class="card-desc">Four hidden notes. Bulls and cows by ear.</p>
+        </a>
+
+        <a class="card" data-game="jumble" href="jumble/">
+          <span class="card-tag">No. 047</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><g font-family="Fraunces, serif" font-weight="500" font-size="22" fill="currentColor" text-anchor="middle" letter-spacing="-0.5"><text x="14" y="32">P</text><text x="30" y="32">A</text><text x="42" y="32">R</text><text x="56" y="32">S</text><text x="70" y="32">E</text></g><g stroke="currentColor" stroke-width="0.8" stroke-opacity="0.4"><line x1="6"  y1="40" x2="22" y2="40"/><line x1="24" y1="40" x2="36" y2="40"/><line x1="38" y1="40" x2="48" y2="40"/><line x1="50" y1="40" x2="62" y2="40"/><line x1="64" y1="40" x2="76" y2="40"/></g></svg>
+          </div>
+          <h3 class="card-name">Jumble</h3>
+          <p class="card-desc">Five letters. Many words. Find ours.</p>
+        </a>
+
+        <a class="card" data-game="year" href="year/">
+          <span class="card-tag">No. 048</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><g font-family="Fraunces, serif" font-weight="500" font-size="26" fill="currentColor" letter-spacing="-1"><text x="10" y="36">1</text><text x="26" y="36">9</text><text x="44" y="36">6</text><text x="62" y="36">9</text></g><g transform="translate(34,42)" stroke="currentColor" fill="currentColor"><circle cx="0"  cy="0" r="2.5"/><circle cx="8"  cy="0" r="2.5"/><circle cx="16" cy="0" r="2.5" fill="none" stroke-width="1.5"/></g></svg>
+          </div>
+          <h3 class="card-name">Year</h3>
+          <p class="card-desc">A four-digit historical year. Bulls and cows.</p>
         </a>
 
       </div>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Year · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .yr-stage { width: 100%; max-width: 460px; }
+
+  .yr-display {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: flex-end;
+    padding: 12px 0 6px;
+  }
+  .yr-display .col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 56px;
+  }
+  .yr-display .d {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(2.6rem, 11vw, 3.6rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    background: var(--paper-soft);
+    border-bottom: 2px solid var(--hairline-strong);
+    padding: 6px 0;
+    width: 100%;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .yr-display .d.placeholder { color: var(--ink-faint); opacity: 0.4; }
+  .yr-display .d.active {
+    border-bottom-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .yr-keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    width: 100%;
+    max-width: 280px;
+  }
+  .yr-key {
+    aspect-ratio: 5 / 3;
+    border: 1px solid var(--hairline-strong);
+    background: var(--paper-soft);
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    font-size: 1.2rem;
+    color: var(--ink);
+    transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  @media (hover: hover) {
+    .yr-key:hover { background: var(--paper); border-color: var(--ink-soft); }
+  }
+  .yr-key:active { transform: scale(0.96); background: var(--paper-deep); }
+  .yr-key.fn {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .yr-key.submit { color: var(--accent); border-color: var(--accent); }
+  .yr-key.submit[disabled] { opacity: 0.32; pointer-events: none; }
+
+  .yr-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .yr-status b { color: var(--ink); font-weight: 600; }
+
+  .yr-history {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .yr-history-row {
+    display: grid;
+    grid-template-columns: 22px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 6px 12px;
+  }
+  .yr-history-row .gnum { font: 500 0.66rem 'JetBrains Mono', monospace; color: var(--ink-faint); }
+  .yr-history-row .yrn {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+  }
+  .yr-history-row .fb {
+    display: flex; gap: 4px;
+  }
+  .yr-history-row .fb .d {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid var(--hairline-strong);
+  }
+  .yr-history-row .fb .d.bull { background: var(--accent); border-color: var(--accent); }
+  .yr-history-row .fb .d.cow  { background: transparent; border-color: var(--accent); border-width: 1.5px; }
+
+  .yr-reveal {
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-size: 1rem;
+    max-width: 30em;
+    margin: 0 auto;
+  }
+  .yr-reveal .year-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 2rem;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 4px;
+    letter-spacing: -0.02em;
+  }
+  .yr-reveal .card {
+    font-style: italic;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body data-game="year" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="year">
+      <div class="game-head">
+        <div class="eyebrow">No. 048 · Year</div>
+        <h1 class="title">Year</h1>
+        <p class="rule">A four-digit year. Six tries.</p>
+        <p class="howto"><b>How to play.</b> Guess any year — wild probes are fine. You'll see total <b>bulls</b> (right digit, right slot) and <b>cows</b> (right digit, wrong slot). When you crack it, the events of that year reveal.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="year">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="year">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="year" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="year" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="year" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="year" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="year" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="year" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="year" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage yr-stage" id="stage-year">
+
+        <div class="yr-display" id="yr-display"></div>
+
+        <div class="yr-keypad" id="yr-keypad">
+          <button class="yr-key" data-k="1">1</button>
+          <button class="yr-key" data-k="2">2</button>
+          <button class="yr-key" data-k="3">3</button>
+          <button class="yr-key" data-k="4">4</button>
+          <button class="yr-key" data-k="5">5</button>
+          <button class="yr-key" data-k="6">6</button>
+          <button class="yr-key" data-k="7">7</button>
+          <button class="yr-key" data-k="8">8</button>
+          <button class="yr-key" data-k="9">9</button>
+          <button class="yr-key fn" data-k="back">←</button>
+          <button class="yr-key" data-k="0">0</button>
+          <button class="yr-key fn submit" data-k="submit" id="yr-submit" disabled>Try</button>
+        </div>
+
+        <div class="yr-status" id="yr-status">Try <b>1</b> of <b>6</b></div>
+
+        <div class="yr-history" id="yr-history"></div>
+
+        <div class="solved" id="solved-year"><span class="check">✓</span><span class="solved-text">Cracked</span></div>
+        <div class="yr-reveal" id="yr-reveal" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Year_() {
+    const SLOTS = 4;
+    const MAX_TRIES = 6;
+
+    // 5 curated years with terse historical cards.
+    const PUZZLES = [
+      { id: 'year-001', year: '1969', card: 'Apollo 11 lands on the Moon. Woodstock fills a farm in Bethel, NY. Stonewall riots in Greenwich Village. The first ARPANET message is sent.' },
+      { id: 'year-002', year: '1066', card: 'William of Normandy defeats Harold at the Battle of Hastings. The Norman Conquest reshapes England — language, law, architecture.' },
+      { id: 'year-003', year: '1492', card: 'Columbus crosses the Atlantic. The Reconquista ends with the fall of Granada. The Alhambra Decree expels Jews from Spain.' },
+      { id: 'year-004', year: '1989', card: 'The Berlin Wall falls. Tiananmen Square protests. The Velvet Revolution in Czechoslovakia. Tim Berners-Lee proposes the World Wide Web at CERN.' },
+      { id: 'year-005', year: '1776', card: 'The American Declaration of Independence is signed in Philadelphia. Adam Smith publishes The Wealth of Nations.' },
+    ];
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let entry = [];
+    let history = [];
+    let solved = false, done = false, revealed = false;
+
+    const stageEl   = $('#stage-year');
+    const dispEl    = $('#yr-display');
+    const histEl    = $('#yr-history');
+    const statusEl  = $('#yr-status');
+    const submitBtn = $('#yr-submit');
+    const solvedEl  = $('#solved-year');
+    const revealEl  = $('#yr-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="year"][data-action="share"]');
+
+    function renderDisplay() {
+      dispEl.innerHTML = '';
+      for (let i = 0; i < SLOTS; i++) {
+        const col = document.createElement('div'); col.className = 'col';
+        const d = document.createElement('div'); d.className = 'd';
+        if (i < entry.length) d.textContent = String(entry[i]);
+        else { d.classList.add('placeholder'); d.textContent = '·'; }
+        if (!done && i === entry.length) d.classList.add('active');
+        col.appendChild(d);
+        dispEl.appendChild(col);
+      }
+    }
+
+    function feedback(guess, code) {
+      let bulls = 0;
+      const cR = [], gR = [];
+      for (let i = 0; i < SLOTS; i++) {
+        if (guess[i] === code[i]) bulls++;
+        else { cR.push(code[i]); gR.push(guess[i]); }
+      }
+      let cows = 0;
+      for (const g of gR) {
+        const idx = cR.indexOf(g);
+        if (idx >= 0) { cows++; cR.splice(idx, 1); }
+      }
+      return { bulls, cows };
+    }
+
+    function key(k) {
+      if (done) return;
+      if (k === 'back') { if (entry.length > 0) entry.pop(); }
+      else if (k === 'submit') {
+        if (entry.length !== SLOTS) return;
+        submit(); return;
+      } else {
+        if (entry.length < SLOTS) entry.push(k);
+      }
+      renderDisplay();
+      updateSubmit();
+    }
+
+    function updateSubmit() {
+      submitBtn.disabled = done || entry.length !== SLOTS;
+    }
+
+    function submit() {
+      const guess = entry.slice();
+      const code = PUZZLE.year.split('');
+      const { bulls, cows } = feedback(guess, code);
+      history.push({ guess, bulls, cows });
+      if (bulls === SLOTS) {
+        solved = true; done = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+        showRevealCard();
+      } else if (history.length >= MAX_TRIES) {
+        done = true;
+        showRevealCard();
+      } else {
+        haptic(8);
+      }
+      entry = [];
+      renderDisplay();
+      renderHistory();
+      updateSubmit();
+      updateStatus();
+      if (done && shareBtn) shareBtn.hidden = false;
+    }
+
+    function showRevealCard() {
+      revealEl.hidden = false;
+      revealEl.innerHTML = `<span class="year-num">${PUZZLE.year}</span><div class="card">${PUZZLE.card}</div>`;
+    }
+
+    function renderHistory() {
+      histEl.innerHTML = '';
+      history.forEach((h, i) => {
+        const row = document.createElement('div');
+        row.className = 'yr-history-row';
+        const num = document.createElement('div'); num.className = 'gnum'; num.textContent = String(i + 1);
+        const yr  = document.createElement('div'); yr.className = 'yrn'; yr.textContent = h.guess.join('');
+        const fb  = document.createElement('div'); fb.className = 'fb';
+        // 4 cells: bulls, then cows, then empty
+        for (let k = 0; k < SLOTS; k++) {
+          const d = document.createElement('div'); d.className = 'd';
+          if (k < h.bulls) d.classList.add('bull');
+          else if (k < h.bulls + h.cows) d.classList.add('cow');
+          fb.appendChild(d);
+        }
+        row.appendChild(num); row.appendChild(yr); row.appendChild(fb);
+        histEl.appendChild(row);
+      });
+    }
+
+    function updateStatus() {
+      const t = history.length + 1;
+      if (solved) statusEl.innerHTML = `Cracked in <b>${history.length}</b>`;
+      else if (revealed) statusEl.innerHTML = `Revealed`;
+      else if (done) statusEl.innerHTML = `Out of tries`;
+      else statusEl.innerHTML = `Try <b>${t}</b> of <b>${MAX_TRIES}</b>`;
+    }
+
+    function reset() {
+      entry = []; history = [];
+      solved = false; done = false; revealed = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Cracked';
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      if (shareBtn) shareBtn.hidden = true;
+      renderDisplay();
+      renderHistory();
+      updateSubmit();
+      updateStatus();
+    }
+
+    function reveal() {
+      if (done) return;
+      done = true; revealed = true;
+      solvedEl.classList.add('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      showRevealCard();
+      updateSubmit();
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+
+    function share() {
+      const lines = history.map(h => '●'.repeat(h.bulls) + '○'.repeat(h.cows) + '·'.repeat(SLOTS - h.bulls - h.cows));
+      const head = solved ? `Year ${pIdx + 1} · ${history.length}/${MAX_TRIES}` :
+                   revealed ? `Year ${pIdx + 1} · revealed` :
+                   `Year ${pIdx + 1} · X/${MAX_TRIES}`;
+      copyShare(`${head}\n\n${lines.join('\n')}\n\ninternet.house/game/year`);
+    }
+
+    function load(i) {
+      pIdx = (i + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+
+    document.getElementById('yr-keypad').addEventListener('click', e => {
+      const b = e.target.closest('.yr-key'); if (!b) return;
+      key(b.dataset.k);
+    });
+    document.addEventListener('keydown', e => {
+      if (document.body.dataset.game !== 'year') return;
+      if (done && e.key !== 'Enter') return;
+      if (/^[0-9]$/.test(e.key)) key(e.key);
+      else if (e.key === 'Backspace') key('back');
+      else if (e.key === 'Enter' && entry.length === SLOTS) key('submit');
+    });
+
+    GAMES['year'] = { reset, share, reveal, load };
+    load(0);
+  })();
+  </script>
+</body>
+</html>

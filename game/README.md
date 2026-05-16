@@ -1,6 +1,6 @@
 # /game
 
-Forty-four daily-puzzle prototypes, one per folder, served straight
+Forty-eight daily-puzzle prototypes, one per folder, served straight
 out of `game/`. No build step.
 
 ```
@@ -52,6 +52,10 @@ game/
   weigh/index.html          ← Game 42    Pure
   window/index.html         ← Game 43    Pure
   parity/index.html         ← Game 44    Pure
+  icon/index.html           ← Game 45    Pure
+  melody/index.html         ← Game 46    Pure
+  jumble/index.html         ← Game 47    Pure
+  year/index.html           ← Game 48    Pure
 ```
 
 Each game lives in its own folder; visiting `/game/<slug>/` loads only
@@ -98,12 +102,16 @@ The hub clusters the thirty-two games:
   second-layer visualization renders alongside the abstract dots
   (composition / comic strip / drawn star map / mini tidepool sim).
 - **Pure** — Safe, Balance, Bounce, Group, Cipher, Weigh, Window,
-  Parity. Mechanics-first prototypes with no narrative wrapper.
-  Each guess returns multi-dimensional independent feedback; the
-  visual is the instrument. The four Bulls-and-Cows-lineage games
-  (Cipher, Weigh, Window, Parity) push the principle further: the
-  feedback is purely aggregate — a sum, a count, a parity — and
-  cross-referencing across guesses is required for deduction.
+  Parity, Icon, Melody, Jumble, Year. Mechanics-first prototypes
+  with no narrative wrapper. Each guess returns multi-dimensional
+  independent feedback; the visual is the instrument. The
+  Bulls-and-Cows-lineage games push the principle further: feedback
+  is purely aggregate — a sum, a count, a parity, an overlap, a
+  bull/cow count — and cross-referencing across guesses is required
+  for deduction. The latest four (Icon, Melody, Jumble, Year) pair
+  pure mechanics with daily content that has cultural texture — a
+  recognizable shape, a famous melody, a multi-anagram letter set,
+  a historically loaded year.
 
 The hub itself (`game/index.html`) is a card grid — each card has a
 glyph, name, one-line description, and a tinted accent border.
@@ -971,7 +979,66 @@ Five puzzles ship per game.
 
 ---
 
-## Adding a forty-fifth game
+## The Pure group · daily-content extension
+
+Four more pure-mechanic prototypes — Bulls-and-Cows lineage paired
+with daily content that has cultural texture. The mechanic still
+carries the game; the content is what makes today's puzzle worth
+showing up for.
+
+**Icon** is overlap-count deduction. A 5×5 grid hides a recognizable
+shape today (heart, smiley, letter, digit, plus). The player is
+told exactly K cells are filled and places K each turn; feedback
+is a single number — how many of their cells match. Six guesses.
+As cells lock in, the icon resolves visually partway through.
+
+```js
+{ id: 'icon-NNN', name: 'Heart', filled: [1,3,5,6,7,8,9,11,12,13,17] }
+```
+
+**Melody** is Bulls and Cows for music. Six-key keyboard (C–A
+diatonic), keys colored cool→warm by pitch — no music theory
+required. The hidden 4-note sequence comes from a curated library
+of recognizable melodies (Twinkle, Ode to Joy, Mary Had a Little
+Lamb, Frère Jacques, Happy Birthday). On submit, Web Audio plays
+the player's sequence then the target. Eight guesses.
+
+```js
+{ id: 'melody-NNN', seq: [0,0,4,4], name: 'Twinkle, Twinkle' }
+```
+
+**Jumble** is permutation deduction with a vocabulary constraint.
+Five letters shown alphabetized form multiple valid English words;
+the player arranges them and gets back the count of letters in
+correct position (bulls only). The prototype ships with hand-curated
+letter sets each having its complete anagram list for input
+validation. Five guesses.
+
+```js
+{
+  id: 'jumble-NNN',
+  letters: ['A','E','P','R','S'],
+  valid: ['PARSE','PARES','SPARE','SPEAR', ...],
+  answer: 'PARSE',
+}
+```
+
+**Year** is digit-level Bulls and Cows with a historical reveal.
+A 4-digit year between 1000 and 2099, chosen for cultural
+significance. Wild guesses for information are fine — there's no
+validity restriction on the digits. Six tries. On solve the year
+reveals with a terse historical card: "1969 — Apollo 11. Woodstock.
+Stonewall riots. The first ARPANET message."
+
+```js
+{ id: 'year-NNN', year: '1969', card: 'Apollo 11 lands on the Moon...' }
+```
+
+Five puzzles ship per game.
+
+---
+
+## Adding a forty-ninth game
 
 1. Create `/game/<slug>/index.html` modeled on any existing game.
 2. Add an accent color in `shared.css`:
