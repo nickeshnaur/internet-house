@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Safe · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .sf-stage { width: 100%; max-width: 460px; }
+
+  .sf-display {
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 6px;
+    padding: 18px 14px 14px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+  .sf-display .col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    max-width: 64px;
+  }
+  .sf-display .digit {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: clamp(2.4rem, 11vw, 3.4rem);
+    line-height: 1;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 8px 0;
+    width: 100%;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .sf-display .digit.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+  .sf-display .digit.placeholder { color: var(--ink-faint); opacity: 0.45; }
+  .sf-display .arrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    color: var(--ink-faint);
+    height: 18px;
+  }
+  .sf-display .arrow.exact { color: var(--accent); font-weight: 700; }
+  .sf-display .arrow.up,
+  .sf-display .arrow.down { color: var(--ink-soft); font-weight: 600; }
+
+  .sf-keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    width: 100%;
+    max-width: 280px;
+  }
+  .sf-key {
+    aspect-ratio: 5 / 3;
+    border: 1px solid var(--hairline-strong);
+    background: var(--paper-soft);
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    font-size: 1.2rem;
+    color: var(--ink);
+    transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  @media (hover: hover) {
+    .sf-key:hover { background: var(--paper); border-color: var(--ink-soft); }
+  }
+  .sf-key:active { transform: scale(0.96); background: var(--paper-deep); }
+  .sf-key.fn {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .sf-key.submit { color: var(--accent); border-color: var(--accent); }
+  .sf-key.submit[disabled] { opacity: 0.32; pointer-events: none; }
+
+  .sf-history {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .sf-history-row {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    align-items: center;
+    gap: 10px;
+  }
+  .sf-history-row .gnum {
+    font: 500 0.66rem 'JetBrains Mono', monospace;
+    color: var(--ink-faint);
+    text-align: right;
+  }
+  .sf-history-row .row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 6px 8px;
+  }
+  .sf-history-row .cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .sf-history-row .cell .d {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--ink);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .sf-history-row .cell .a {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    line-height: 1;
+    color: var(--ink-faint);
+  }
+  .sf-history-row .cell .a.exact { color: var(--accent); font-weight: 700; }
+  .sf-history-row .cell .a.up,
+  .sf-history-row .cell .a.down { color: var(--ink-soft); font-weight: 600; }
+
+  .sf-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .sf-status b { color: var(--ink); font-weight: 600; }
+
+  .sf-reveal {
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1rem;
+  }
+  .sf-reveal em { color: var(--accent); font-style: normal; font-weight: 500; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em; }
+</style>
+</head>
+<body data-game="safe" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="safe">
+      <div class="game-head">
+        <div class="eyebrow">No. 037 · Safe</div>
+        <h1 class="title">Safe</h1>
+        <p class="rule">Crack the four-digit code. Six tries.</p>
+        <p class="howto"><b>How to play.</b> Type four digits, then press <b>Submit</b>. Per digit you'll see <b>↑</b> if the true digit is higher, <b>↓</b> if lower, or <b>✓</b> if exact.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="safe">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="safe">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="safe" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="safe" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="safe" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="safe" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="safe" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="safe" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="safe" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage sf-stage" id="stage-safe">
+        <div class="sf-display" id="sf-display"></div>
+
+        <div class="sf-keypad" id="sf-keypad">
+          <button class="sf-key" data-k="1">1</button>
+          <button class="sf-key" data-k="2">2</button>
+          <button class="sf-key" data-k="3">3</button>
+          <button class="sf-key" data-k="4">4</button>
+          <button class="sf-key" data-k="5">5</button>
+          <button class="sf-key" data-k="6">6</button>
+          <button class="sf-key" data-k="7">7</button>
+          <button class="sf-key" data-k="8">8</button>
+          <button class="sf-key" data-k="9">9</button>
+          <button class="sf-key fn" data-k="back">←</button>
+          <button class="sf-key" data-k="0">0</button>
+          <button class="sf-key fn submit" data-k="submit" id="sf-submit" disabled>Try</button>
+        </div>
+
+        <div class="sf-status"><span id="sf-num">Try <b>1</b> of <b>6</b></span></div>
+
+        <div class="sf-history" id="sf-history"></div>
+
+        <div class="solved" id="solved-safe"><span class="check">✓</span><span class="solved-text">Cracked</span></div>
+        <p class="sf-reveal" id="sf-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Safe() {
+    const PUZZLES = [
+      { id: 'safe-001', code: [4,7,2,9], hint: 'Today’s combination' },
+      { id: 'safe-002', code: [8,1,5,3], hint: 'Today’s combination' },
+      { id: 'safe-003', code: [0,6,3,7], hint: 'Today’s combination' },
+      { id: 'safe-004', code: [9,2,4,1], hint: 'Today’s combination' },
+      { id: 'safe-005', code: [3,3,8,6], hint: 'Today’s combination' },
+    ];
+
+    const MAX_TRIES = 6;
+    const SLOTS = 4;
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let entry = [];          // 0..4 digits typed
+    let activeSlot = 0;
+    let history = [];        // [{ guess:[4], fb:[4 of '↑'|'↓'|'✓'] }]
+    let solved = false, done = false, revealed = false;
+
+    const stageEl   = $('#stage-safe');
+    const dispEl    = $('#sf-display');
+    const histEl    = $('#sf-history');
+    const numEl     = $('#sf-num');
+    const submitBtn = $('#sf-submit');
+    const solvedEl  = $('#solved-safe');
+    const revealEl  = $('#sf-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="safe"][data-action="share"]');
+
+    function renderDisplay() {
+      dispEl.innerHTML = '';
+      for (let i = 0; i < SLOTS; i++) {
+        const col = document.createElement('div');
+        col.className = 'col';
+        const d = document.createElement('div');
+        d.className = 'digit';
+        if (i < entry.length) {
+          d.textContent = String(entry[i]);
+        } else {
+          d.classList.add('placeholder');
+          d.textContent = '·';
+        }
+        if (!done && i === entry.length) d.classList.add('active');
+        col.appendChild(d);
+        const a = document.createElement('div');
+        a.className = 'arrow';
+        a.textContent = '';
+        col.appendChild(a);
+        dispEl.appendChild(col);
+      }
+    }
+
+    function renderHistory() {
+      histEl.innerHTML = '';
+      history.forEach((g, i) => {
+        const row = document.createElement('div');
+        row.className = 'sf-history-row';
+        const num = document.createElement('div');
+        num.className = 'gnum'; num.textContent = String(i + 1);
+        const r = document.createElement('div');
+        r.className = 'row';
+        for (let s = 0; s < SLOTS; s++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          const d = document.createElement('div');
+          d.className = 'd'; d.textContent = String(g.guess[s]);
+          const a = document.createElement('div');
+          a.className = 'a';
+          const f = g.fb[s];
+          if (f === '✓') { a.classList.add('exact'); a.textContent = '✓'; }
+          else if (f === '↑') { a.classList.add('up'); a.textContent = '↑'; }
+          else { a.classList.add('down'); a.textContent = '↓'; }
+          cell.appendChild(d); cell.appendChild(a);
+          r.appendChild(cell);
+        }
+        row.appendChild(num); row.appendChild(r);
+        histEl.appendChild(row);
+      });
+    }
+
+    function updateNum() {
+      const t = history.length + 1;
+      if (solved) numEl.innerHTML = `Cracked in <b>${history.length}</b>`;
+      else if (done) numEl.innerHTML = `Out of tries`;
+      else numEl.innerHTML = `Try <b>${t}</b> of <b>${MAX_TRIES}</b>`;
+    }
+
+    function updateSubmit() {
+      submitBtn.disabled = done || entry.length !== SLOTS;
+    }
+
+    function feedback(guess, code) {
+      return guess.map((g, i) => {
+        if (g === code[i]) return '✓';
+        if (code[i] > g) return '↑';
+        return '↓';
+      });
+    }
+
+    function key(k) {
+      if (done) return;
+      if (k === 'back') {
+        if (entry.length > 0) entry.pop();
+      } else if (k === 'submit') {
+        if (entry.length !== SLOTS) return;
+        submit();
+        return;
+      } else {
+        if (entry.length < SLOTS) entry.push(+k);
+      }
+      renderDisplay();
+      updateSubmit();
+    }
+
+    function submit() {
+      const fb = feedback(entry, PUZZLE.code);
+      history.push({ guess: entry.slice(), fb });
+      const all = fb.every(f => f === '✓');
+      entry = [];
+      if (all) {
+        solved = true; done = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+      } else if (history.length >= MAX_TRIES) {
+        done = true;
+      } else {
+        haptic(8);
+      }
+      renderDisplay();
+      renderHistory();
+      updateNum();
+      updateSubmit();
+      if (done && shareBtn) shareBtn.hidden = false;
+    }
+
+    function load(i) {
+      pIdx = (i + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+
+    function reset() {
+      entry = [];
+      history = [];
+      solved = false; done = false; revealed = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Cracked';
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      if (shareBtn) shareBtn.hidden = true;
+      renderDisplay();
+      renderHistory();
+      updateNum();
+      updateSubmit();
+    }
+
+    function reveal() {
+      if (solved) return;
+      done = true; revealed = true;
+      solvedEl.classList.add('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      revealEl.hidden = false;
+      revealEl.innerHTML = `Code was <em>${PUZZLE.code.join('')}</em>.`;
+      if (shareBtn) shareBtn.hidden = false;
+      renderDisplay();
+      updateNum();
+      updateSubmit();
+    }
+
+    function share() {
+      const map = { '✓':'✅', '↑':'⬆️', '↓':'⬇️' };
+      const lines = history.map(g => g.fb.map(f => map[f]).join(''));
+      const head = solved ? `Safe ${pIdx + 1} · ${history.length}/${MAX_TRIES}` :
+                   revealed ? `Safe ${pIdx + 1} · revealed` :
+                   `Safe ${pIdx + 1} · X/${MAX_TRIES}`;
+      copyShare(`${head}\n\n${lines.join('\n')}\n\ninternet.house/game/safe`);
+    }
+
+    document.getElementById('sf-keypad').addEventListener('click', e => {
+      const b = e.target.closest('.sf-key'); if (!b) return;
+      key(b.dataset.k);
+    });
+
+    document.addEventListener('keydown', e => {
+      if (document.body.dataset.game !== 'safe') return;
+      if (done && e.key !== 'Enter') return;
+      if (/^[0-9]$/.test(e.key)) key(e.key);
+      else if (e.key === 'Backspace') key('back');
+      else if (e.key === 'Enter' && entry.length === SLOTS) key('submit');
+    });
+
+    GAMES['safe'] = { reset, share, reveal, load };
+    load(0);
+  })();
+  </script>
+</body>
+</html>

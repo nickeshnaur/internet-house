@@ -178,6 +178,10 @@
   .card[data-game="heist"]      { --card-accent: var(--heist); }
   .card[data-game="constellation"] { --card-accent: var(--constellation); }
   .card[data-game="tidepool"]   { --card-accent: var(--tidepool); }
+  .card[data-game="safe"]       { --card-accent: var(--safe); }
+  .card[data-game="balance"]    { --card-accent: var(--balance); }
+  .card[data-game="bounce"]     { --card-accent: var(--bounce); }
+  .card[data-game="group"]      { --card-accent: var(--group); }
 
   @media (max-width: 480px) {
     .grid { grid-template-columns: 1fr; gap: 10px; }
@@ -608,6 +612,52 @@
           </div>
           <h3 class="card-name">Tidepool</h3>
           <p class="card-desc">Compose today's pool — four species, four roles.</p>
+        </a>
+
+      </div>
+    </section>
+
+    <section class="group" aria-labelledby="grp-pure">
+      <div class="group-head">
+        <h2 class="group-name" id="grp-pure">Pure</h2>
+        <span class="group-tagline">The mechanic is the content.</span>
+      </div>
+      <div class="grid">
+
+        <a class="card" data-game="safe" href="safe/">
+          <span class="card-tag">No. 037</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="96" height="56" viewBox="0 0 96 56" fill="none"><g font-family="JetBrains Mono, monospace" font-weight="700" font-size="24" fill="currentColor"><text x="6"  y="34">4</text><text x="30" y="34">7</text><text x="54" y="34">2</text><text x="78" y="34">9</text></g><g font-family="Inter, sans-serif" font-size="9" fill="currentColor" fill-opacity="0.55" text-anchor="middle"><text x="13" y="50">↑</text><text x="37" y="50">✓</text><text x="61" y="50">↓</text><text x="85" y="50">↑</text></g></svg>
+          </div>
+          <h3 class="card-name">Safe</h3>
+          <p class="card-desc">Crack a four-digit code. Six tries.</p>
+        </a>
+
+        <a class="card" data-game="balance" href="balance/">
+          <span class="card-tag">No. 038</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><line x1="42" y1="14" x2="42" y2="48" stroke="currentColor" stroke-width="1.4"/><g transform="rotate(-8 42 14)"><line x1="14" y1="14" x2="70" y2="14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M4 14 Q14 30 24 14 Z" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="1"/><path d="M60 14 Q70 26 80 14 Z" fill="currentColor" fill-opacity="0.32" stroke="currentColor" stroke-width="1"/></g></svg>
+          </div>
+          <h3 class="card-name">Balance</h3>
+          <p class="card-desc">Twelve coins. Find the odd one — heavier or lighter.</p>
+        </a>
+
+        <a class="card" data-game="bounce" href="bounce/">
+          <span class="card-tag">No. 039</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><rect x="14" y="6" width="56" height="44" rx="2" fill="#0E1218"/><g stroke="#1B2230" stroke-width="0.5"><line x1="28" y1="6"  x2="28" y2="50"/><line x1="42" y1="6"  x2="42" y2="50"/><line x1="56" y1="6"  x2="56" y2="50"/><line x1="14" y1="20" x2="70" y2="20"/><line x1="14" y1="34" x2="70" y2="34"/></g><line x1="34" y1="22" x2="40" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="50" y1="40" x2="56" y2="34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="21" cy="6"  r="2" fill="currentColor"/><circle cx="63" cy="50" r="2" fill="currentColor"/></svg>
+          </div>
+          <h3 class="card-name">Bounce</h3>
+          <p class="card-desc">Map four hidden mirrors from beam paths.</p>
+        </a>
+
+        <a class="card" data-game="group" href="group/">
+          <span class="card-tag">No. 040</span>
+          <div class="card-glyph" aria-hidden="true">
+            <svg width="84" height="56" viewBox="0 0 84 56" fill="none"><g><rect x="6"  y="4"  width="16" height="14" rx="2" fill="currentColor" fill-opacity="0.7"/><rect x="26" y="4"  width="16" height="14" rx="2" fill="currentColor" fill-opacity="0.18"/><rect x="46" y="4"  width="16" height="14" rx="2" fill="currentColor" fill-opacity="0.7"/><rect x="66" y="4"  width="16" height="14" rx="2" fill="currentColor" fill-opacity="0.18"/><rect x="6"  y="22" width="16" height="14" rx="2" fill="currentColor" fill-opacity="0.18"/><rect x="26" y="22" width="16" height="14" rx="2" fill="currentColor" fill-opacity="0.7"/><rect x="46" y="22" width="16" height="14" rx="2" fill="currentColor" fill-opacity="0.18"/><rect x="66" y="22" width="16" height="14" rx="2" fill="currentColor" fill-opacity="0.7"/><rect x="6"  y="40" width="16" height="14" rx="2" fill="currentColor" fill-opacity="0.18"/><rect x="26" y="40" width="16" height="14" rx="2" fill="currentColor" fill-opacity="0.18"/><rect x="46" y="40" width="16" height="14" rx="2" fill="currentColor" fill-opacity="0.18"/><rect x="66" y="40" width="16" height="14" rx="2" fill="currentColor" fill-opacity="0.18"/></g></svg>
+          </div>
+          <h3 class="card-name">Group</h3>
+          <p class="card-desc">Twelve items. Find the four that share a property.</p>
         </a>
 
       </div>

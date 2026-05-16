@@ -1,6 +1,6 @@
 # /game
 
-Thirty-six daily-puzzle prototypes, one per folder, served straight
+Forty daily-puzzle prototypes, one per folder, served straight
 out of `game/`. No build step.
 
 ```
@@ -44,6 +44,10 @@ game/
   heist/index.html          ← Game 34    Crew
   constellation/index.html  ← Game 35    Crew
   tidepool/index.html       ← Game 36    Crew
+  safe/index.html           ← Game 37    Pure
+  balance/index.html        ← Game 38    Pure
+  bounce/index.html         ← Game 39    Pure
+  group/index.html          ← Game 40    Pure
 ```
 
 Each game lives in its own folder; visiting `/game/<slug>/` loads only
@@ -89,6 +93,11 @@ The hub clusters the thirty-two games:
   feedback is component-wise (✓ exact / ~ in set / ✗ absent), and a
   second-layer visualization renders alongside the abstract dots
   (composition / comic strip / drawn star map / mini tidepool sim).
+- **Pure** — Safe, Balance, Bounce, Group. Mechanics-first prototypes
+  with no narrative wrapper. Each guess returns multi-dimensional
+  independent feedback; the visual is the instrument (digit display,
+  pan balance, beam grid, item grid). Typography and grid systems
+  do all the work.
 
 The hub itself (`game/index.html`) is a card grid — each card has a
 glyph, name, one-line description, and a tinted accent border.
@@ -850,7 +859,59 @@ warm tide pool, upwelling basin.
 
 ---
 
-## Adding a thirty-seventh game
+## The Pure group
+
+Four mechanics-first prototypes — no narrative wrapper, no character
+voice, no decorative theming. The interaction itself is the
+experience: each guess returns multi-dimensional independent
+feedback, and information accumulates across guesses.
+
+**Safe** is a four-digit lock. Each turn the player types four digits
+and gets ↑ / ↓ / ✓ per slot — binary search teaches itself within
+one guess. Six tries.
+
+```js
+{ id: 'safe-NNN', code: [4,7,2,9] }
+```
+
+**Balance** is the classic 12-coin pan-balance puzzle. One coin is
+the odd weight; direction is unknown. Tap coins onto left/right
+pans (counts must match), press Weigh, see ⬅ / ➡ / ⚖. Four
+weighings, then commit a final answer (coin number + heavier/lighter).
+
+```js
+{ id: 'balance-NNN', odd: 7, dir: 'lighter' }
+```
+
+**Bounce** hides four mirrors (╱ or ╲) on a 6×6 grid surrounded by
+24 ports. Each shot fires a beam from a port; you see only the
+entry and exit, never the path. Five shots, then place four mirrors
+and lock in. The core is a beam-tracer: given a port and mirror
+layout, return the exit port.
+
+```js
+{ id: 'bounce-NNN', mirrors: [{r:1,c:2,t:'/'}, {r:3,c:4,t:'\\'}, ...] }
+```
+
+**Group** shows twelve items in a 3×4 grid; four share a hidden
+property. Pick four, get per-item ✓/✗. Items can be words,
+numbers, anything — the deductive loop is content-agnostic.
+Five tries; confirmed ✓ items lock in for substitution strategy.
+
+```js
+{
+  id: 'group-NNN',
+  category: 'Musical instruments',
+  items: ['HARP','SAW','OAK',...,'CHISEL'],
+  group: ['HARP','VIOLIN','PIANO','CELLO'],
+}
+```
+
+Five puzzles ship per game.
+
+---
+
+## Adding a forty-first game
 
 1. Create `/game/<slug>/index.html` modeled on any existing game.
 2. Add an accent color in `shared.css`:

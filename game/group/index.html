@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Group · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .gp-stage { width: 100%; max-width: 460px; }
+
+  .gp-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+  }
+  .gp-card {
+    aspect-ratio: 1 / 1;
+    background: var(--paper-soft);
+    border: 1.5px solid var(--hairline-strong);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(0.92rem, 3.4vw, 1.1rem);
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    cursor: pointer;
+    position: relative;
+    transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  @media (hover: hover) {
+    .gp-card:hover { border-color: var(--ink-soft); background: var(--paper); }
+  }
+  .gp-card.sel {
+    background: color-mix(in srgb, var(--accent) 14%, var(--paper));
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .gp-card.confirmed {
+    background: var(--accent);
+    color: var(--paper);
+    border-color: var(--accent);
+    pointer-events: none;
+  }
+  .gp-card.locked { pointer-events: none; opacity: 0.65; }
+  .gp-card .badge {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    font: 600 0.7rem 'Inter', sans-serif;
+    display: none;
+    align-items: center; justify-content: center;
+    background: var(--paper);
+    border: 1px solid var(--hairline-strong);
+    color: var(--ink-faint);
+  }
+  .gp-card[data-fb="ok"]  .badge { display: inline-flex; background: var(--accent); color: var(--paper); border-color: var(--accent); }
+  .gp-card[data-fb="bad"] .badge { display: inline-flex; background: var(--paper); color: var(--ink-faint); border-color: var(--hairline-strong); }
+
+  .gp-controls {
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center;
+  }
+  .gp-btn {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .gp-btn[disabled] { opacity: 0.32; pointer-events: none; }
+  .gp-btn.ghost { color: var(--ink-faint); border-color: var(--hairline-strong); }
+
+  .gp-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .gp-status b { color: var(--ink); font-weight: 600; }
+
+  .gp-history {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .gp-history-row {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 10px;
+    align-items: start;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 6px 10px;
+  }
+  .gp-history-row .gnum { font: 500 0.66rem 'Inter', sans-serif; color: var(--ink-faint); padding-top: 3px; }
+  .gp-history-row .items {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .gp-history-row .it {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 4px 3px;
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    border-radius: 3px;
+  }
+  .gp-history-row .it .lbl {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+    line-height: 1;
+    text-align: center;
+  }
+  .gp-history-row .it .fb {
+    font: 600 0.7rem 'Inter', sans-serif;
+    line-height: 1;
+    color: var(--ink-faint);
+  }
+  .gp-history-row .it.ok .fb  { color: var(--accent); }
+  .gp-history-row .it.bad .fb { color: var(--ink-faint); }
+
+  .gp-reveal {
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1rem;
+  }
+  .gp-reveal em { color: var(--accent); font-style: normal; font-weight: 500; }
+</style>
+</head>
+<body data-game="group" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="group">
+      <div class="game-head">
+        <div class="eyebrow">No. 040 · Group</div>
+        <h1 class="title">Group</h1>
+        <p class="rule">Twelve items. Four belong together. Find them.</p>
+        <p class="howto"><b>How to play.</b> Tap to select four items, then <b>Submit</b>. Each item gets a ✓ if it belongs to the hidden group, ✗ if not. Five tries.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="group">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="group">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="group" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="group" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="group" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="group" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="group" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="group" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="group" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage gp-stage" id="stage-group">
+
+        <div class="gp-grid" id="gp-grid"></div>
+
+        <div class="gp-status" id="gp-status">Try <b>1</b> of <b>5</b></div>
+
+        <div class="gp-controls">
+          <button class="gp-btn ghost" id="gp-clear">Clear</button>
+          <button class="gp-btn" id="gp-submit" disabled>Submit</button>
+        </div>
+
+        <div class="gp-history" id="gp-history"></div>
+
+        <div class="solved" id="solved-group"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+        <p class="gp-reveal" id="gp-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Group() {
+    // 5 puzzles. items[] is shown in 3×4 grid in given order; group[] holds the four members.
+    const PUZZLES = [
+      {
+        id: 'group-001',
+        category: 'Musical instruments',
+        items:  ['HARP','SAW','OAK','VIOLIN','HAMMER','PIANO','BRUSH','CELLO','WRENCH','ELM','PINE','CHISEL'],
+        group:  ['HARP','VIOLIN','PIANO','CELLO'],
+      },
+      {
+        id: 'group-002',
+        category: 'European capitals',
+        items:  ['MADRID','MEMPHIS','OSLO','DENVER','LISBON','MILAN','TURIN','ATHENS','BOSTON','NAPLES','PORTO','SEATTLE'],
+        group:  ['MADRID','OSLO','LISBON','ATHENS'],
+      },
+      {
+        id: 'group-003',
+        category: 'Prime numbers',
+        items:  ['9','17','21','11','15','25','29','27','33','7','35','39'],
+        group:  ['17','11','29','7'],
+      },
+      {
+        id: 'group-004',
+        category: 'Shades of red',
+        items:  ['CORAL','OLIVE','SCARLET','MOSS','CRIMSON','TEAL','VERMILION','SAGE','SLATE','LIME','SAND','BISQUE'],
+        group:  ['CORAL','SCARLET','CRIMSON','VERMILION'],
+      },
+      {
+        id: 'group-005',
+        category: 'Greek letters',
+        items:  ['SIGMA','PESO','RHO','EURO','LAMBDA','YEN','OMEGA','RUPEE','REAL','POUND','DINAR','RAND'],
+        group:  ['SIGMA','RHO','LAMBDA','OMEGA'],
+      },
+    ];
+
+    const MAX_TRIES = 5;
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let selected = new Set();          // indices into items[]
+    let history = [];                  // [{ pickIdx:[4], fb:[4 of true|false] }]
+    let confirmed = new Set();         // indices that have already been confirmed as ✓ in some past guess
+    let solved = false, done = false, revealed = false;
+
+    const stageEl   = $('#stage-group');
+    const gridEl    = $('#gp-grid');
+    const statusEl  = $('#gp-status');
+    const submitBtn = $('#gp-submit');
+    const clearBtn  = $('#gp-clear');
+    const histEl    = $('#gp-history');
+    const solvedEl  = $('#solved-group');
+    const revealEl  = $('#gp-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="group"][data-action="share"]');
+
+    function buildGrid() {
+      gridEl.innerHTML = '';
+      PUZZLE.items.forEach((it, i) => {
+        const c = document.createElement('button');
+        c.className = 'gp-card';
+        c.dataset.idx = String(i);
+        c.innerHTML = `<span class="lbl">${it}</span><span class="badge"></span>`;
+        gridEl.appendChild(c);
+      });
+      paintGrid();
+    }
+    function paintGrid() {
+      $$('.gp-card', gridEl).forEach(c => {
+        const i = +c.dataset.idx;
+        c.classList.toggle('sel', selected.has(i) && !confirmed.has(i));
+        c.classList.toggle('confirmed', confirmed.has(i));
+        // residual ✓/✗ from the most recent guess in which this card appeared
+        c.removeAttribute('data-fb');
+        c.querySelector('.badge').textContent = '';
+        if (history.length > 0) {
+          const last = history[history.length - 1];
+          const pos = last.pickIdx.indexOf(i);
+          if (pos >= 0) {
+            const ok = last.fb[pos];
+            c.setAttribute('data-fb', ok ? 'ok' : 'bad');
+            c.querySelector('.badge').textContent = ok ? '✓' : '✗';
+          }
+        }
+        if (done && !solved && !confirmed.has(i)) c.classList.add('locked');
+      });
+      submitBtn.disabled = done || selected.size !== 4;
+    }
+
+    function toggleCard(i) {
+      if (done) return;
+      if (confirmed.has(i)) return;            // already-confirmed cards are locked
+      if (selected.has(i)) selected.delete(i);
+      else {
+        if (selected.size >= 4) { showToast('Pick four'); return; }
+        selected.add(i);
+      }
+      paintGrid();
+    }
+
+    function clearSelection() {
+      if (done) return;
+      // clear all not-confirmed
+      [...selected].forEach(i => { if (!confirmed.has(i)) selected.delete(i); });
+      paintGrid();
+    }
+
+    function submit() {
+      if (selected.size !== 4 || done) return;
+      const pickIdx = [...selected].sort((a,b) => a-b);
+      const fb = pickIdx.map(i => PUZZLE.group.includes(PUZZLE.items[i]));
+      history.push({ pickIdx, fb });
+      // confirmed cards: any ✓ from this guess sticks
+      pickIdx.forEach((i, k) => { if (fb[k]) confirmed.add(i); });
+      const allOk = fb.every(Boolean);
+      // unselect non-confirmed picks for next round
+      pickIdx.forEach((i, k) => { if (!fb[k]) selected.delete(i); });
+      // confirmed picks stay "selected" visually via .confirmed
+      [...selected].forEach(i => { if (!confirmed.has(i)) selected.delete(i); });
+      if (allOk) {
+        solved = true; done = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+      } else if (history.length >= MAX_TRIES) {
+        done = true;
+      } else {
+        haptic(8);
+      }
+      paintGrid();
+      renderHistory();
+      updateStatus();
+      if (done && shareBtn) shareBtn.hidden = false;
+    }
+
+    function renderHistory() {
+      histEl.innerHTML = '';
+      history.forEach((g, i) => {
+        const row = document.createElement('div');
+        row.className = 'gp-history-row';
+        const num = document.createElement('div'); num.className = 'gnum'; num.textContent = String(i + 1);
+        const items = document.createElement('div'); items.className = 'items';
+        g.pickIdx.forEach((idx, k) => {
+          const ok = g.fb[k];
+          const it = document.createElement('div');
+          it.className = 'it ' + (ok ? 'ok' : 'bad');
+          it.innerHTML = `<span class="lbl">${PUZZLE.items[idx]}</span><span class="fb">${ok ? '✓' : '✗'}</span>`;
+          items.appendChild(it);
+        });
+        row.appendChild(num); row.appendChild(items);
+        histEl.appendChild(row);
+      });
+    }
+
+    function updateStatus() {
+      const t = history.length + 1;
+      if (solved) statusEl.innerHTML = `Solved in <b>${history.length}</b>`;
+      else if (revealed) statusEl.innerHTML = `Revealed`;
+      else if (done) statusEl.innerHTML = `Out of tries`;
+      else statusEl.innerHTML = `Try <b>${t}</b> of <b>${MAX_TRIES}</b>`;
+    }
+
+    function reset() {
+      selected = new Set();
+      history = [];
+      confirmed = new Set();
+      solved = false; done = false; revealed = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Solved';
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      if (shareBtn) shareBtn.hidden = true;
+      buildGrid();
+      renderHistory();
+      updateStatus();
+    }
+
+    function reveal() {
+      if (done) return;
+      done = true; revealed = true;
+      solvedEl.classList.add('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      revealEl.hidden = false;
+      revealEl.innerHTML = `<em>${PUZZLE.category}</em> — ${PUZZLE.group.join(' · ')}.`;
+      // visually mark the true group cards
+      $$('.gp-card', gridEl).forEach(c => {
+        const i = +c.dataset.idx;
+        if (PUZZLE.group.includes(PUZZLE.items[i])) {
+          c.setAttribute('data-fb', 'ok');
+          c.querySelector('.badge').textContent = '✓';
+        } else {
+          c.classList.add('locked');
+        }
+      });
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+
+    function share() {
+      const lines = history.map(g => g.fb.map(ok => ok ? '✅' : '❌').join(''));
+      const head = solved ? `Group ${pIdx + 1} · ${history.length}/${MAX_TRIES}` :
+                   revealed ? `Group ${pIdx + 1} · revealed` :
+                   `Group ${pIdx + 1} · X/${MAX_TRIES}`;
+      copyShare(`${head}\n\n${lines.join('\n')}\n\ninternet.house/game/group`);
+    }
+
+    function load(i) {
+      pIdx = (i + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+
+    gridEl.addEventListener('click', e => {
+      const c = e.target.closest('.gp-card'); if (!c) return;
+      toggleCard(+c.dataset.idx);
+    });
+    submitBtn.addEventListener('click', submit);
+    clearBtn.addEventListener('click', clearSelection);
+
+    GAMES['group'] = { reset, share, reveal, load };
+    load(0);
+  })();
+  </script>
+</body>
+</html>

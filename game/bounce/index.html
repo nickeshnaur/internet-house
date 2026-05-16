@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Bounce · internet.house</title>
+<meta name="theme-color" content="#0E1218">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  body[data-game="bounce"] { background: var(--paper); }
+
+  .bn-stage { width: 100%; max-width: 460px; }
+
+  .bn-board {
+    width: clamp(300px, 92vw, 420px);
+    aspect-ratio: 1 / 1;
+    background: #0E1218;
+    border: 1px solid #2A3240;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.4);
+  }
+  .bn-board svg { display: block; width: 100%; height: 100%; }
+
+  /* port chips floating on the outside of the grid */
+  .bn-port {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .bn-port:hover .pdot { fill: #D4DCEA; }
+
+  .bn-mode {
+    display: flex; gap: 8px; align-items: center;
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .bn-mode .seg {
+    border: 1px solid var(--hairline-strong);
+    border-radius: 999px;
+    padding: 2px;
+    display: flex;
+  }
+  .bn-mode .seg button {
+    padding: 5px 12px;
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border-radius: 999px;
+    transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .bn-mode .seg button.sel { background: var(--accent); color: #0E1218; }
+
+  .bn-mirror-pick {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .bn-mirror-pick .mp {
+    width: 36px; height: 36px;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 6px;
+    background: #0E1218;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 1.4rem;
+    line-height: 1;
+    transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+  }
+  .bn-mirror-pick .mp.sel {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 16%, #0E1218);
+  }
+
+  .bn-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .bn-status b { color: var(--ink); font-weight: 600; }
+
+  .bn-history {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .bn-history-row {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    align-items: center;
+    gap: 10px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font: 500 0.78rem 'JetBrains Mono', monospace;
+    color: var(--ink-soft);
+  }
+  .bn-history-row .gnum { color: var(--ink-faint); font-size: 0.66rem; }
+  .bn-history-row .arrow { color: var(--accent); margin: 0 6px; }
+
+  .bn-btn {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .bn-btn[disabled] { opacity: 0.32; pointer-events: none; }
+
+  .bn-reveal {
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1rem;
+  }
+  .bn-reveal em { color: var(--accent); font-style: normal; font-weight: 500; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em; }
+</style>
+</head>
+<body data-game="bounce" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="bounce">
+      <div class="game-head">
+        <div class="eyebrow">No. 039 · Bounce</div>
+        <h1 class="title">Bounce</h1>
+        <p class="rule">Four mirrors hide on a six-by-six grid. Five shots.</p>
+        <p class="howto"><b>How to play.</b> In <b>Fire</b> mode, tap a port — the beam enters, bounces off ╱ and ╲ mirrors at 45°, and exits somewhere. Only entry and exit glow; the path stays hidden. After your shots, switch to <b>Place</b> mode, drop four mirrors on the grid, and lock in.</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="bounce">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="bounce">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="bounce" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="bounce" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="bounce" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="bounce" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="bounce" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="bounce" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="bounce" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage bn-stage" id="stage-bounce">
+
+        <div class="bn-board">
+          <svg id="bn-svg" viewBox="0 0 320 320" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+
+        <div class="bn-mode">
+          <span>Mode</span>
+          <span class="seg" id="bn-seg">
+            <button data-mode="fire" class="sel">Fire</button>
+            <button data-mode="place">Place</button>
+          </span>
+          <span class="bn-mirror-pick" id="bn-pick" style="display:none">
+            <button class="mp sel" data-mtype="/">/</button>
+            <button class="mp" data-mtype="\">\</button>
+          </span>
+        </div>
+
+        <div class="bn-status" id="bn-status">Shot <b>1</b> of <b>5</b></div>
+
+        <div class="bn-history" id="bn-history"></div>
+
+        <button class="bn-btn" id="bn-commit" disabled>Lock in mirrors</button>
+
+        <div class="solved" id="solved-bounce"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+        <p class="bn-reveal" id="bn-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Bounce() {
+    const N = 6;
+    const MAX_SHOTS = 5;
+
+    // 5 hand-authored puzzles. Each lists 4 mirrors as { r, c, t } where t is '/' or '\\'.
+    const PUZZLES = [
+      { id: 'bounce-001', mirrors: [{r:1,c:2,t:'/'}, {r:3,c:4,t:'\\'}, {r:4,c:1,t:'\\'}, {r:2,c:3,t:'/'}] },
+      { id: 'bounce-002', mirrors: [{r:0,c:3,t:'\\'}, {r:2,c:1,t:'/'}, {r:4,c:4,t:'/'}, {r:5,c:2,t:'\\'}] },
+      { id: 'bounce-003', mirrors: [{r:1,c:1,t:'\\'}, {r:1,c:4,t:'/'}, {r:4,c:1,t:'/'}, {r:4,c:4,t:'\\'}] },
+      { id: 'bounce-004', mirrors: [{r:0,c:2,t:'/'}, {r:3,c:0,t:'\\'}, {r:3,c:5,t:'/'}, {r:5,c:3,t:'\\'}] },
+      { id: 'bounce-005', mirrors: [{r:2,c:2,t:'/'}, {r:2,c:5,t:'\\'}, {r:5,c:2,t:'\\'}, {r:5,c:5,t:'/'}] },
+    ];
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    let mode = 'fire';        // 'fire' or 'place'
+    let pickType = '/';
+    let shots = [];           // [{ inPort, outPort }]
+    let placed = [];          // [{ r, c, t }]
+    let solved = false, done = false, revealed = false;
+
+    const stageEl   = $('#stage-bounce');
+    const svg       = document.getElementById('bn-svg');
+    const segEl     = $('#bn-seg');
+    const pickEl    = $('#bn-pick');
+    const statusEl  = $('#bn-status');
+    const histEl    = $('#bn-history');
+    const commitBtn = $('#bn-commit');
+    const solvedEl  = $('#solved-bounce');
+    const revealEl  = $('#bn-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="bounce"][data-action="share"]');
+
+    const VB = 320;     // viewbox size
+    const M = 36;       // margin (port band)
+    const G = VB - 2*M; // grid pixel size
+    const CELL = G / N;
+
+    // Port encoding: side ('T'|'R'|'B'|'L') + index 0..5
+    function portToEntry(p) {
+      const side = p[0], i = +p.slice(1);
+      if (side === 'T') return { r: 0, c: i, dr: 1,  dc: 0 };
+      if (side === 'B') return { r: N-1, c: i, dr: -1, dc: 0 };
+      if (side === 'L') return { r: i, c: 0, dr: 0,  dc: 1 };
+      if (side === 'R') return { r: i, c: N-1, dr: 0, dc: -1 };
+    }
+    function reflect(dr, dc, t) {
+      // / : (dr,dc) → (-dc, -dr).  \ : (dr,dc) → (dc, dr).
+      if (t === '/') return [-dc, -dr];
+      return [dc, dr];
+    }
+    function trace(port, mirrors) {
+      const { r, c, dr, dc } = portToEntry(port);
+      let cr = r, cc = c, cdr = dr, cdc = dc, steps = 0;
+      while (steps < 200) {
+        const m = mirrors.find(m => m.r === cr && m.c === cc);
+        if (m) [cdr, cdc] = reflect(cdr, cdc, m.t);
+        cr += cdr; cc += cdc;
+        if (cr < 0)   return 'T' + cc;     // Wait — need to derive exit port carefully
+        if (cr >= N)  return 'B' + cc;
+        if (cc < 0)   return 'L' + cr;
+        if (cc >= N)  return 'R' + cr;
+        steps++;
+      }
+      return null;
+    }
+
+    function buildBoard() {
+      svg.innerHTML = '';
+      const ns = 'http://www.w3.org/2000/svg';
+      const defs = document.createElementNS(ns, 'defs');
+      defs.innerHTML = `
+        <filter id="bn-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="1.4" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>`;
+      svg.appendChild(defs);
+
+      // grid background
+      const bg = document.createElementNS(ns, 'rect');
+      bg.setAttribute('x', M); bg.setAttribute('y', M);
+      bg.setAttribute('width', G); bg.setAttribute('height', G);
+      bg.setAttribute('fill', '#101620');
+      bg.setAttribute('stroke', '#2A3240');
+      bg.setAttribute('stroke-width', '0.8');
+      svg.appendChild(bg);
+
+      // grid lines
+      for (let i = 1; i < N; i++) {
+        const x = M + i * CELL;
+        const y = M + i * CELL;
+        const v = document.createElementNS(ns, 'line');
+        v.setAttribute('x1', x); v.setAttribute('y1', M); v.setAttribute('x2', x); v.setAttribute('y2', M + G);
+        v.setAttribute('stroke', '#1B2230'); v.setAttribute('stroke-width', '0.6');
+        svg.appendChild(v);
+        const h = document.createElementNS(ns, 'line');
+        h.setAttribute('x1', M); h.setAttribute('y1', y); h.setAttribute('x2', M + G); h.setAttribute('y2', y);
+        h.setAttribute('stroke', '#1B2230'); h.setAttribute('stroke-width', '0.6');
+        svg.appendChild(h);
+      }
+
+      // cell click overlay (for placement mode)
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          const rect = document.createElementNS(ns, 'rect');
+          rect.setAttribute('class', 'bn-cell');
+          rect.setAttribute('data-r', r); rect.setAttribute('data-c', c);
+          rect.setAttribute('x', M + c * CELL); rect.setAttribute('y', M + r * CELL);
+          rect.setAttribute('width', CELL); rect.setAttribute('height', CELL);
+          rect.setAttribute('fill', 'transparent');
+          rect.style.cursor = 'pointer';
+          svg.appendChild(rect);
+        }
+      }
+
+      // ports
+      for (let i = 0; i < N; i++) {
+        addPort('T', i, M + (i+0.5)*CELL, M - 18);
+        addPort('B', i, M + (i+0.5)*CELL, M + G + 18);
+        addPort('L', i, M - 18, M + (i+0.5)*CELL);
+        addPort('R', i, M + G + 18, M + (i+0.5)*CELL);
+      }
+
+      // group for shots overlay (entry/exit glows)
+      const shotsLayer = document.createElementNS(ns, 'g');
+      shotsLayer.setAttribute('id', 'bn-shots-layer');
+      svg.appendChild(shotsLayer);
+
+      // group for placed mirrors
+      const mirrorsLayer = document.createElementNS(ns, 'g');
+      mirrorsLayer.setAttribute('id', 'bn-mirrors-layer');
+      svg.appendChild(mirrorsLayer);
+
+      // group for path animations (briefly drawn then faded)
+      const pathLayer = document.createElementNS(ns, 'g');
+      pathLayer.setAttribute('id', 'bn-path-layer');
+      svg.appendChild(pathLayer);
+    }
+
+    function addPort(side, i, x, y) {
+      const ns = 'http://www.w3.org/2000/svg';
+      const g = document.createElementNS(ns, 'g');
+      g.setAttribute('class', 'bn-port');
+      g.setAttribute('data-port', side + i);
+      g.setAttribute('transform', `translate(${x},${y})`);
+      const dot = document.createElementNS(ns, 'circle');
+      dot.setAttribute('class', 'pdot');
+      dot.setAttribute('cx', 0); dot.setAttribute('cy', 0); dot.setAttribute('r', 5);
+      dot.setAttribute('fill', '#3A4250');
+      dot.setAttribute('stroke', '#5A6378');
+      dot.setAttribute('stroke-width', '0.6');
+      g.appendChild(dot);
+      const t = document.createElementNS(ns, 'text');
+      t.setAttribute('x', 0); t.setAttribute('y', 0);
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('dominant-baseline', 'middle');
+      t.setAttribute('font-family', 'JetBrains Mono, monospace');
+      t.setAttribute('font-size', '7');
+      t.setAttribute('font-weight', '600');
+      t.setAttribute('fill', '#0E1218');
+      t.textContent = side + i;
+      g.appendChild(t);
+      svg.appendChild(g);
+    }
+
+    function repaintShots() {
+      const layer = document.getElementById('bn-shots-layer');
+      layer.innerHTML = '';
+      // also reset port colors
+      $$('.bn-port', svg).forEach(p => {
+        p.querySelector('.pdot').setAttribute('fill', '#3A4250');
+        p.querySelector('.pdot').setAttribute('stroke', '#5A6378');
+        p.querySelector('text').setAttribute('fill', '#0E1218');
+        p.removeAttribute('data-glow');
+      });
+      // colors per shot — cycle through a small palette
+      const PAL = ['#3DB7D4', '#D4A536', '#E8A0C8', '#A78BFA', '#7DB3D9'];
+      shots.forEach((s, i) => {
+        const col = PAL[i % PAL.length];
+        markPort(s.inPort, col, 'in');
+        if (s.outPort && s.outPort !== s.inPort) markPort(s.outPort, col, 'out');
+        else if (s.outPort === s.inPort) markPort(s.inPort, col, 'both');
+      });
+    }
+    function markPort(port, color, kind) {
+      const g = $(`.bn-port[data-port="${port}"]`, svg);
+      if (!g) return;
+      g.querySelector('.pdot').setAttribute('fill', color);
+      g.querySelector('.pdot').setAttribute('stroke', color);
+      g.querySelector('text').setAttribute('fill', '#0E1218');
+      g.setAttribute('data-glow', kind);
+    }
+
+    function repaintPlaced() {
+      const layer = document.getElementById('bn-mirrors-layer');
+      layer.innerHTML = '';
+      placed.forEach(m => drawMirror(layer, m, '#3DB7D4'));
+    }
+    function drawMirror(layer, m, color) {
+      const ns = 'http://www.w3.org/2000/svg';
+      const x = M + m.c * CELL, y = M + m.r * CELL;
+      const line = document.createElementNS(ns, 'line');
+      if (m.t === '/') {
+        line.setAttribute('x1', x + 4); line.setAttribute('y1', y + CELL - 4);
+        line.setAttribute('x2', x + CELL - 4); line.setAttribute('y2', y + 4);
+      } else {
+        line.setAttribute('x1', x + 4); line.setAttribute('y1', y + 4);
+        line.setAttribute('x2', x + CELL - 4); line.setAttribute('y2', y + CELL - 4);
+      }
+      line.setAttribute('stroke', color);
+      line.setAttribute('stroke-width', '3');
+      line.setAttribute('stroke-linecap', 'round');
+      line.setAttribute('filter', 'url(#bn-glow)');
+      layer.appendChild(line);
+    }
+
+    function flashPath(port, mirrors) {
+      // brief animated draw of the path inside the grid, then fade
+      const layer = document.getElementById('bn-path-layer');
+      const ns = 'http://www.w3.org/2000/svg';
+      const e = portToEntry(port);
+      let cr = e.r, cc = e.c, dr = e.dr, dc = e.dc, steps = 0;
+      const pts = [[ M + (cc + 0.5 - dc * 0.5) * CELL, M + (cr + 0.5 - dr * 0.5) * CELL ]];
+      while (steps < 200) {
+        const m = mirrors.find(mm => mm.r === cr && mm.c === cc);
+        if (m) { pts.push([ M + (cc + 0.5) * CELL, M + (cr + 0.5) * CELL ]); [dr, dc] = reflect(dr, dc, m.t); }
+        cr += dr; cc += dc;
+        if (cr < 0 || cr >= N || cc < 0 || cc >= N) {
+          // clamp end point to edge
+          pts.push([ M + (cc + 0.5 - dc * 0.5) * CELL, M + (cr + 0.5 - dr * 0.5) * CELL ]);
+          break;
+        }
+        steps++;
+      }
+      const poly = document.createElementNS(ns, 'polyline');
+      poly.setAttribute('points', pts.map(p => p.join(',')).join(' '));
+      poly.setAttribute('fill', 'none');
+      poly.setAttribute('stroke', '#3DB7D4');
+      poly.setAttribute('stroke-width', '2.4');
+      poly.setAttribute('stroke-linecap', 'round');
+      poly.setAttribute('stroke-linejoin', 'round');
+      poly.setAttribute('filter', 'url(#bn-glow)');
+      poly.setAttribute('opacity', '1');
+      poly.style.transition = 'opacity 600ms var(--ease)';
+      layer.appendChild(poly);
+      // fade out so the player only sees a flash
+      requestAnimationFrame(() => { setTimeout(() => poly.style.opacity = '0', 60); setTimeout(() => poly.remove(), 700); });
+    }
+
+    function fire(port) {
+      if (done) return;
+      if (mode !== 'fire') return;
+      if (shots.length >= MAX_SHOTS) return;
+      // disallow duplicate inPort
+      if (shots.some(s => s.inPort === port)) { showToast('Already fired from this port'); return; }
+      const out = trace(port, PUZZLE.mirrors);
+      shots.push({ inPort: port, outPort: out });
+      // briefly reveal path THROUGH the player's currently placed mirrors? No — through the true mirrors but invisibly.
+      // Per spec: path is NOT shown. Skip flashPath for play. (Only used on reveal/replay.)
+      haptic(8);
+      repaintShots();
+      renderHistory();
+      updateStatus();
+      checkCommit();
+    }
+
+    function placeMirror(r, c) {
+      if (done) return;
+      if (mode !== 'place') return;
+      const ex = placed.findIndex(m => m.r === r && m.c === c);
+      if (ex >= 0) {
+        // toggle orientation if same type already there; else set to current type; clicking same again removes
+        if (placed[ex].t === pickType) {
+          placed.splice(ex, 1);
+        } else {
+          placed[ex].t = pickType;
+        }
+      } else {
+        if (placed.length >= 4) { showToast('Four mirrors max'); return; }
+        placed.push({ r, c, t: pickType });
+      }
+      repaintPlaced();
+      checkCommit();
+      updateStatus();
+    }
+
+    function setMode(m) {
+      mode = m;
+      $$('button', segEl).forEach(b => b.classList.toggle('sel', b.dataset.mode === m));
+      pickEl.style.display = (m === 'place') ? 'flex' : 'none';
+    }
+    function setPick(t) {
+      pickType = t;
+      $$('.mp', pickEl).forEach(b => b.classList.toggle('sel', b.dataset.mtype === t));
+    }
+
+    function checkCommit() {
+      commitBtn.disabled = done || placed.length !== 4;
+    }
+
+    function commit() {
+      if (placed.length !== 4 || done) return;
+      // compare with PUZZLE.mirrors (set match by r,c,t)
+      const key = m => `${m.r},${m.c},${m.t}`;
+      const want = new Set(PUZZLE.mirrors.map(key));
+      const got  = new Set(placed.map(key));
+      const ok = want.size === got.size && [...want].every(k => got.has(k));
+      done = true;
+      if (ok) {
+        solved = true;
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+        replayAll();
+      } else {
+        revealEl.hidden = false;
+        revealEl.innerHTML = `Mirrors revealed.`;
+        // show true mirrors in a different color
+        const layer = document.getElementById('bn-mirrors-layer');
+        layer.innerHTML = '';
+        PUZZLE.mirrors.forEach(m => drawMirror(layer, m, '#D4A536'));
+        // and grey out the player's
+        placed.forEach(m => {
+          if (!PUZZLE.mirrors.some(t => t.r === m.r && t.c === m.c && t.t === m.t)) {
+            drawMirror(layer, m, '#5A6378');
+          }
+        });
+        shake(stageEl);
+      }
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+
+    function replayAll() {
+      // replay each shot's path through the true mirrors as a brief flash (staggered)
+      shots.forEach((s, i) => setTimeout(() => flashPath(s.inPort, PUZZLE.mirrors), 260 * i));
+    }
+
+    function updateStatus() {
+      if (solved) statusEl.innerHTML = `Solved`;
+      else if (revealed) statusEl.innerHTML = `Revealed`;
+      else if (done) statusEl.innerHTML = `Locked`;
+      else if (mode === 'place') statusEl.innerHTML = `Placed <b>${placed.length}</b> of <b>4</b> mirrors`;
+      else statusEl.innerHTML = `Shot <b>${shots.length + 1}</b> of <b>${MAX_SHOTS}</b>`;
+    }
+
+    function renderHistory() {
+      histEl.innerHTML = '';
+      shots.forEach((s, i) => {
+        const row = document.createElement('div');
+        row.className = 'bn-history-row';
+        row.innerHTML = `<span class="gnum">${i + 1}</span><span>${s.inPort}<span class="arrow">→</span>${s.outPort || '—'}</span>`;
+        histEl.appendChild(row);
+      });
+    }
+
+    function reset() {
+      shots = []; placed = [];
+      solved = false; done = false; revealed = false;
+      mode = 'fire'; pickType = '/';
+      setMode('fire'); setPick('/');
+      solvedEl.classList.remove('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Solved';
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      if (shareBtn) shareBtn.hidden = true;
+      buildBoard();
+      repaintShots();
+      repaintPlaced();
+      renderHistory();
+      checkCommit();
+      updateStatus();
+    }
+
+    function reveal() {
+      if (done) return;
+      done = true; revealed = true;
+      solvedEl.classList.add('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      revealEl.hidden = false;
+      const desc = PUZZLE.mirrors.map(m => `${m.t} (${m.r},${m.c})`).join('  ');
+      revealEl.innerHTML = `Mirrors: <em>${desc}</em>`;
+      const layer = document.getElementById('bn-mirrors-layer');
+      layer.innerHTML = '';
+      PUZZLE.mirrors.forEach(m => drawMirror(layer, m, '#D4A536'));
+      replayAll();
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+
+    function share() {
+      const lines = shots.map(s => `${s.inPort}→${s.outPort || '—'}`);
+      const head = solved ? `Bounce ${pIdx + 1} · solved (${shots.length}/${MAX_SHOTS} shots)` :
+                   revealed ? `Bounce ${pIdx + 1} · revealed` :
+                   `Bounce ${pIdx + 1} · X`;
+      copyShare(`${head}\n\n${lines.join('\n')}\n\ninternet.house/game/bounce`);
+    }
+
+    function load(i) {
+      pIdx = (i + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+
+    svg.addEventListener('click', e => {
+      const port = e.target.closest('.bn-port');
+      if (port) { fire(port.dataset.port); return; }
+      const cell = e.target.closest('.bn-cell');
+      if (cell) { placeMirror(+cell.dataset.r, +cell.dataset.c); return; }
+    });
+    segEl.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      setMode(b.dataset.mode);
+      updateStatus();
+    });
+    pickEl.addEventListener('click', e => {
+      const b = e.target.closest('.mp'); if (!b) return;
+      setPick(b.dataset.mtype);
+    });
+    commitBtn.addEventListener('click', commit);
+
+    GAMES['bounce'] = { reset, share, reveal, load };
+    load(0);
+  })();
+  </script>
+</body>
+</html>

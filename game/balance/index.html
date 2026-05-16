@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Balance · internet.house</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  .bl-stage { width: 100%; max-width: 460px; }
+
+  .bl-balance {
+    width: clamp(280px, 90vw, 420px);
+    aspect-ratio: 4 / 3;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .bl-balance svg { width: 100%; height: 100%; display: block; }
+  .bl-beam, .bl-pan-l, .bl-pan-r, .bl-rope-l, .bl-rope-r {
+    transition: transform 720ms var(--ease);
+    transform-origin: center;
+  }
+  .bl-pan-coins text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    fill: var(--ink);
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+
+  .bl-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    width: clamp(280px, 92vw, 420px);
+  }
+  .bl-coin {
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    background: var(--paper-soft);
+    border: 1.5px solid var(--hairline-strong);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--ink);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  @media (hover: hover) {
+    .bl-coin:hover { border-color: var(--ink-soft); }
+  }
+  .bl-coin.left {
+    background: color-mix(in srgb, var(--accent) 80%, white);
+    border-color: var(--accent);
+    color: var(--paper);
+  }
+  .bl-coin.right {
+    background: var(--paper);
+    border-color: var(--accent);
+    border-style: dashed;
+    color: var(--accent);
+  }
+  .bl-coin.locked { opacity: 0.55; pointer-events: none; }
+  .bl-coin .pan-label {
+    position: absolute;
+    bottom: -2px; right: -2px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1px solid var(--hairline-strong);
+    font: 600 0.5rem 'Inter', sans-serif;
+    color: var(--ink-faint);
+    display: none;
+    align-items: center; justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 0;
+  }
+  .bl-coin.left .pan-label,
+  .bl-coin.right .pan-label { display: inline-flex; }
+
+  .bl-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .bl-btn {
+    padding: 8px 22px;
+    font: 500 0.72rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .bl-btn[disabled] { opacity: 0.32; pointer-events: none; }
+  .bl-btn.ghost {
+    color: var(--ink-faint);
+    border-color: var(--hairline-strong);
+  }
+
+  .bl-status {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .bl-status b { color: var(--ink); font-weight: 600; }
+
+  .bl-history {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .bl-history-row {
+    display: grid;
+    grid-template-columns: 22px 1fr 32px;
+    align-items: center;
+    gap: 10px;
+    background: var(--paper-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 6px 10px;
+  }
+  .bl-history-row .gnum {
+    font: 500 0.66rem 'JetBrains Mono', monospace;
+    color: var(--ink-faint);
+  }
+  .bl-history-row .pans {
+    font: 500 0.78rem 'JetBrains Mono', monospace;
+    color: var(--ink-soft);
+  }
+  .bl-history-row .pans .vs {
+    color: var(--ink-faint);
+    margin: 0 4px;
+  }
+  .bl-history-row .res {
+    font-size: 1.1rem;
+    text-align: center;
+    color: var(--accent);
+  }
+
+  .bl-commit {
+    width: 100%;
+    border-top: 1px solid var(--hairline);
+    padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .bl-commit-head {
+    font: 500 0.66rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .bl-commit-row {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .bl-commit-pick {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .bl-commit-pick .lbl {
+    font: 500 0.6rem 'Inter', sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .bl-commit-pick select {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--ink);
+    border: 1px solid var(--hairline-strong);
+    background: var(--paper);
+    border-radius: 4px;
+    padding: 6px 10px;
+    appearance: none;
+  }
+  .bl-dir-row { display: flex; gap: 8px; }
+  .bl-dir {
+    padding: 6px 14px;
+    font: 500 0.7rem 'Inter', sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .bl-dir.sel {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+
+  .bl-reveal {
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1rem;
+  }
+  .bl-reveal em { color: var(--accent); font-style: normal; font-weight: 500; }
+</style>
+</head>
+<body data-game="balance" data-mood="light">
+  <header class="masthead">
+    <a class="back" href="../">← All games</a>
+    <div class="today" id="today"></div>
+  </header>
+
+  <main>
+    <section class="game" data-game="balance">
+      <div class="game-head">
+        <div class="eyebrow">No. 038 · Balance</div>
+        <h1 class="title">Balance</h1>
+        <p class="rule">Twelve coins. One is the odd weight. Find it.</p>
+        <p class="howto"><b>How to play.</b> Tap coins to send to the <b>left</b> pan; tap again for <b>right</b>; again to clear. Pans must hold equal counts. Press <b>Weigh</b> — you get four weighings, then commit your answer (which coin, heavier or lighter).</p>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" data-action="reset" data-game="balance">Reset</button>
+        <button class="tool-btn" data-action="reveal" data-game="balance">Reveal</button>
+        <button class="tool-btn" data-action="share" data-game="balance" hidden>Share</button>
+        <span class="sep"></span>
+        <span class="puzzle-picker" data-game="balance" role="group" aria-label="Choose puzzle">
+          <button class="puzzle-pick" data-game="balance" data-idx="0" aria-current="true">1</button>
+          <button class="puzzle-pick" data-game="balance" data-idx="1">2</button>
+          <button class="puzzle-pick" data-game="balance" data-idx="2">3</button>
+          <button class="puzzle-pick" data-game="balance" data-idx="3">4</button>
+          <button class="puzzle-pick" data-game="balance" data-idx="4">5</button>
+        </span>
+      </div>
+
+      <div class="stage bl-stage" id="stage-balance">
+
+        <div class="bl-balance">
+          <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet">
+            <!-- post -->
+            <line x1="200" y1="60" x2="200" y2="270" stroke="#bbb1a0" stroke-width="3" />
+            <polygon points="180,270 220,270 210,290 190,290" fill="#bbb1a0"/>
+            <circle cx="200" cy="60" r="6" fill="#7a7363"/>
+            <!-- beam -->
+            <g class="bl-beam" id="bl-beam">
+              <line x1="60" y1="60" x2="340" y2="60" stroke="#7a7363" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="60" cy="60" r="3" fill="#7a7363"/>
+              <circle cx="340" cy="60" r="3" fill="#7a7363"/>
+              <!-- left pan -->
+              <g class="bl-pan-l" id="bl-pan-l">
+                <line x1="60" y1="60" x2="60" y2="160" stroke="#a89c84" stroke-width="1.4"/>
+                <path d="M20 160 Q60 200 100 160 Z" fill="#cbbfa6" stroke="#7a7363" stroke-width="1.4"/>
+                <ellipse cx="60" cy="160" rx="40" ry="6" fill="#a89c84"/>
+                <g id="bl-coins-l" class="bl-pan-coins"></g>
+              </g>
+              <!-- right pan -->
+              <g class="bl-pan-r" id="bl-pan-r">
+                <line x1="340" y1="60" x2="340" y2="160" stroke="#a89c84" stroke-width="1.4"/>
+                <path d="M300 160 Q340 200 380 160 Z" fill="#cbbfa6" stroke="#7a7363" stroke-width="1.4"/>
+                <ellipse cx="340" cy="160" rx="40" ry="6" fill="#a89c84"/>
+                <g id="bl-coins-r" class="bl-pan-coins"></g>
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <div class="bl-status" id="bl-status">Weighing <b>1</b> of <b>4</b></div>
+
+        <div class="bl-grid" id="bl-grid"></div>
+
+        <div class="bl-controls">
+          <button class="bl-btn ghost" id="bl-clear">Clear</button>
+          <button class="bl-btn" id="bl-weigh" disabled>Weigh</button>
+        </div>
+
+        <div class="bl-history" id="bl-history"></div>
+
+        <div class="bl-commit" id="bl-commit" hidden>
+          <div class="bl-commit-head">Commit your answer</div>
+          <div class="bl-commit-row">
+            <div class="bl-commit-pick">
+              <span class="lbl">Coin</span>
+              <select id="bl-coin-sel"></select>
+            </div>
+            <div class="bl-commit-pick">
+              <span class="lbl">Weight</span>
+              <div class="bl-dir-row" id="bl-dir-row">
+                <button class="bl-dir" data-dir="heavier">Heavier</button>
+                <button class="bl-dir" data-dir="lighter">Lighter</button>
+              </div>
+            </div>
+          </div>
+          <button class="bl-btn" id="bl-commit-btn" disabled>Lock in</button>
+        </div>
+
+        <div class="solved" id="solved-balance"><span class="check">✓</span><span class="solved-text">Solved</span></div>
+        <p class="bl-reveal" id="bl-reveal" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><a href="../">internet.house · daily</a></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../shared.js"></script>
+  <script>
+  (function Balance() {
+    const PUZZLES = [
+      { id: 'balance-001', odd: 7,  dir: 'lighter' },
+      { id: 'balance-002', odd: 3,  dir: 'heavier' },
+      { id: 'balance-003', odd: 11, dir: 'lighter' },
+      { id: 'balance-004', odd: 5,  dir: 'heavier' },
+      { id: 'balance-005', odd: 9,  dir: 'lighter' },
+    ];
+
+    const COINS = 12;
+    const MAX_WEIGHINGS = 4;
+
+    let pIdx = 0, PUZZLE = PUZZLES[pIdx];
+    // assignments: 0 = unassigned, 1 = left, 2 = right
+    let assign = new Array(COINS + 1).fill(0);
+    let history = [];          // [{ left:[], right:[], result: 'L'|'R'|'=' }]
+    let pickedCoin = null, pickedDir = null;
+    let solved = false, done = false, revealed = false;
+
+    const stageEl   = $('#stage-balance');
+    const gridEl    = $('#bl-grid');
+    const beamEl    = $('#bl-beam');
+    const panLEl    = $('#bl-pan-l');
+    const panREl    = $('#bl-pan-r');
+    const coinsLEl  = $('#bl-coins-l');
+    const coinsREl  = $('#bl-coins-r');
+    const histEl    = $('#bl-history');
+    const statusEl  = $('#bl-status');
+    const weighBtn  = $('#bl-weigh');
+    const clearBtn  = $('#bl-clear');
+    const commitEl  = $('#bl-commit');
+    const coinSel   = $('#bl-coin-sel');
+    const dirRowEl  = $('#bl-dir-row');
+    const commitBtn = $('#bl-commit-btn');
+    const solvedEl  = $('#solved-balance');
+    const revealEl  = $('#bl-reveal');
+    const shareBtn  = document.querySelector('.tool-btn[data-game="balance"][data-action="share"]');
+
+    function weightOf(n) {
+      if (n === PUZZLE.odd) return PUZZLE.dir === 'heavier' ? 1.1 : 0.9;
+      return 1.0;
+    }
+
+    function selected(side) {
+      const out = [];
+      for (let i = 1; i <= COINS; i++) if (assign[i] === side) out.push(i);
+      return out;
+    }
+
+    function buildGrid() {
+      gridEl.innerHTML = '';
+      for (let i = 1; i <= COINS; i++) {
+        const c = document.createElement('button');
+        c.className = 'bl-coin';
+        c.dataset.n = String(i);
+        c.innerHTML = `${i}<span class="pan-label">L</span>`;
+        if (done) c.classList.add('locked');
+        gridEl.appendChild(c);
+      }
+      paintGrid();
+    }
+
+    function paintGrid() {
+      $$('.bl-coin', gridEl).forEach(c => {
+        const n = +c.dataset.n;
+        c.classList.remove('left', 'right');
+        const lbl = c.querySelector('.pan-label');
+        if (assign[n] === 1) { c.classList.add('left'); lbl.textContent = 'L'; }
+        else if (assign[n] === 2) { c.classList.add('right'); lbl.textContent = 'R'; }
+        if (done) c.classList.add('locked'); else c.classList.remove('locked');
+      });
+      const L = selected(1), R = selected(2);
+      weighBtn.disabled = done || L.length === 0 || L.length !== R.length;
+    }
+
+    function paintPans() {
+      // visualize current selection on the pan SVGs
+      coinsLEl.innerHTML = ''; coinsREl.innerHTML = '';
+      const L = selected(1), R = selected(2);
+      const drawCoins = (g, list, cx, cy) => {
+        // arrange as a small grid above the pan
+        const max = list.length;
+        const cols = Math.min(4, Math.max(1, max));
+        const rows = Math.ceil(max / cols);
+        const cw = 14, ch = 14;
+        const startX = cx - ((cols - 1) * cw) / 2;
+        const startY = cy - 12 - (rows - 1) * ch;
+        list.forEach((n, i) => {
+          const r = Math.floor(i / cols), col = i % cols;
+          const x = startX + col * cw, y = startY + r * ch;
+          const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+          c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', 6);
+          c.setAttribute('fill', '#e3d7be');
+          c.setAttribute('stroke', '#7a7363');
+          c.setAttribute('stroke-width', '0.8');
+          g.appendChild(c);
+          const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+          t.setAttribute('x', x); t.setAttribute('y', y + 0.5); t.textContent = String(n);
+          g.appendChild(t);
+        });
+      };
+      drawCoins(coinsLEl, L, 60, 160);
+      drawCoins(coinsREl, R, 340, 160);
+    }
+
+    function tiltPans(result) {
+      // result: 'L' (left down), 'R' (right down), '=' (level)
+      let angle = 0;
+      if (result === 'L') angle = 8;
+      if (result === 'R') angle = -8;
+      // rotate beam around (200,60)
+      beamEl.style.transformOrigin = '200px 60px';
+      beamEl.style.transform = `rotate(${angle}deg)`;
+      // counter-rotate pans so they hang vertically
+      const counter = -angle;
+      panLEl.style.transformOrigin = '60px 60px';
+      panREl.style.transformOrigin = '340px 60px';
+      panLEl.style.transform = `translateY(${angle * 1.2}px) rotate(${counter}deg)`;
+      panREl.style.transform = `translateY(${-angle * 1.2}px) rotate(${counter}deg)`;
+    }
+
+    function computeResult(L, R) {
+      const sumL = L.reduce((s, n) => s + weightOf(n), 0);
+      const sumR = R.reduce((s, n) => s + weightOf(n), 0);
+      if (Math.abs(sumL - sumR) < 1e-6) return '=';
+      return sumL > sumR ? 'L' : 'R';
+    }
+
+    function updateStatus() {
+      const t = history.length + 1;
+      if (solved) statusEl.innerHTML = `Solved in <b>${history.length}</b> weighings`;
+      else if (revealed) statusEl.innerHTML = `Revealed`;
+      else if (done && history.length >= MAX_WEIGHINGS && !solved) statusEl.innerHTML = `Commit your answer`;
+      else if (commitEl.hidden === false) statusEl.innerHTML = `Commit your answer`;
+      else statusEl.innerHTML = `Weighing <b>${t}</b> of <b>${MAX_WEIGHINGS}</b>`;
+    }
+
+    function renderHistory() {
+      histEl.innerHTML = '';
+      history.forEach((h, i) => {
+        const row = document.createElement('div');
+        row.className = 'bl-history-row';
+        const num = document.createElement('div'); num.className = 'gnum'; num.textContent = String(i + 1);
+        const pans = document.createElement('div'); pans.className = 'pans';
+        pans.innerHTML = `${h.left.join(',')}<span class="vs">⟷</span>${h.right.join(',')}`;
+        const res = document.createElement('div'); res.className = 'res';
+        res.textContent = h.result === 'L' ? '⬅' : h.result === 'R' ? '➡' : '⚖';
+        row.appendChild(num); row.appendChild(pans); row.appendChild(res);
+        histEl.appendChild(row);
+      });
+    }
+
+    function weigh() {
+      const L = selected(1), R = selected(2);
+      if (L.length === 0 || L.length !== R.length) return;
+      const r = computeResult(L, R);
+      history.push({ left: L.slice(), right: R.slice(), result: r });
+      tiltPans(r);
+      haptic(12);
+      // clear assignments after a brief delay so user can see the result
+      setTimeout(() => {
+        assign = new Array(COINS + 1).fill(0);
+        paintPans();
+        paintGrid();
+      }, 1100);
+      renderHistory();
+      if (history.length >= MAX_WEIGHINGS) {
+        // open commit panel (also offer commit at any time)
+      }
+      // Commit panel becomes visible after first weighing
+      commitEl.hidden = false;
+      updateStatus();
+    }
+
+    function clearSelection() {
+      if (done) return;
+      assign = new Array(COINS + 1).fill(0);
+      paintGrid(); paintPans();
+    }
+
+    function pickCoin(n) {
+      if (done) return;
+      // cycle: 0 → 1 → 2 → 0
+      assign[n] = (assign[n] + 1) % 3;
+      paintGrid(); paintPans();
+    }
+
+    function buildCoinSel() {
+      coinSel.innerHTML = '<option value="">—</option>';
+      for (let i = 1; i <= COINS; i++) {
+        const o = document.createElement('option'); o.value = String(i); o.textContent = String(i);
+        coinSel.appendChild(o);
+      }
+    }
+
+    function setDir(d) {
+      pickedDir = d;
+      $$('.bl-dir', dirRowEl).forEach(b => b.classList.toggle('sel', b.dataset.dir === d));
+      checkCommit();
+    }
+
+    function checkCommit() {
+      commitBtn.disabled = !(pickedCoin && pickedDir);
+    }
+
+    function commit() {
+      if (!pickedCoin || !pickedDir) return;
+      done = true;
+      solved = (pickedCoin === PUZZLE.odd && pickedDir === PUZZLE.dir);
+      if (solved) {
+        solvedEl.classList.add('show');
+        flashReveal(stageEl);
+        haptic(20);
+      } else {
+        revealEl.hidden = false;
+        revealEl.innerHTML = `Coin <em>#${PUZZLE.odd}</em> · <em>${PUZZLE.dir}</em>.`;
+        shake(stageEl);
+      }
+      paintGrid();
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+
+    function reset() {
+      assign = new Array(COINS + 1).fill(0);
+      history = [];
+      pickedCoin = null; pickedDir = null;
+      solved = false; done = false; revealed = false;
+      solvedEl.classList.remove('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Solved';
+      revealEl.hidden = true; revealEl.innerHTML = '';
+      commitEl.hidden = true;
+      coinSel.value = '';
+      $$('.bl-dir', dirRowEl).forEach(b => b.classList.remove('sel'));
+      commitBtn.disabled = true;
+      tiltPans('=');
+      buildGrid();
+      paintPans();
+      renderHistory();
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = true;
+    }
+
+    function reveal() {
+      if (solved || done) return;
+      done = true; revealed = true;
+      solvedEl.classList.add('show', 'is-revealed');
+      solvedEl.querySelector('.solved-text').textContent = 'Revealed';
+      revealEl.hidden = false;
+      revealEl.innerHTML = `Coin <em>#${PUZZLE.odd}</em> was <em>${PUZZLE.dir}</em>.`;
+      paintGrid();
+      updateStatus();
+      if (shareBtn) shareBtn.hidden = false;
+    }
+
+    function share() {
+      const map = { 'L':'⬅️', 'R':'➡️', '=':'⚖️' };
+      const lines = history.map(h => map[h.result]);
+      const head = solved ? `Balance ${pIdx + 1} · ${history.length}/${MAX_WEIGHINGS}` :
+                   revealed ? `Balance ${pIdx + 1} · revealed` :
+                   `Balance ${pIdx + 1} · X/${MAX_WEIGHINGS}`;
+      const ans = solved || revealed ? `\n\nCoin #${PUZZLE.odd} · ${PUZZLE.dir}` : '';
+      copyShare(`${head}\n\n${lines.join(' ')}${ans}\n\ninternet.house/game/balance`);
+    }
+
+    function load(i) {
+      pIdx = (i + PUZZLES.length) % PUZZLES.length;
+      PUZZLE = PUZZLES[pIdx];
+      reset();
+    }
+
+    gridEl.addEventListener('click', e => {
+      const c = e.target.closest('.bl-coin'); if (!c) return;
+      pickCoin(+c.dataset.n);
+    });
+    weighBtn.addEventListener('click', weigh);
+    clearBtn.addEventListener('click', clearSelection);
+    coinSel.addEventListener('change', () => { pickedCoin = coinSel.value ? +coinSel.value : null; checkCommit(); });
+    dirRowEl.addEventListener('click', e => {
+      const b = e.target.closest('.bl-dir'); if (!b) return;
+      setDir(b.dataset.dir);
+    });
+    commitBtn.addEventListener('click', commit);
+
+    buildCoinSel();
+    GAMES['balance'] = { reset, share, reveal, load };
+    load(0);
+  })();
+  </script>
+</body>
+</html>
