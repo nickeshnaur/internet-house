@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>humans · internet.house</title>
+<meta name="theme-color" content="#F8F5EE">
+<meta name="description" content="A few questions, and then some answers from other people.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.92em%22 font-size=%2280%22 font-family=%22serif%22 font-style=%22italic%22 fill=%22%236B2B2B%22>·</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F8F5EE;
+    --ink: #1A1815;
+    --soft: #8A857A;
+    --accent: #6B2B2B;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
+    font-variation-settings: 'opsz' 18, 'wght' 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior: none;
+  }
+
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  main#root {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    transition: opacity 600ms ease;
+  }
+
+  /* ─── universal text utilities ─── */
+  .serif-link {
+    display: inline-block;
+    color: var(--ink);
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Newsreader', serif;
+    font-variation-settings: 'opsz' 24, 'wght' 400;
+    font-style: italic;
+    font-size: 19px;
+    line-height: 1.5;
+    padding: 6px 0;
+    position: relative;
+    letter-spacing: 0.005em;
+  }
+  .serif-link::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 4px;
+    height: 1px;
+    background: var(--ink);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 400ms var(--ease);
+  }
+  .serif-link.accent { color: var(--accent); }
+  .serif-link.accent::after { background: var(--accent); }
+  .serif-link:hover::after,
+  .serif-link:focus-visible::after { transform: scaleX(1); }
+  .serif-link:focus { outline: none; }
+  .serif-link:focus-visible { outline: 1px dotted var(--soft); outline-offset: 6px; }
+
+  .chrome {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: var(--soft);
+    background: none;
+    border: none;
+    text-decoration: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  .chrome:hover { color: var(--ink); }
+  .chrome:focus { outline: none; }
+  .chrome:focus-visible { outline: 1px dotted var(--soft); outline-offset: 6px; }
+
+  /* ─── skip link (fixed corner) ─── */
+  #skip {
+    position: fixed;
+    bottom: max(22px, env(safe-area-inset-bottom));
+    right: 22px;
+    padding: 10px 4px;
+    z-index: 30;
+    opacity: 0;
+    transition: opacity 700ms ease;
+  }
+  #skip.visible { opacity: 1; }
+  #skip[hidden] { display: none; }
+
+  /* ─── landing ─── */
+  .landing {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 80px 0;
+  }
+  .landing .lede {
+    margin: 0 0 56px;
+    font-size: 26px;
+    line-height: 1.32;
+    letter-spacing: -0.005em;
+    font-variation-settings: 'opsz' 60, 'wght' 400;
+    max-width: 17ch;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: fade-up 900ms 120ms var(--ease) forwards;
+  }
+  .landing .begin-wrap {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: fade-up 900ms 720ms var(--ease) forwards;
+  }
+  @media (min-width: 640px) {
+    .landing .lede { font-size: 36px; max-width: 22ch; }
+  }
+  @media (min-width: 900px) {
+    .landing .lede { font-size: 42px; }
+  }
+
+  /* ─── question screen ─── */
+  .screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    padding-top: 96px;
+    padding-bottom: 96px;
+  }
+  .q-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-top: max(0px, calc(38vh - 200px));
+    transition: padding-top 800ms var(--ease);
+  }
+  .screen.revealed .q-block { padding-top: 0; }
+
+  .question {
+    margin: 0;
+    font-size: 32px;
+    line-height: 1.16;
+    letter-spacing: -0.012em;
+    font-variation-settings: 'opsz' 72, 'wght' 400;
+    max-width: 18ch;
+    opacity: 0;
+    transform: translateY(12px);
+    transform-origin: center top;
+    transition:
+      opacity 700ms ease-out,
+      transform 700ms ease-out;
+    will-change: opacity, transform;
+  }
+  .question.entered {
+    opacity: 1;
+    transform: none;
+    animation: breath 8s 800ms ease-in-out infinite;
+  }
+  .screen.revealed .question {
+    opacity: 0.3;
+    transform: scale(0.85);
+    animation: none;
+    transition:
+      opacity 800ms var(--ease),
+      transform 800ms var(--ease);
+  }
+  @keyframes breath {
+    0%, 100% { font-variation-settings: 'opsz' 72, 'wght' 400; }
+    50%      { font-variation-settings: 'opsz' 72, 'wght' 460; }
+  }
+  @media (min-width: 600px) { .question { font-size: 40px; max-width: 22ch; } }
+  @media (min-width: 900px) { .question { font-size: 48px; } }
+  @media (min-width: 1100px) { .question { font-size: 54px; } }
+
+  /* ─── input field ─── */
+  .input-form {
+    margin: 56px auto 0;
+    width: 100%;
+    max-width: 520px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 700ms ease-out 200ms, transform 700ms ease-out 200ms;
+  }
+  .input-form.entered { opacity: 1; transform: none; }
+  .screen.revealed .input-form {
+    opacity: 0;
+    transition: opacity 400ms ease;
+    pointer-events: none;
+  }
+
+  .input-wrap {
+    display: block;
+    position: relative;
+    width: 100%;
+    border-bottom: 1px solid var(--ink);
+    font-size: 20px;
+    line-height: 1.5;
+    font-variation-settings: 'opsz' 30, 'wght' 420;
+    padding: 6px 1px 8px;
+    min-height: calc(1.5em + 14px);
+    text-align: left;
+  }
+  @media (min-width: 700px) { .input-wrap { font-size: 22px; } }
+  @media (min-width: 1000px) { .input-wrap { font-size: 24px; } }
+
+  .input-wrap .display {
+    position: absolute;
+    left: 1px; right: 1px; top: 6px;
+    height: 1.5em;
+    line-height: 1.5;
+    pointer-events: none;
+    white-space: pre;
+    overflow: hidden;
+    color: var(--ink);
+  }
+  .input-wrap .caret {
+    display: inline-block;
+    width: 2px;
+    height: 1.05em;
+    background: var(--accent);
+    vertical-align: -0.18em;
+    margin: 0 0 0 0;
+    opacity: 0;
+  }
+  .input-wrap.focused .caret {
+    animation: blink 1100ms steps(1, end) infinite;
+  }
+  @keyframes blink {
+    0%, 49.999% { opacity: 1; }
+    50%, 100%   { opacity: 0; }
+  }
+  .input-wrap input {
+    display: block;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: transparent;
+    caret-color: transparent;
+    font: inherit;
+    font-variation-settings: inherit;
+    padding: 0;
+    margin: 0;
+  }
+  .input-wrap input::selection { background: rgba(107,43,43,0.18); color: var(--ink); }
+
+  /* ─── answers ─── */
+  .answers {
+    margin-top: 88px;
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+  }
+  .answer {
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 900ms ease-out, transform 900ms ease-out;
+  }
+  .answer.in { opacity: 1; transform: none; }
+  .answer-text {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.55;
+    font-variation-settings: 'opsz' 30, 'wght' 420;
+    color: var(--ink);
+    letter-spacing: 0.002em;
+  }
+  @media (min-width: 700px) { .answer-text { font-size: 22px; } }
+  @media (min-width: 1000px) { .answer-text { font-size: 24px; } }
+  .answer-by {
+    margin-top: 12px;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--soft);
+    font-weight: 400;
+  }
+
+  /* ─── continue ─── */
+  .continue-wrap {
+    margin: 96px auto 0;
+    display: flex;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 800ms ease-out, transform 800ms ease-out;
+  }
+  .continue-wrap.in { opacity: 1; transform: none; }
+
+  /* ─── closing ─── */
+  .closing {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 96px 0;
+  }
+  .closing .thanks {
+    margin: 0 0 56px;
+    font-size: 26px;
+    line-height: 1.36;
+    letter-spacing: -0.005em;
+    font-variation-settings: 'opsz' 60, 'wght' 400;
+    max-width: 26ch;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: fade-up 900ms 120ms var(--ease) forwards;
+  }
+  @media (min-width: 640px) { .closing .thanks { font-size: 30px; } }
+  @media (min-width: 900px) { .closing .thanks { font-size: 34px; } }
+  .closing .thanks .second {
+    display: block;
+    margin-top: 1.1em;
+    color: var(--ink);
+  }
+
+  .email-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    max-width: 520px;
+    margin-bottom: 36px;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: fade-up 900ms 680ms var(--ease) forwards;
+  }
+  .email-form .input-wrap { flex: 1; }
+  .email-form .submit-btn { flex-shrink: 0; padding-bottom: 12px; }
+
+  .email-thanks {
+    font-style: italic;
+    color: var(--soft);
+    font-size: 19px;
+    line-height: 1.5;
+    font-variation-settings: 'opsz' 30, 'wght' 400;
+    max-width: 520px;
+    margin-bottom: 36px;
+    opacity: 0;
+    animation: fade-up 700ms var(--ease) forwards;
+  }
+
+  .share {
+    align-self: flex-start;
+    margin-top: 4px;
+    padding: 6px 0;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: fade-up 900ms 1100ms var(--ease) forwards;
+  }
+
+  /* ─── shared animations ─── */
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ─── reduced motion ─── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-delay: 0ms !important;
+      animation-iteration-count: 1 !important;
+    }
+    .question.entered { animation: none; }
+    .input-wrap.focused .caret { animation: none; opacity: 1; }
+    /* Keep gentle cross-fades */
+    main#root { transition: opacity 280ms ease !important; }
+    .landing .lede, .landing .begin-wrap,
+    .closing .thanks, .email-form, .share, .email-thanks {
+      opacity: 1 !important; transform: none !important;
+      animation: fade-only 280ms ease forwards !important;
+    }
+    @keyframes fade-only { from { opacity: 0; } to { opacity: 1; } }
+    .question, .input-form { transform: none !important; transition: opacity 280ms ease !important; }
+    .question.entered, .input-form.entered { opacity: 1; }
+    .screen.revealed .question { opacity: 0.3; transform: none !important; }
+    .answer { transform: none !important; transition: opacity 320ms ease !important; }
+    .continue-wrap { transform: none !important; transition: opacity 320ms ease !important; }
+    .q-block { transition: padding-top 320ms ease !important; }
+  }
+</style>
+</head>
+<body>
+  <main id="root" role="main"></main>
+  <button id="skip" class="chrome" type="button" hidden aria-label="Skip this question">skip</button>
+
+  <script src="data.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      const QUESTIONS = window.QUESTIONS || [];
+      const ANSWERS_PER_QUESTION = 4;
+      const ANSWER_STAGGER_MS = 850;
+      const ANSWER_FIRST_DELAY_MS = 700;
+      const CONTINUE_AFTER_LAST_MS = 700;
+      const CROSSFADE_MS = 600;
+
+      const root = document.getElementById('root');
+      const skip = document.getElementById('skip');
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      let state = { screen: 'landing', q: 0 };
+      let answerTimers = [];
+
+      function clearTimers() {
+        answerTimers.forEach(clearTimeout);
+        answerTimers = [];
+      }
+
+      function esc(s) {
+        return String(s).replace(/[&<>"']/g, c => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+      }
+
+      function crossFade(next) {
+        clearTimers();
+        root.style.opacity = '0';
+        setTimeout(() => {
+          next();
+          root.style.opacity = '1';
+        }, prefersReducedMotion ? 200 : CROSSFADE_MS);
+      }
+
+      function bindInput(wrap) {
+        const input = wrap.querySelector('input');
+        const before = wrap.querySelector('.before');
+        const after = wrap.querySelector('.after');
+        const sync = () => {
+          const v = input.value;
+          const pos = (input.selectionStart != null) ? input.selectionStart : v.length;
+          before.textContent = v.slice(0, pos);
+          after.textContent = v.slice(pos);
+        };
+        input.addEventListener('input', sync);
+        input.addEventListener('keyup', sync);
+        input.addEventListener('click', sync);
+        input.addEventListener('select', sync);
+        input.addEventListener('focus', () => { wrap.classList.add('focused'); sync(); });
+        input.addEventListener('blur', () => wrap.classList.remove('focused'));
+        sync();
+        return input;
+      }
+
+      // ───────── LANDING ─────────
+      function renderLanding() {
+        state.screen = 'landing';
+        skip.hidden = true;
+        skip.classList.remove('visible');
+        root.innerHTML = `
+          <section class="landing">
+            <h1 class="lede">A few questions, and then some answers from other people.</h1>
+            <div class="begin-wrap">
+              <button type="button" class="serif-link accent" id="begin">Begin</button>
+            </div>
+          </section>
+        `;
+        document.getElementById('begin').addEventListener('click', () => {
+          state.q = 0;
+          crossFade(() => renderQuestion());
+        });
+      }
+
+      // ───────── QUESTION SCREEN ─────────
+      function renderQuestion() {
+        state.screen = 'asking';
+        const q = QUESTIONS[state.q];
+        root.innerHTML = `
+          <section class="screen" id="screen">
+            <div class="q-block">
+              <h2 class="question" id="question">${esc(q.q)}</h2>
+              <form class="input-form" id="form" autocomplete="off" novalidate>
+                <label class="input-wrap" id="input-wrap">
+                  <span class="display"><span class="before"></span><span class="caret"></span><span class="after"></span></span>
+                  <input type="text" id="answer-input" autocomplete="off" autocapitalize="sentences" autocorrect="off" spellcheck="false" aria-label="${esc(q.q)}">
+                </label>
+              </form>
+            </div>
+            <div class="answers" id="answers" aria-live="polite"></div>
+          </section>
+        `;
+
+        skip.hidden = false;
+        skip.onclick = () => reveal();
+
+        const wrap = document.getElementById('input-wrap');
+        const input = bindInput(wrap);
+
+        const form = document.getElementById('form');
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          reveal();
+        });
+
+        requestAnimationFrame(() => {
+          document.getElementById('question').classList.add('entered');
+          document.getElementById('form').classList.add('entered');
+          const st = setTimeout(() => skip.classList.add('visible'), 900);
+          answerTimers.push(st);
+          if (window.matchMedia('(min-width: 700px) and (pointer: fine)').matches) {
+            const ft = setTimeout(() => input.focus({ preventScroll: true }), 500);
+            answerTimers.push(ft);
+          }
+        });
+      }
+
+      function reveal() {
+        const screen = document.getElementById('screen');
+        if (!screen || screen.classList.contains('revealed')) return;
+
+        screen.classList.add('revealed');
+        skip.classList.remove('visible');
+        setTimeout(() => { skip.hidden = true; }, 500);
+
+        const input = document.getElementById('answer-input');
+        if (input) input.blur();
+
+        const answersEl = document.getElementById('answers');
+        const list = QUESTIONS[state.q].a.slice(0, ANSWERS_PER_QUESTION);
+
+        list.forEach((a, i) => {
+          const el = document.createElement('div');
+          el.className = 'answer';
+          el.innerHTML = `
+            <p class="answer-text">${esc(a.text)}</p>
+            <div class="answer-by">— ${esc(a.by)}</div>
+          `;
+          answersEl.appendChild(el);
+          const t = setTimeout(() => el.classList.add('in'), ANSWER_FIRST_DELAY_MS + i * ANSWER_STAGGER_MS);
+          answerTimers.push(t);
+        });
+
+        const continueDelay =
+          ANSWER_FIRST_DELAY_MS + (list.length - 1) * ANSWER_STAGGER_MS + CONTINUE_AFTER_LAST_MS;
+        const ct = setTimeout(() => {
+          const wrap = document.createElement('div');
+          wrap.className = 'continue-wrap';
+          wrap.innerHTML = `<button type="button" class="serif-link" id="continue">Continue</button>`;
+          screen.appendChild(wrap);
+          requestAnimationFrame(() => wrap.classList.add('in'));
+          document.getElementById('continue').addEventListener('click', () => {
+            crossFade(() => {
+              if (state.q < QUESTIONS.length - 1) {
+                state.q += 1;
+                renderQuestion();
+              } else {
+                renderClosing();
+              }
+            });
+          });
+        }, continueDelay);
+        answerTimers.push(ct);
+      }
+
+      // ───────── CLOSING ─────────
+      function renderClosing() {
+        state.screen = 'closing';
+        skip.hidden = true;
+        skip.classList.remove('visible');
+        root.innerHTML = `
+          <section class="closing">
+            <h2 class="thanks">
+              Thank you for sharing what you shared.
+              <span class="second">Twice a month, we'd like to send you one stranger's answer to one question. That's all.</span>
+            </h2>
+            <form class="email-form" id="email-form" autocomplete="off" novalidate>
+              <label class="input-wrap" id="email-wrap" aria-label="Email address">
+                <span class="display"><span class="before"></span><span class="caret"></span><span class="after"></span></span>
+                <input type="email" id="email-input" autocomplete="email" inputmode="email" spellcheck="false" aria-label="Email address">
+              </label>
+              <button type="submit" class="serif-link accent submit-btn" id="submit">send</button>
+            </form>
+            <button type="button" class="chrome share" id="share">send this to one person</button>
+          </section>
+        `;
+
+        bindInput(document.getElementById('email-wrap'));
+
+        document.getElementById('email-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const form = document.getElementById('email-form');
+          const replacement = document.createElement('p');
+          replacement.className = 'email-thanks';
+          replacement.textContent = 'noted — thank you.';
+          form.replaceWith(replacement);
+        });
+
+        const shareBtn = document.getElementById('share');
+        shareBtn.addEventListener('click', async () => {
+          const url = new URL('./', location.href).toString();
+          try {
+            if (navigator.share) {
+              await navigator.share({
+                title: 'humans',
+                text: 'A few questions, and then some answers from other people.',
+                url
+              });
+            } else if (navigator.clipboard) {
+              await navigator.clipboard.writeText(url);
+              const original = shareBtn.textContent;
+              shareBtn.textContent = 'link copied';
+              setTimeout(() => { shareBtn.textContent = original; }, 2400);
+            }
+          } catch (_) { /* user cancelled — ignore */ }
+        });
+      }
+
+      // ───────── boot ─────────
+      renderLanding();
+    })();
+  </script>
+</body>
+</html>
